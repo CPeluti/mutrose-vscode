@@ -1,6 +1,6 @@
 export type id = string;
 
-export interface Model {
+export interface GoalModel {
     actors: Actor[]
     orphans: never[]
     dependencies: never[]
@@ -16,7 +16,7 @@ export interface Actor extends Node {
     nodes: Node[]
 }
 
-export type NodeType = 'istar.Task' | 'istar.Goal' | 'istar.Actor'
+export type NodeType = 'istar.Task' | 'istar.Goal' | 'istar.Actor';
 export interface Node extends CustomProperties {
     id: id
     text: string

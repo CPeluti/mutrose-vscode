@@ -24,7 +24,9 @@ function convertNode2DIO(nodeJson, parent) {
     style.elements[0].elements[0].attributes.x = nodeJson.x;
     style.elements[0].elements[0].attributes.y = nodeJson.y;
     nodeJson.parent = parent;
+    //renaming text to label
     delete Object.assign(nodeJson, { label: nodeJson.text })['text'];
+    //adding MR_ to every customProperties key
     Object.keys(nodeJson?.customProperties).forEach(key => {
         nodeJson['MR_' + key] = nodeJson.customProperties[key];
     });
@@ -66,37 +68,44 @@ function convertActors2DIO(gm) {
             }
             return { ...propAcc, ['MR_' + key]: value };
         }, {});
+        const style = xml_elements_1.default.actor;
         return { nodes: [...acc.nodes, ...nodes], actors: [...acc.actors, { ...newActor, ...customProperties }] };
     }, { actors: [], nodes: [] });
 }
 function convertLinks2DIO(gm) {
-    const links = [];
-    gm.links.forEach((link) => {
+    return gm.links.map(link => {
         let newLink;
-        if (link.type === 'istar.AndRefinementLink') {
-            newLink = xml_elements_1.default.andLink;
+        switch (link.type) {
+            case 'istar.AndRefinementLink':
+                newLink = xml_elements_1.default.andLink;
+                break;
+            case 'istar.OrRefinementLink':
+                break;
         }
-        ;
-        const res = gm.actors.filter((actor) => {
-            return actor.nodes.find((node) => (link.source === node.id || link.target === node.id));
-        })[0].id;
-        newLink.elements[0].attributes.parent = res;
+        const parent = gm.actors.find(actor => {
+            return actor.nodes.find(node => node.id === link.source || node.id === link.target);
+        });
+        newLink.elements[0].attributes.parent = parent?.id;
         newLink.elements[0].attributes.id = link.id;
         newLink.elements[0].attributes.target = link.target;
         newLink.elements[0].attributes.source = link.source;
         newLink = convertJS2XML(newLink);
-        links.push(newLink);
+        return newLink;
     });
-    return links;
 }
 function convertGM2DIOXML(input) {
     const gm = JSON.parse(input);
     const res = convertActors2DIO(gm);
     const resLinks = convertLinks2DIO(gm);
+    const actors = res.actors.map(actor => {
+        const { nodes, ...newActor } = actor;
+        const style = xml_elements_1.default.actor;
+        return convertJS2XML({ object: { _attributes: { ...newActor }, _text: parser.json2xml({ ...style }) } }, true);
+    });
+    console.log(actors);
     let output = `<mxfile host="65bd71144e">\n<diagram id="JPszrsa7NkP3LcdA_txE" name="Página-1">\n<mxGraphModel dx="322" dy="417" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="${gm.diagram.width}" pageHeight="${gm.diagram.height}" math="0" shadow="0">\n<root>\n<mxCell id="0"/>\n
     <mxCell id="1" parent="0"/>\n`;
-    output += res.actors;
-    output += "\n" + res.nodes.join('\n') + '\n' + resLinks.join('\n') + '\n';
+    output += "\n" + actors.join('\n') + '\n' + res.nodes.join('\n') + '\n' + resLinks.join('\n') + '\n';
     output += '</root>\n</mxGraphModel>\n</diagram>\n</mxfile>';
     return output;
 }

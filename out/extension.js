@@ -5,6 +5,7 @@ exports.deactivate = exports.activate = void 0;
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
 const parser_1 = require("./parser");
+const goalModel_1 = require("./goalModel");
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 function activate(context) {
@@ -46,8 +47,13 @@ function activate(context) {
         });
     });
     context.subscriptions.push(command1);
+    const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+        ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+    const gmProvider = new goalModel_1.GoalModelProvider(rootPath);
+    vscode.window.registerTreeDataProvider('goalModel', gmProvider);
     let command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
-        console.log("TODO");
+        gmProvider.refresh();
+        console.log(gmProvider.getChildren());
     });
     context.subscriptions.push(command2);
     let command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {

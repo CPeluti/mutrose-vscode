@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {convertDIOXML2GM, convertGM2DIOXML} from "./parser";
+import { GoalModelProvider } from './goalModel';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -48,8 +49,16 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(command1);
 
+	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+	
+	const gmProvider = new GoalModelProvider(rootPath);
+
+	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
+
 	let command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
-		console.log("TODO");
+		gmProvider.refresh();
+		console.log(gmProvider.getChildren());
 	});
 	context.subscriptions.push(command2);
 	let command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
