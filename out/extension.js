@@ -30,7 +30,7 @@ function activate(context) {
         });
     });
     context.subscriptions.push(command);
-    command = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
+    let command1 = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         const text = vscode.window.activeTextEditor?.document.getText();
@@ -45,6 +45,15 @@ function activate(context) {
             }
         });
     });
+    context.subscriptions.push(command1);
+    let command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
+        console.log("TODO");
+    });
+    context.subscriptions.push(command2);
+    let command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
+        console.log("TODO");
+    });
+    context.subscriptions.push(command3);
 }
 exports.activate = activate;
 // This method is called when your extension is deactivated

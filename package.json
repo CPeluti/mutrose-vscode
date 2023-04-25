@@ -12,7 +12,51 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "goal-model",
+          "title": "MutRoSe",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "goal-model": [
+        {
+          "id": "goalModel",
+          "name": "Goal Models",
+          "icon": "media/icon.svg",
+          "contextualTitle": "Goal Model"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "goalModel.refreshModels",
+          "when": "view == goalModel",
+          "group": "navigation"
+        },
+        {
+          "command": "goalModel.createNewMission",
+          "when": "view == goalModel"
+        }
+      ]
+    },
     "commands": [
+      {
+        "command": "goalModel.createNewMission",
+        "title": "Create Mission"
+      },
+      {
+        "command": "goalModel.refreshModels",
+        "title": "Refresh",
+        "icon":{
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
       {
         "command": "gm-parser.gm2DIO",
         "title": "Parse Goal Model to Draw.io XML"

@@ -58,14 +58,16 @@ function convertActors2DIO(gm: { actors: Actor[]; }){
            return convertNode2DIO(node, actor.id);
         });
 
+        // Removing customProperties and substituting with MR_Properties
         const {customProperties: cp, ...newActor} = actor;
-        
+
         const customProperties = Object.entries(cp).reduce((propAcc, [key, value]) => {
             if(key === 'text'){
                 return {...propAcc, label: value};
             }
             return {...propAcc, ['MR_'+key]: value};
         }, {} as Record<`MR_${string}`, string>);
+        
         return {nodes: [...acc.nodes, ...nodes], actors: [...acc.actors, {...newActor, ...customProperties}]};
     
     },{actors: [], nodes: []} as {actors: ParsedActor[], nodes: string[]});

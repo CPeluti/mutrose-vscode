@@ -58,6 +58,7 @@ function convertActors2DIO(gm) {
         const nodes = actor.nodes.map(node => {
             return convertNode2DIO(node, actor.id);
         });
+        // Removing customProperties and substituting with MR_Properties
         const { customProperties: cp, ...newActor } = actor;
         const customProperties = Object.entries(cp).reduce((propAcc, [key, value]) => {
             if (key === 'text') {
