@@ -1,0 +1,421 @@
+{
+  "actors": [
+    {
+      "id": "e7a35a23-5caf-4181-a6d2-efcc42a38be0",
+      "text": "M1: Deliver Goods / Equipment",
+      "type": "istar.Actor",
+      "x": 54,
+      "y": 58,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "819b2be0-84e8-45eb-a224-1eedc6085897",
+          "text": "G1: Deliver Goods or Equipment [G2;G3]",
+          "type": "istar.Goal",
+          "x": 297,
+          "y": 83,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "287e37b0-1860-4942-8364-dd44fb1dbfe5",
+          "text": "G2: Find Agents That Need Equipment",
+          "type": "istar.Goal",
+          "x": 54,
+          "y": 209,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(a:Agent | a.requesting_equipment)",
+            "Controls": "requesting_agents : Sequence(Agent)"
+          }
+        },
+        {
+          "id": "211d6d5b-0fc5-47cf-8728-1e4eee65e891",
+          "text": "G3: Get Necessary Objects For Agents [G4;G5;G6;G11]",
+          "type": "istar.Goal",
+          "x": 666,
+          "y": 199,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "requesting_agents->forAll(current_agent | )",
+            "Controls": "current_agent : Agent",
+            "Monitors": "requesting_agents",
+            "Group": "False"
+          }
+        },
+        {
+          "id": "562463a9-5441-4f2a-bad8-044e4ea40048",
+          "text": "G4: Get Agent Requesting Objects",
+          "type": "istar.Goal",
+          "x": 370,
+          "y": 373,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "current_agent.requested_objects->select(o:Object | )",
+            "Controls": "objects_requested : Sequence(Object)",
+            "Monitors": "current_agent"
+          }
+        },
+        {
+          "id": "935f7c27-5565-4a6a-b04b-a1d8fd737be7",
+          "text": "G5: Get Delivery Location",
+          "type": "istar.Goal",
+          "x": 573,
+          "y": 380,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(l:Location | l.name in current_agent.location)",
+            "Controls": "delivery_location : Location",
+            "Monitors": "current_agent"
+          }
+        },
+        {
+          "id": "e1558479-40db-4c8e-80a8-74df1ab9ed95",
+          "text": "G6: Get Requested Objects [FALLBACK(G7,G10)]",
+          "type": "istar.Goal",
+          "x": 821,
+          "y": 373,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "objects_requested->forAll(current_object | )",
+            "Controls": "current_object : Object",
+            "Monitors": "objects_requested"
+          }
+        },
+        {
+          "id": "5d932b3b-20c6-4d10-9934-63b25e54739e",
+          "text": "G8: Get Storage That Contains Object",
+          "type": "istar.Goal",
+          "x": 639,
+          "y": 545,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(s:Storage | current_object.name in s.objects)",
+            "Controls": "object_storage : Storage",
+            "Monitors": "current_object"
+          }
+        },
+        {
+          "id": "16613c38-0cb1-4b2c-b023-977424959841",
+          "text": "G9: Get Object",
+          "type": "istar.Goal",
+          "x": 831,
+          "y": 561,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "object_storage, current_object"
+          }
+        },
+        {
+          "id": "38d97754-3d5b-48e3-a87f-29c48cf449b7",
+          "text": "AT1: GetObject",
+          "type": "istar.Task",
+          "x": 829,
+          "y": 645,
+          "customProperties": {
+            "Description": "",
+            "Location": "object_storage",
+            "Params": "current_object"
+          }
+        },
+        {
+          "id": "ba497660-9b6b-43f8-9d1f-9b6ac32559c3",
+          "text": "G11: Deliver Requested Objects [FALLBACK(G12,G13)]",
+          "type": "istar.Goal",
+          "x": 1215,
+          "y": 374,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "9aca7c26-5add-42bb-b896-c58698ab5bc8",
+          "text": "G7: Retrieve Objects [G8;G9]",
+          "type": "istar.Goal",
+          "x": 747,
+          "y": 484,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "5498b8a4-b050-414c-b43a-c2831ee7b553",
+          "text": "G10: Recharge Battery",
+          "type": "istar.Goal",
+          "x": 973,
+          "y": 483,
+          "customProperties": {
+            "Description": "",
+            "CreationCondition": "assertion trigger \"BatteryLow\""
+          }
+        },
+        {
+          "id": "c2f4cc06-0df8-4417-a3c7-9f7a2837387a",
+          "text": "AT2: RechargeBattery",
+          "type": "istar.Task",
+          "x": 978,
+          "y": 563,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "6fbdc783-6199-47f3-80f1-5d76e8534b99",
+          "text": "G12: Deliver Objects",
+          "type": "istar.Goal",
+          "x": 1145,
+          "y": 506,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "delivery_location"
+          }
+        },
+        {
+          "id": "709d8d6c-4a71-4af2-bd74-a00f8d5d0a43",
+          "text": "AT3: DeliverObjects",
+          "type": "istar.Task",
+          "x": 1146,
+          "y": 605,
+          "customProperties": {
+            "Description": "",
+            "Location": "delivery_location"
+          }
+        },
+        {
+          "id": "3f745338-d2ba-4252-9bba-3e089daf28cc",
+          "text": "G13: Return Objects To Checkpoint [FALLBACK(G14,G15)]",
+          "type": "istar.Goal",
+          "x": 1341,
+          "y": 482,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "751fac20-c6d9-49a6-b9e4-7ab50613a304",
+          "text": "G14: Return Objects",
+          "type": "istar.Goal",
+          "x": 1299,
+          "y": 603,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "374b0bf6-ec17-4894-a28d-e3356a484580",
+          "text": "AT4: ReturnObjectsToCheckpoint",
+          "type": "istar.Task",
+          "x": 1277,
+          "y": 706,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "532c2207-3b19-4551-8b38-a4cd2cf03b2e",
+          "text": "G15: Trigger Alert",
+          "type": "istar.Goal",
+          "x": 1475,
+          "y": 601,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "4d8a81a5-c34c-4ebb-8e5e-65e0670bea5b",
+          "text": "AT5: AlertTrigger",
+          "type": "istar.Task",
+          "x": 1471,
+          "y": 715,
+          "customProperties": {
+            "Description": ""
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "e5c61583-1034-47d4-b27d-3f145bb7903e",
+      "type": "istar.AndRefinementLink",
+      "source": "287e37b0-1860-4942-8364-dd44fb1dbfe5",
+      "target": "819b2be0-84e8-45eb-a224-1eedc6085897"
+    },
+    {
+      "id": "a7f027c0-217d-4244-9f28-122bde8e651d",
+      "type": "istar.AndRefinementLink",
+      "source": "211d6d5b-0fc5-47cf-8728-1e4eee65e891",
+      "target": "819b2be0-84e8-45eb-a224-1eedc6085897"
+    },
+    {
+      "id": "14bce79f-1702-4e79-8ab5-1641b9c9ff33",
+      "type": "istar.AndRefinementLink",
+      "source": "562463a9-5441-4f2a-bad8-044e4ea40048",
+      "target": "211d6d5b-0fc5-47cf-8728-1e4eee65e891"
+    },
+    {
+      "id": "b86643cb-a707-42e7-8b9f-494943f65eaf",
+      "type": "istar.AndRefinementLink",
+      "source": "935f7c27-5565-4a6a-b04b-a1d8fd737be7",
+      "target": "211d6d5b-0fc5-47cf-8728-1e4eee65e891"
+    },
+    {
+      "id": "9c1533b2-fd7e-43a5-a5bb-782d1eca0ea7",
+      "type": "istar.AndRefinementLink",
+      "source": "38d97754-3d5b-48e3-a87f-29c48cf449b7",
+      "target": "16613c38-0cb1-4b2c-b023-977424959841"
+    },
+    {
+      "id": "ebe7a109-0478-4687-9271-6f13c73ab104",
+      "type": "istar.AndRefinementLink",
+      "source": "ba497660-9b6b-43f8-9d1f-9b6ac32559c3",
+      "target": "211d6d5b-0fc5-47cf-8728-1e4eee65e891"
+    },
+    {
+      "id": "cd99623e-4fd8-4989-b936-faa4233105de",
+      "type": "istar.AndRefinementLink",
+      "source": "e1558479-40db-4c8e-80a8-74df1ab9ed95",
+      "target": "211d6d5b-0fc5-47cf-8728-1e4eee65e891"
+    },
+    {
+      "id": "f2f15618-3d78-4251-a90a-97d2f39214a0",
+      "type": "istar.AndRefinementLink",
+      "source": "9aca7c26-5add-42bb-b896-c58698ab5bc8",
+      "target": "e1558479-40db-4c8e-80a8-74df1ab9ed95"
+    },
+    {
+      "id": "2c29fe9a-82d6-4914-b76c-8696b4806372",
+      "type": "istar.AndRefinementLink",
+      "source": "5d932b3b-20c6-4d10-9934-63b25e54739e",
+      "target": "9aca7c26-5add-42bb-b896-c58698ab5bc8"
+    },
+    {
+      "id": "9b87c721-d01f-42fe-8bb9-5894ea379ae7",
+      "type": "istar.AndRefinementLink",
+      "source": "16613c38-0cb1-4b2c-b023-977424959841",
+      "target": "9aca7c26-5add-42bb-b896-c58698ab5bc8"
+    },
+    {
+      "id": "9a45505a-50c5-44bc-81c9-3ea885acf9d5",
+      "type": "istar.AndRefinementLink",
+      "source": "5498b8a4-b050-414c-b43a-c2831ee7b553",
+      "target": "e1558479-40db-4c8e-80a8-74df1ab9ed95"
+    },
+    {
+      "id": "54c80630-8eca-4196-9615-9fed34a82c31",
+      "type": "istar.AndRefinementLink",
+      "source": "c2f4cc06-0df8-4417-a3c7-9f7a2837387a",
+      "target": "5498b8a4-b050-414c-b43a-c2831ee7b553"
+    },
+    {
+      "id": "b2a0a2f0-f77d-485e-8d10-23c0b9c85a53",
+      "type": "istar.AndRefinementLink",
+      "source": "6fbdc783-6199-47f3-80f1-5d76e8534b99",
+      "target": "ba497660-9b6b-43f8-9d1f-9b6ac32559c3"
+    },
+    {
+      "id": "7cd472e5-cef5-45c6-8174-18b4ad3777e9",
+      "type": "istar.AndRefinementLink",
+      "source": "709d8d6c-4a71-4af2-bd74-a00f8d5d0a43",
+      "target": "6fbdc783-6199-47f3-80f1-5d76e8534b99"
+    },
+    {
+      "id": "bcaa8632-a386-4009-82e9-4035e1cccf87",
+      "type": "istar.AndRefinementLink",
+      "source": "3f745338-d2ba-4252-9bba-3e089daf28cc",
+      "target": "ba497660-9b6b-43f8-9d1f-9b6ac32559c3"
+    },
+    {
+      "id": "48247c9c-8e82-4818-b1cb-fa365e34806b",
+      "type": "istar.AndRefinementLink",
+      "source": "751fac20-c6d9-49a6-b9e4-7ab50613a304",
+      "target": "3f745338-d2ba-4252-9bba-3e089daf28cc"
+    },
+    {
+      "id": "68b5c22f-cd64-4bb5-98ed-21bdbecc1d66",
+      "type": "istar.AndRefinementLink",
+      "source": "374b0bf6-ec17-4894-a28d-e3356a484580",
+      "target": "751fac20-c6d9-49a6-b9e4-7ab50613a304"
+    },
+    {
+      "id": "427e153b-0124-4506-acde-505711a358c4",
+      "type": "istar.AndRefinementLink",
+      "source": "532c2207-3b19-4551-8b38-a4cd2cf03b2e",
+      "target": "3f745338-d2ba-4252-9bba-3e089daf28cc"
+    },
+    {
+      "id": "8f0ece25-a9ef-4179-9b51-56c28daf4dbe",
+      "type": "istar.AndRefinementLink",
+      "source": "4d8a81a5-c34c-4ebb-8e5e-65e0670bea5b",
+      "target": "532c2207-3b19-4551-8b38-a4cd2cf03b2e"
+    }
+  ],
+  "display": {
+    "819b2be0-84e8-45eb-a224-1eedc6085897": {
+      "width": 119.609375,
+      "height": 55
+    },
+    "287e37b0-1860-4942-8364-dd44fb1dbfe5": {
+      "width": 106.609375,
+      "height": 46
+    },
+    "211d6d5b-0fc5-47cf-8728-1e4eee65e891": {
+      "width": 127.609375,
+      "height": 51
+    },
+    "562463a9-5441-4f2a-bad8-044e4ea40048": {
+      "width": 106.609375,
+      "height": 43
+    },
+    "e1558479-40db-4c8e-80a8-74df1ab9ed95": {
+      "width": 128.609375,
+      "height": 55
+    },
+    "5d932b3b-20c6-4d10-9934-63b25e54739e": {
+      "width": 118.609375,
+      "height": 50
+    },
+    "ba497660-9b6b-43f8-9d1f-9b6ac32559c3": {
+      "width": 142.609375,
+      "height": 56
+    },
+    "9aca7c26-5add-42bb-b896-c58698ab5bc8": {
+      "width": 108.609375,
+      "height": 38
+    },
+    "5498b8a4-b050-414c-b43a-c2831ee7b553": {
+      "width": 98.609375,
+      "height": 42
+    },
+    "3f745338-d2ba-4252-9bba-3e089daf28cc": {
+      "width": 144.609375,
+      "height": 61
+    },
+    "374b0bf6-ec17-4894-a28d-e3356a484580": {
+      "width": 137.609375,
+      "height": 65
+    }
+  },
+  "tool": "pistar.2.0.0",
+  "istar": "2.0",
+  "saveDate": "Thu, 14 Oct 2021 19:33:20 GMT",
+  "diagram": {
+    "width": 2000,
+    "height": 1381,
+    "name": "Welcome Model",
+    "customProperties": {
+      "Description": "Welcome to the piStar tool! This model describe some of the recent improvements in the tool.\n\nFor help using this tool, please check the Help menu above"
+    }
+  }
+}

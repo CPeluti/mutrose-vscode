@@ -1,0 +1,547 @@
+{
+  "actors": [
+    {
+      "id": "91162568-82ca-453d-abfa-dfd5864e9aae",
+      "text": "M1: Vital SIgns Monitoring",
+      "type": "istar.Actor",
+      "x": 120,
+      "y": 105,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "a395120f-7356-4c55-89b4-a64717a9a341",
+          "text": "G1: Check All Patient's Vital Signs [G2;G3]",
+          "type": "istar.Goal",
+          "x": 484,
+          "y": 155,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "6f8dcaf9-ab09-4f8c-82c9-9e2382d43cd9",
+          "text": "G2: Fetch Occupied Rooms",
+          "type": "istar.Goal",
+          "x": 120,
+          "y": 296,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(r:Room | r.is_occupied)",
+            "Controls": "occupied_rooms : Sequence(Room)"
+          }
+        },
+        {
+          "id": "e1894919-81a9-4477-8432-ad904b6cb050",
+          "text": "G3: Check All Patients [FALLBACK(G4,G17)]",
+          "type": "istar.Goal",
+          "x": 997,
+          "y": 235,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "occupied_rooms->forAll(current_room | )",
+            "Monitors": "occupied_rooms",
+            "Controls": "current_room : Room",
+            "Group": "False"
+          }
+        },
+        {
+          "id": "e7cf10f4-e651-4cb2-bfd0-bc833734656c",
+          "text": "G7: Check Room Patients [G8;G11]",
+          "type": "istar.Goal",
+          "x": 753,
+          "y": 481,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "current_room_patients->forAll(current_patient | current_patient.checked)",
+            "Monitors": "current_room_patients",
+            "Controls": "current_patient : Patient"
+          }
+        },
+        {
+          "id": "1135e1f3-5875-47d1-9c9e-f50842e931b3",
+          "text": "G19: Recharge Battery",
+          "type": "istar.Goal",
+          "x": 1382,
+          "y": 353,
+          "customProperties": {
+            "Description": "",
+            "CreationCondition": "assertion trigger \"LowBattery\""
+          }
+        },
+        {
+          "id": "6c37a0a8-7044-433e-be1e-01f838887381",
+          "text": "AT8: RechargeBattery",
+          "type": "istar.Task",
+          "x": 1382,
+          "y": 465,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "cc9b56a3-c6b1-4ef0-8b3b-c4e54cb8b0df",
+          "text": "G6: Enter the Room",
+          "type": "istar.Goal",
+          "x": 584,
+          "y": 498,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_room"
+          }
+        },
+        {
+          "id": "83307ed1-6340-41ee-80b6-ff8fd1e0fc26",
+          "text": "AT1: EnterRoom",
+          "type": "istar.Task",
+          "x": 579,
+          "y": 580,
+          "customProperties": {
+            "Description": "",
+            "Location": "current_room"
+          }
+        },
+        {
+          "id": "80ef09f7-db76-41a7-a315-277eb501bef6",
+          "text": "G8: Approach the Patient and Provide Instructions [G9;G10]",
+          "type": "istar.Goal",
+          "x": 735,
+          "y": 726,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_room"
+          }
+        },
+        {
+          "id": "e3bbdddb-30fc-46d8-a42b-b7d9c887b86b",
+          "text": "AT2: ApproachPatient",
+          "type": "istar.Task",
+          "x": 648,
+          "y": 934,
+          "customProperties": {
+            "Description": "",
+            "Location": "current_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "c2cda2a0-04ee-4528-87e3-025befd9158f",
+          "text": "AT3: ProvideInstructions",
+          "type": "istar.Task",
+          "x": 852,
+          "y": 934,
+          "customProperties": {
+            "Description": "",
+            "Location": "current_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "dbcd04a6-fc8c-4110-bdac-1f81ce209ee1",
+          "text": "G11: Collect Vital Signs [FALLBACK(G12,G13)]",
+          "type": "istar.Goal",
+          "x": 1046,
+          "y": 627,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "9e7636bc-42da-46e7-9560-488964256cdd",
+          "text": "G12: Collect Necessary Vital Signs",
+          "type": "istar.Goal",
+          "x": 976,
+          "y": 745,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_room, current_patient"
+          }
+        },
+        {
+          "id": "b8317da1-e71c-4b3c-8910-1fdc21de61ef",
+          "text": "G13: Assess Current Patient Status [FALLBACK(G14,G15)]",
+          "type": "istar.Goal",
+          "x": 1206,
+          "y": 744,
+          "customProperties": {
+            "Description": "",
+            "CreationCondition": "assertion trigger \"FailedCollect\"",
+            "Monitors": "current_room"
+          }
+        },
+        {
+          "id": "575554ed-e5e8-46d8-9ba7-a06f915c71eb",
+          "text": "AT4: CollectVitalSigns",
+          "type": "istar.Task",
+          "x": 978,
+          "y": 864,
+          "customProperties": {
+            "Description": "",
+            "Location": "current_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "95ed7266-f790-49f9-9a1f-5e4f82af3e45",
+          "text": "AT5: AssessPatientStatus",
+          "type": "istar.Task",
+          "x": 1145,
+          "y": 921,
+          "customProperties": {
+            "Description": "",
+            "Location": "current_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "7f645892-b910-49d3-a786-0f208fbce829",
+          "text": "G4: Check Patients In Current Room [G5;G6;G7;G16]",
+          "type": "istar.Goal",
+          "x": 744,
+          "y": 340,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "36474607-f456-4adb-92a1-a4904de7c78e",
+          "text": "G5: Fetch Patients In Room",
+          "type": "istar.Goal",
+          "x": 373,
+          "y": 492,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(p:Patient | p.name in current_room.patients && !p.checked)",
+            "Controls": "current_room_patients : Sequence(Patient)",
+            "Monitors": "current_room"
+          }
+        },
+        {
+          "id": "bdd0c64c-b74a-4b0d-bb8b-48a7983d6d27",
+          "text": "G16: Sanitize Robot If Needed",
+          "type": "istar.Goal",
+          "x": 1188,
+          "y": 462,
+          "customProperties": {
+            "Description": "",
+            "CreationCondition": "assertion trigger \"SanitizationNeeded\""
+          }
+        },
+        {
+          "id": "8544e5d4-88e7-471d-b540-bf7d13a88115",
+          "text": "AT7: RobotSanitization",
+          "type": "istar.Task",
+          "x": 1269,
+          "y": 676,
+          "customProperties": {
+            "Description": "",
+            "Location": "sanitization_room"
+          }
+        },
+        {
+          "id": "fc9e0d40-50ef-412b-9df3-45c915970701",
+          "text": "G14: Assess Status",
+          "type": "istar.Goal",
+          "x": 1146,
+          "y": 859,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_room, current_patient"
+          }
+        },
+        {
+          "id": "b052af40-bddb-4ea3-89e6-df84cb778519",
+          "text": "G15: Send Alert",
+          "type": "istar.Goal",
+          "x": 1314,
+          "y": 862,
+          "customProperties": {
+            "Description": "",
+            "CreationCondition": "assertion trigger \"NoResponse\"",
+            "Monitors": "current_room, current_patient"
+          }
+        },
+        {
+          "id": "a0c210f0-dd39-42b9-b95f-de65b13fbbb7",
+          "text": "AT6: SendAlert",
+          "type": "istar.Task",
+          "x": 1316,
+          "y": 922,
+          "customProperties": {
+            "Description": "",
+            "Location": "current_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "4cbaea92-274c-475f-991a-c236dc5cf30e",
+          "text": "G9: Approach The Patient",
+          "type": "istar.Goal",
+          "x": 652,
+          "y": 849,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_room, current_patient"
+          }
+        },
+        {
+          "id": "3e362f16-2d21-4aa2-8391-a9c0a5b9794f",
+          "text": "G10: Provide The Instructions",
+          "type": "istar.Goal",
+          "x": 851,
+          "y": 849,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_room, current_patient"
+          }
+        },
+        {
+          "id": "a39eebe1-16c1-4c65-825d-d963015da423",
+          "text": "G17: Fetch Sanitization Room",
+          "type": "istar.Goal",
+          "x": 1116,
+          "y": 553,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(r:Room| r.name = \"SanitizationRoom\")",
+            "Controls": "sanitization_room : Room"
+          }
+        },
+        {
+          "id": "5b93b10c-30af-4ec0-80e0-db49ced46e6c",
+          "text": "G18: Sanitize Robot In Sanitization Room",
+          "type": "istar.Goal",
+          "x": 1255,
+          "y": 547,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "sanitization_room"
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "75d768b8-cd95-4863-b56c-c80848fc05ee",
+      "type": "istar.AndRefinementLink",
+      "source": "6f8dcaf9-ab09-4f8c-82c9-9e2382d43cd9",
+      "target": "a395120f-7356-4c55-89b4-a64717a9a341"
+    },
+    {
+      "id": "e02970c6-a084-4384-bf0f-9239ec629e99",
+      "type": "istar.AndRefinementLink",
+      "source": "e1894919-81a9-4477-8432-ad904b6cb050",
+      "target": "a395120f-7356-4c55-89b4-a64717a9a341"
+    },
+    {
+      "id": "d3197c71-8846-49cd-91ad-25ee7d56d9e6",
+      "type": "istar.AndRefinementLink",
+      "source": "1135e1f3-5875-47d1-9c9e-f50842e931b3",
+      "target": "e1894919-81a9-4477-8432-ad904b6cb050"
+    },
+    {
+      "id": "3f4d61cc-3665-4a67-b977-17ad2150322b",
+      "type": "istar.AndRefinementLink",
+      "source": "6c37a0a8-7044-433e-be1e-01f838887381",
+      "target": "1135e1f3-5875-47d1-9c9e-f50842e931b3"
+    },
+    {
+      "id": "91be3c82-bc6c-4e2d-8d17-8cb2eeccb2f8",
+      "type": "istar.AndRefinementLink",
+      "source": "83307ed1-6340-41ee-80b6-ff8fd1e0fc26",
+      "target": "cc9b56a3-c6b1-4ef0-8b3b-c4e54cb8b0df"
+    },
+    {
+      "id": "0bd666fe-01ce-4085-8900-2eeffa37a82f",
+      "type": "istar.AndRefinementLink",
+      "source": "80ef09f7-db76-41a7-a315-277eb501bef6",
+      "target": "e7cf10f4-e651-4cb2-bfd0-bc833734656c"
+    },
+    {
+      "id": "57580d55-2a08-4cc0-92a5-fdfa9ae374ec",
+      "type": "istar.AndRefinementLink",
+      "source": "dbcd04a6-fc8c-4110-bdac-1f81ce209ee1",
+      "target": "e7cf10f4-e651-4cb2-bfd0-bc833734656c"
+    },
+    {
+      "id": "57346e4e-f60c-4b87-aa81-dd56f1ddd9c2",
+      "type": "istar.AndRefinementLink",
+      "source": "9e7636bc-42da-46e7-9560-488964256cdd",
+      "target": "dbcd04a6-fc8c-4110-bdac-1f81ce209ee1"
+    },
+    {
+      "id": "1d2812c6-f9a0-4a07-b1f9-43dd66d4057f",
+      "type": "istar.AndRefinementLink",
+      "source": "575554ed-e5e8-46d8-9ba7-a06f915c71eb",
+      "target": "9e7636bc-42da-46e7-9560-488964256cdd"
+    },
+    {
+      "id": "f55b52ab-a037-4815-be57-18f73dadfc95",
+      "type": "istar.AndRefinementLink",
+      "source": "b8317da1-e71c-4b3c-8910-1fdc21de61ef",
+      "target": "dbcd04a6-fc8c-4110-bdac-1f81ce209ee1"
+    },
+    {
+      "id": "a2764ded-0f20-44c4-9aae-8a511d4ef4f4",
+      "type": "istar.AndRefinementLink",
+      "source": "7f645892-b910-49d3-a786-0f208fbce829",
+      "target": "e1894919-81a9-4477-8432-ad904b6cb050"
+    },
+    {
+      "id": "9d5057ca-45cf-4f83-b3f2-04e5bf0f7f7c",
+      "type": "istar.AndRefinementLink",
+      "source": "36474607-f456-4adb-92a1-a4904de7c78e",
+      "target": "7f645892-b910-49d3-a786-0f208fbce829"
+    },
+    {
+      "id": "2a617266-2429-459f-8766-77b8257ea84a",
+      "type": "istar.AndRefinementLink",
+      "source": "e7cf10f4-e651-4cb2-bfd0-bc833734656c",
+      "target": "7f645892-b910-49d3-a786-0f208fbce829"
+    },
+    {
+      "id": "f16c4ada-5c64-4674-8168-5e00fa85bd0d",
+      "type": "istar.AndRefinementLink",
+      "source": "bdd0c64c-b74a-4b0d-bb8b-48a7983d6d27",
+      "target": "7f645892-b910-49d3-a786-0f208fbce829"
+    },
+    {
+      "id": "1bddadf6-ac52-4bab-ac09-e836ae178c3a",
+      "type": "istar.AndRefinementLink",
+      "source": "fc9e0d40-50ef-412b-9df3-45c915970701",
+      "target": "b8317da1-e71c-4b3c-8910-1fdc21de61ef"
+    },
+    {
+      "id": "2a891793-459a-4ba8-a559-e1eace93c490",
+      "type": "istar.AndRefinementLink",
+      "source": "95ed7266-f790-49f9-9a1f-5e4f82af3e45",
+      "target": "fc9e0d40-50ef-412b-9df3-45c915970701"
+    },
+    {
+      "id": "d9bddb00-7905-493a-9a9b-a0b329416028",
+      "type": "istar.AndRefinementLink",
+      "source": "b052af40-bddb-4ea3-89e6-df84cb778519",
+      "target": "b8317da1-e71c-4b3c-8910-1fdc21de61ef"
+    },
+    {
+      "id": "95292df0-50d7-4b5f-86ab-e5abb6d1abde",
+      "type": "istar.AndRefinementLink",
+      "source": "a0c210f0-dd39-42b9-b95f-de65b13fbbb7",
+      "target": "b052af40-bddb-4ea3-89e6-df84cb778519"
+    },
+    {
+      "id": "c38248b1-9887-428e-a43e-427a052549e4",
+      "type": "istar.AndRefinementLink",
+      "source": "cc9b56a3-c6b1-4ef0-8b3b-c4e54cb8b0df",
+      "target": "7f645892-b910-49d3-a786-0f208fbce829"
+    },
+    {
+      "id": "17506cf8-13bf-45f7-a2f3-d219974a78b8",
+      "type": "istar.AndRefinementLink",
+      "source": "4cbaea92-274c-475f-991a-c236dc5cf30e",
+      "target": "80ef09f7-db76-41a7-a315-277eb501bef6"
+    },
+    {
+      "id": "7994e3ec-4555-414d-afb9-ccafa8d19020",
+      "type": "istar.AndRefinementLink",
+      "source": "e3bbdddb-30fc-46d8-a42b-b7d9c887b86b",
+      "target": "4cbaea92-274c-475f-991a-c236dc5cf30e"
+    },
+    {
+      "id": "0815e2bf-ff15-4312-b595-228246a1b33c",
+      "type": "istar.AndRefinementLink",
+      "source": "3e362f16-2d21-4aa2-8391-a9c0a5b9794f",
+      "target": "80ef09f7-db76-41a7-a315-277eb501bef6"
+    },
+    {
+      "id": "79cbe777-ecb5-452f-848f-ae818976e9b6",
+      "type": "istar.AndRefinementLink",
+      "source": "c2cda2a0-04ee-4528-87e3-025befd9158f",
+      "target": "3e362f16-2d21-4aa2-8391-a9c0a5b9794f"
+    },
+    {
+      "id": "1419f410-bf3f-4f48-be34-bd7e4687dcbe",
+      "type": "istar.AndRefinementLink",
+      "source": "a39eebe1-16c1-4c65-825d-d963015da423",
+      "target": "bdd0c64c-b74a-4b0d-bb8b-48a7983d6d27"
+    },
+    {
+      "id": "41198df8-6764-43b6-82ba-937092d532a3",
+      "type": "istar.AndRefinementLink",
+      "source": "5b93b10c-30af-4ec0-80e0-db49ced46e6c",
+      "target": "bdd0c64c-b74a-4b0d-bb8b-48a7983d6d27"
+    },
+    {
+      "id": "48a15ff0-014e-4eb8-9171-72c4adddf350",
+      "type": "istar.AndRefinementLink",
+      "source": "8544e5d4-88e7-471d-b540-bf7d13a88115",
+      "target": "5b93b10c-30af-4ec0-80e0-db49ced46e6c"
+    }
+  ],
+  "display": {
+    "a395120f-7356-4c55-89b4-a64717a9a341": {
+      "width": 105.609375,
+      "height": 49
+    },
+    "6f8dcaf9-ab09-4f8c-82c9-9e2382d43cd9": {
+      "width": 96.609375,
+      "height": 45
+    },
+    "e1894919-81a9-4477-8432-ad904b6cb050": {
+      "width": 112.609375,
+      "height": 48
+    },
+    "e7cf10f4-e651-4cb2-bfd0-bc833734656c": {
+      "width": 102.609375,
+      "height": 50
+    },
+    "80ef09f7-db76-41a7-a315-277eb501bef6": {
+      "width": 125.609375,
+      "height": 68
+    },
+    "dbcd04a6-fc8c-4110-bdac-1f81ce209ee1": {
+      "width": 117.609375,
+      "height": 52
+    },
+    "b8317da1-e71c-4b3c-8910-1fdc21de61ef": {
+      "width": 120.609375,
+      "height": 50.0062255859375
+    },
+    "7f645892-b910-49d3-a786-0f208fbce829": {
+      "width": 112.609375,
+      "height": 64
+    },
+    "5b93b10c-30af-4ec0-80e0-db49ced46e6c": {
+      "width": 117.609375,
+      "height": 52
+    },
+    "f16c4ada-5c64-4674-8168-5e00fa85bd0d": {
+      "vertices": [
+        {
+          "x": 996,
+          "y": 423
+        }
+      ]
+    }
+  },
+  "tool": "pistar.2.0.0",
+  "istar": "2.0",
+  "saveDate": "Thu, 14 Oct 2021 19:40:30 GMT",
+  "diagram": {
+    "width": 2000,
+    "height": 1300,
+    "name": "Welcome Model",
+    "customProperties": {
+      "Description": "Welcome to the piStar tool! This model describe some of the recent improvements in the tool.\n\nFor help using this tool, please check the Help menu above"
+    }
+  }
+}

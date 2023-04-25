@@ -24,7 +24,9 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission>{
             return Promise.resolve([]);
         }
         if(element){
-            return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
+            // TODO: implement goal recursive getter
+            // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
+            return Promise.resolve([]);
         } else {
             const gmFolderPath = path.join(this.workspaceRoot, 'gm');
             if(this.pathExists(gmFolderPath)){
@@ -46,7 +48,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission>{
                     return {name: parsedText[1], missionNumber: parsedText[0]};
                 });
                 
-                return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed);
+                return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, );
             };
             const gms: GoalModel[] = gmList.map(gm=>{
                 return JSON.parse(fs.readFileSync(path.join(gmFolderPath, gm), 'utf-8'));
@@ -73,6 +75,7 @@ export class Mission extends vscode.TreeItem {
         public readonly name: string,
         private readonly missionNumber: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+        public readonly filePath: string,
         public readonly command?: vscode.Command
     ){
         super(name, collapsibleState);

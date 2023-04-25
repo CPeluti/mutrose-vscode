@@ -24,7 +24,9 @@ class GoalModelProvider {
             return Promise.resolve([]);
         }
         if (element) {
-            return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot, 'gm')));
+            // TODO: implement goal recursive getter
+            // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
+            return Promise.resolve([]);
         }
         else {
             const gmFolderPath = path.join(this.workspaceRoot, 'gm');
@@ -69,11 +71,12 @@ class GoalModelProvider {
 }
 exports.GoalModelProvider = GoalModelProvider;
 class Mission extends vscode.TreeItem {
-    constructor(name, missionNumber, collapsibleState, command) {
+    constructor(name, missionNumber, collapsibleState, filePath, command) {
         super(name, collapsibleState);
         this.name = name;
         this.missionNumber = missionNumber;
         this.collapsibleState = collapsibleState;
+        this.filePath = filePath;
         this.command = command;
         this.contextValue = 'Mission';
         this.tooltip = `${missionNumber}-${this.name}`;

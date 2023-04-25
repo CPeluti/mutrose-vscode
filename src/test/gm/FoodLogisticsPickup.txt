@@ -1,0 +1,278 @@
+{
+  "actors": [
+    {
+      "id": "31223c4e-8210-4140-a36b-9accde8a55f5",
+      "text": "M2: Food Logistics Pickup",
+      "type": "istar.Actor",
+      "x": 371,
+      "y": 143,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "66b89690-6933-4962-aeb1-79958c65f99b",
+          "text": "G1: Pickup Patients Dirty Dishes [G2;G3]",
+          "type": "istar.Goal",
+          "x": 589,
+          "y": 175,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "682af1f2-d83f-41a7-a843-53af7b781462",
+          "text": "G2: Fetch Rooms To Retrive Dishes",
+          "type": "istar.Goal",
+          "x": 426,
+          "y": 284,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(p:Pickup | )",
+            "Controls": "active_pickups : Sequence(Pickup)"
+          }
+        },
+        {
+          "id": "46a8b5d6-1784-4ff8-899a-d20a1be03cef",
+          "text": "G3: Pickup Dishes In Rooms and Retrieve Them to Kitchen[G4;G5;G8]",
+          "type": "istar.Goal",
+          "x": 834,
+          "y": 290,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "active_pickups->forAll(current_pickup | )",
+            "Controls": "current_pickup : Pickup",
+            "Monitors": "active_pickups",
+            "Group": "True",
+            "Divisible": "False"
+          }
+        },
+        {
+          "id": "a4750371-ef08-41c6-a7db-df6d91d0d09c",
+          "text": "G4: Fetch Pickup Patient",
+          "type": "istar.Goal",
+          "x": 655,
+          "y": 411,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(p:Patient | p.name in current_pickup.patient)",
+            "Controls": "current_pickup_patient : Patient",
+            "Monitors": "current_pickup"
+          }
+        },
+        {
+          "id": "122e7883-67f3-4a92-89ab-3c23d1ee2049",
+          "text": "G6: Fetch Pickup Room",
+          "type": "istar.Goal",
+          "x": 826,
+          "y": 514,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(l:Location | l.name in current_pickup.pickup_location)",
+            "Controls": "pickup_room : Location",
+            "Monitors": "current_pickup"
+          }
+        },
+        {
+          "id": "e797058f-9c7f-4f93-8140-96b268260b95",
+          "text": "G5: Pickup Dishes From Patient [G6;G7]",
+          "type": "istar.Goal",
+          "x": 877,
+          "y": 405,
+          "customProperties": {
+            "Description": "",
+            "Monitors": ""
+          }
+        },
+        {
+          "id": "658d28bb-a0df-439d-b1b4-8a75193f8ea8",
+          "text": "AT1: PickupDishes",
+          "type": "istar.Task",
+          "x": 940,
+          "y": 598,
+          "customProperties": {
+            "Description": "",
+            "Location": "pickup_room",
+            "Params": "current_pickup_patient",
+            "RobotNumber": "[1,2]"
+          }
+        },
+        {
+          "id": "5cd0c939-8871-49c5-b19f-ccab8629465a",
+          "text": "G8: Return Dishes To Kitchen [G9;G10]",
+          "type": "istar.Goal",
+          "x": 1133,
+          "y": 396,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "1c6991dc-2b90-4310-b001-f5ede091c6dd",
+          "text": "G9: Fetch Kitchen Location",
+          "type": "istar.Goal",
+          "x": 1082,
+          "y": 506,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(l:Location | l.name = \"Kitchen\")",
+            "Controls": "kitchen_loc : Location"
+          }
+        },
+        {
+          "id": "ddb39956-63bd-4f11-ad6e-fb3878bc2c8b",
+          "text": "G10: Retrieve Dishes",
+          "type": "istar.Goal",
+          "x": 1216,
+          "y": 511,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "kitchen_loc"
+          }
+        },
+        {
+          "id": "78de4ff0-7640-4cea-9d30-b465f809713f",
+          "text": "AT2: RetrieveDishes",
+          "type": "istar.Task",
+          "x": 1215,
+          "y": 592,
+          "customProperties": {
+            "Description": "",
+            "Location": "kitchen_loc"
+          }
+        },
+        {
+          "id": "e7e65205-a9d8-46fc-8290-7be5e8abea87",
+          "text": "G7: Pickup Dishes in Patient Room",
+          "type": "istar.Goal",
+          "x": 936,
+          "y": 508,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "pickup_room, current_pickup_patient"
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "813d1c47-fe1c-4205-820b-56d6163e52ec",
+      "type": "istar.AndRefinementLink",
+      "source": "682af1f2-d83f-41a7-a843-53af7b781462",
+      "target": "66b89690-6933-4962-aeb1-79958c65f99b"
+    },
+    {
+      "id": "456a61cf-599e-49c9-ba26-670e8b536466",
+      "type": "istar.AndRefinementLink",
+      "source": "a4750371-ef08-41c6-a7db-df6d91d0d09c",
+      "target": "46a8b5d6-1784-4ff8-899a-d20a1be03cef"
+    },
+    {
+      "id": "58baecfd-427e-4c12-b66c-311b9c297b49",
+      "type": "istar.AndRefinementLink",
+      "source": "46a8b5d6-1784-4ff8-899a-d20a1be03cef",
+      "target": "66b89690-6933-4962-aeb1-79958c65f99b"
+    },
+    {
+      "id": "b0d19ab1-6732-4950-951b-d23bca46ec0e",
+      "type": "istar.AndRefinementLink",
+      "source": "e797058f-9c7f-4f93-8140-96b268260b95",
+      "target": "46a8b5d6-1784-4ff8-899a-d20a1be03cef"
+    },
+    {
+      "id": "e2e2360f-cde9-45db-a5ae-c159d63ed679",
+      "type": "istar.AndRefinementLink",
+      "source": "5cd0c939-8871-49c5-b19f-ccab8629465a",
+      "target": "46a8b5d6-1784-4ff8-899a-d20a1be03cef"
+    },
+    {
+      "id": "cbc57bc4-5130-487b-af46-b9ac7b36daae",
+      "type": "istar.AndRefinementLink",
+      "source": "1c6991dc-2b90-4310-b001-f5ede091c6dd",
+      "target": "5cd0c939-8871-49c5-b19f-ccab8629465a"
+    },
+    {
+      "id": "41715b9a-fbf0-452e-a635-e5818e9b1836",
+      "type": "istar.AndRefinementLink",
+      "source": "ddb39956-63bd-4f11-ad6e-fb3878bc2c8b",
+      "target": "5cd0c939-8871-49c5-b19f-ccab8629465a"
+    },
+    {
+      "id": "ac968e13-c8da-4b51-9106-82b2c2e60a90",
+      "type": "istar.AndRefinementLink",
+      "source": "78de4ff0-7640-4cea-9d30-b465f809713f",
+      "target": "ddb39956-63bd-4f11-ad6e-fb3878bc2c8b"
+    },
+    {
+      "id": "f58d1de9-daf0-4ebf-8c0c-ed163c4d8677",
+      "type": "istar.AndRefinementLink",
+      "source": "122e7883-67f3-4a92-89ab-3c23d1ee2049",
+      "target": "e797058f-9c7f-4f93-8140-96b268260b95"
+    },
+    {
+      "id": "cd4c06d1-1804-47f6-afc4-8ccfb1385a9a",
+      "type": "istar.AndRefinementLink",
+      "source": "e7e65205-a9d8-46fc-8290-7be5e8abea87",
+      "target": "e797058f-9c7f-4f93-8140-96b268260b95"
+    },
+    {
+      "id": "de8483f2-8f8d-431e-a4a8-1cb2334281b5",
+      "type": "istar.AndRefinementLink",
+      "source": "658d28bb-a0df-439d-b1b4-8a75193f8ea8",
+      "target": "e7e65205-a9d8-46fc-8290-7be5e8abea87"
+    }
+  ],
+  "display": {
+    "66b89690-6933-4962-aeb1-79958c65f99b": {
+      "width": 112.609375,
+      "height": 41
+    },
+    "682af1f2-d83f-41a7-a843-53af7b781462": {
+      "width": 108.609375,
+      "height": 46
+    },
+    "46a8b5d6-1784-4ff8-899a-d20a1be03cef": {
+      "width": 176.609375,
+      "height": 69
+    },
+    "a4750371-ef08-41c6-a7db-df6d91d0d09c": {
+      "width": 103.609375,
+      "height": 43
+    },
+    "e797058f-9c7f-4f93-8140-96b268260b95": {
+      "width": 103.609375,
+      "height": 41.5
+    },
+    "5cd0c939-8871-49c5-b19f-ccab8629465a": {
+      "width": 103.609375,
+      "height": 53
+    },
+    "1c6991dc-2b90-4310-b001-f5ede091c6dd": {
+      "width": 99.609375,
+      "height": 44
+    },
+    "e7e65205-a9d8-46fc-8290-7be5e8abea87": {
+      "width": 95.609375,
+      "height": 43
+    }
+  },
+  "tool": "pistar.2.0.0",
+  "istar": "2.0",
+  "saveDate": "Sun, 26 Sep 2021 15:54:11 GMT",
+  "diagram": {
+    "width": 2000,
+    "height": 1300,
+    "name": "Welcome Model",
+    "customProperties": {
+      "Description": "Welcome to the piStar tool! This model describe some of the recent improvements in the tool.\n\nFor help using this tool, please check the Help menu above"
+    }
+  }
+}

@@ -1,0 +1,329 @@
+{
+  "actors": [
+    {
+      "id": "31223c4e-8210-4140-a36b-9accde8a55f5",
+      "text": "M1: Food Logistics Delivery",
+      "type": "istar.Actor",
+      "x": 355,
+      "y": 135,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "66b89690-6933-4962-aeb1-79958c65f99b",
+          "text": "G1: Deliver Food to Patients [G2;G3]",
+          "type": "istar.Goal",
+          "x": 578,
+          "y": 167,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "90bb6cd3-5df4-4ed1-b944-11eadd4ea888",
+          "text": "G2: Fetch Rooms That Need Food Delivering",
+          "type": "istar.Goal",
+          "x": 355,
+          "y": 268,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(d:Delivery | )",
+            "Controls": "active_deliveries : Sequence(Delivery)"
+          }
+        },
+        {
+          "id": "004f44de-5fa5-41e8-bff6-4c7f64126dd7",
+          "text": "G7: Deliver Food [G8;G9;G10]",
+          "type": "istar.Goal",
+          "x": 1046,
+          "y": 375,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "23b13cdd-3a6d-4272-a1c9-f26b837a1ffc",
+          "text": "G8: Fetch Delivery's Patient",
+          "type": "istar.Goal",
+          "x": 911,
+          "y": 479,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(p:Patient | p.name in current_delivery.patient)",
+            "Controls": "current_patient : Patient",
+            "Monitors": "current_delivery"
+          }
+        },
+        {
+          "id": "e2c04472-6144-49fb-8ddc-8f145752cf5a",
+          "text": "G3: Get Foods and Deliver Them in Rooms [G4;G7]",
+          "type": "istar.Goal",
+          "x": 834,
+          "y": 266,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "active_deliveries->forAll(current_delivery | )",
+            "Monitors": "active_deliveries",
+            "Controls": "current_delivery : Delivery",
+            "Group": "True",
+            "Divisible": "False"
+          }
+        },
+        {
+          "id": "0ff610ea-6ef7-41a3-be8e-5799a068a3d1",
+          "text": "G12: Food Fetched From Robot Tray",
+          "type": "istar.Goal",
+          "x": 1282,
+          "y": 563,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_patient, delivery_room"
+          }
+        },
+        {
+          "id": "ed27bb08-c519-4040-b4a8-19fe22418796",
+          "text": "G4: Get Food In Kitchen [G5;G6]",
+          "type": "istar.Goal",
+          "x": 622,
+          "y": 374,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "c4665492-cff8-4cc6-a874-1cdba42f668e",
+          "text": "G5: Fetch Kitchen Location",
+          "type": "istar.Goal",
+          "x": 524,
+          "y": 467,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(l:Location | l.name = \"Kitchen\")",
+            "Controls": "kitchen_loc : Location"
+          }
+        },
+        {
+          "id": "0184bda0-2a89-4a14-8f36-51bf1d0d6e9c",
+          "text": "G6: Get Food In Kitchen",
+          "type": "istar.Goal",
+          "x": 696,
+          "y": 469,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "kitchen_loc, current_delivery"
+          }
+        },
+        {
+          "id": "a51d3961-56b4-4bbe-b048-286eef924ae4",
+          "text": "AT1: GetFood",
+          "type": "istar.Task",
+          "x": 695,
+          "y": 560,
+          "customProperties": {
+            "Description": "",
+            "Location": "kitchen_loc",
+            "Params": "current_delivery"
+          }
+        },
+        {
+          "id": "43540617-7849-4cf3-99e4-e93d21085b6f",
+          "text": "G9: Fetch Delivery's Room",
+          "type": "istar.Goal",
+          "x": 1056,
+          "y": 480,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(r:Location | r.name in current_delivery.delivery_location)",
+            "Controls": "delivery_room : Location",
+            "Monitors": "current_delivery"
+          }
+        },
+        {
+          "id": "496e2545-7b54-4568-a6d1-2e616cbe7537",
+          "text": "G11: Deliver Food To Room Table",
+          "type": "istar.Goal",
+          "x": 1152,
+          "y": 560,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "delivery_room, current_patient"
+          }
+        },
+        {
+          "id": "c6f57ba9-a58d-4fa3-9bb2-6a18103975c9",
+          "text": "AT2: DeliverToTable",
+          "type": "istar.Task",
+          "x": 1156,
+          "y": 664,
+          "customProperties": {
+            "Description": "",
+            "Location": "delivery_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "2618fc4a-bdeb-459a-a40c-8d2f315db5d5",
+          "text": "AT3: DeliverToFetch",
+          "type": "istar.Task",
+          "x": 1292,
+          "y": 667,
+          "customProperties": {
+            "Description": "",
+            "RobotNumber": "[1,2]",
+            "Location": "delivery_room",
+            "Params": "current_patient"
+          }
+        },
+        {
+          "id": "16ceb27e-114a-419d-92c0-1a96e5d3c2d3",
+          "text": "G10: Deliver Food To Patient",
+          "type": "istar.Goal",
+          "x": 1215,
+          "y": 478,
+          "customProperties": {
+            "Description": ""
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "f4c04979-a30d-420b-8357-116ed9d4f5fe",
+      "type": "istar.AndRefinementLink",
+      "source": "90bb6cd3-5df4-4ed1-b944-11eadd4ea888",
+      "target": "66b89690-6933-4962-aeb1-79958c65f99b"
+    },
+    {
+      "id": "8955c333-dbdd-4fd3-bd9d-6ae39d522eb6",
+      "type": "istar.AndRefinementLink",
+      "source": "e2c04472-6144-49fb-8ddc-8f145752cf5a",
+      "target": "66b89690-6933-4962-aeb1-79958c65f99b"
+    },
+    {
+      "id": "02ea5727-8ab8-4f16-923e-552eb2e24775",
+      "type": "istar.AndRefinementLink",
+      "source": "004f44de-5fa5-41e8-bff6-4c7f64126dd7",
+      "target": "e2c04472-6144-49fb-8ddc-8f145752cf5a"
+    },
+    {
+      "id": "67d61b06-2980-40de-ad73-cc92b15264e9",
+      "type": "istar.AndRefinementLink",
+      "source": "ed27bb08-c519-4040-b4a8-19fe22418796",
+      "target": "e2c04472-6144-49fb-8ddc-8f145752cf5a"
+    },
+    {
+      "id": "84c0b010-eff2-44ee-be21-5e8869ad3ec3",
+      "type": "istar.AndRefinementLink",
+      "source": "c4665492-cff8-4cc6-a874-1cdba42f668e",
+      "target": "ed27bb08-c519-4040-b4a8-19fe22418796"
+    },
+    {
+      "id": "72270d14-d492-464f-adf8-8ddd8ca64e05",
+      "type": "istar.AndRefinementLink",
+      "source": "0184bda0-2a89-4a14-8f36-51bf1d0d6e9c",
+      "target": "ed27bb08-c519-4040-b4a8-19fe22418796"
+    },
+    {
+      "id": "106daebe-85e2-4804-8660-4817f1a262a8",
+      "type": "istar.AndRefinementLink",
+      "source": "a51d3961-56b4-4bbe-b048-286eef924ae4",
+      "target": "0184bda0-2a89-4a14-8f36-51bf1d0d6e9c"
+    },
+    {
+      "id": "e522b3e5-93ea-44ef-a192-1d8921bb9105",
+      "type": "istar.AndRefinementLink",
+      "source": "c6f57ba9-a58d-4fa3-9bb2-6a18103975c9",
+      "target": "496e2545-7b54-4568-a6d1-2e616cbe7537"
+    },
+    {
+      "id": "78360ecd-b3c7-4cf7-a961-a877a40df8fc",
+      "type": "istar.AndRefinementLink",
+      "source": "2618fc4a-bdeb-459a-a40c-8d2f315db5d5",
+      "target": "0ff610ea-6ef7-41a3-be8e-5799a068a3d1"
+    },
+    {
+      "id": "22cdcdee-2849-4a97-86a8-76734d5fb6bc",
+      "type": "istar.AndRefinementLink",
+      "source": "23b13cdd-3a6d-4272-a1c9-f26b837a1ffc",
+      "target": "004f44de-5fa5-41e8-bff6-4c7f64126dd7"
+    },
+    {
+      "id": "efa46fb0-7fa5-4498-addf-8da6bd884bd1",
+      "type": "istar.AndRefinementLink",
+      "source": "43540617-7849-4cf3-99e4-e93d21085b6f",
+      "target": "004f44de-5fa5-41e8-bff6-4c7f64126dd7"
+    },
+    {
+      "id": "74dd8d0a-205e-4d33-8791-fa0f3f5599fa",
+      "type": "istar.OrRefinementLink",
+      "source": "496e2545-7b54-4568-a6d1-2e616cbe7537",
+      "target": "16ceb27e-114a-419d-92c0-1a96e5d3c2d3"
+    },
+    {
+      "id": "ca0cefc2-36e9-45be-8b2e-1e87c171aa4d",
+      "type": "istar.OrRefinementLink",
+      "source": "0ff610ea-6ef7-41a3-be8e-5799a068a3d1",
+      "target": "16ceb27e-114a-419d-92c0-1a96e5d3c2d3"
+    },
+    {
+      "id": "ddc58cd8-756f-428e-ac19-2338c0214684",
+      "type": "istar.AndRefinementLink",
+      "source": "16ceb27e-114a-419d-92c0-1a96e5d3c2d3",
+      "target": "004f44de-5fa5-41e8-bff6-4c7f64126dd7"
+    }
+  ],
+  "display": {
+    "66b89690-6933-4962-aeb1-79958c65f99b": {
+      "width": 112.609375,
+      "height": 41
+    },
+    "90bb6cd3-5df4-4ed1-b944-11eadd4ea888": {
+      "width": 121.609375,
+      "height": 43
+    },
+    "004f44de-5fa5-41e8-bff6-4c7f64126dd7": {
+      "width": 105.609375,
+      "height": 42
+    },
+    "e2c04472-6144-49fb-8ddc-8f145752cf5a": {
+      "width": 127.609375,
+      "height": 54
+    },
+    "0ff610ea-6ef7-41a3-be8e-5799a068a3d1": {
+      "width": 101.609375,
+      "height": 44
+    },
+    "ed27bb08-c519-4040-b4a8-19fe22418796": {
+      "width": 99.609375,
+      "height": 43
+    },
+    "c4665492-cff8-4cc6-a874-1cdba42f668e": {
+      "width": 99.609375,
+      "height": 41
+    },
+    "496e2545-7b54-4568-a6d1-2e616cbe7537": {
+      "width": 103.609375,
+      "height": 50
+    }
+  },
+  "tool": "pistar.2.0.0",
+  "istar": "2.0",
+  "saveDate": "Mon, 04 Oct 2021 19:04:05 GMT",
+  "diagram": {
+    "width": 2000,
+    "height": 1300,
+    "name": "Welcome Model",
+    "customProperties": {
+      "Description": "Welcome to the piStar tool! This model describe some of the recent improvements in the tool.\n\nFor help using this tool, please check the Help menu above"
+    }
+  }
+}
