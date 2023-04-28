@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { GoalModel, Node } from './GoalModel';
+import { GoalModel } from './GoalModel';
 
 // It's suposed that all goal models are inside the "gm" folder
 export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node>{
@@ -27,7 +27,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
         if(element){
             // TODO: implement goal recursive getter
             // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
-            return Promise.resolve(this.getNodesFromMission(element));
+            return Promise.resolve(element.nodes);
             return Promise.resolve([]);
         } else {
             const gmFolderPath = path.join(this.workspaceRoot, 'gm');
@@ -53,8 +53,12 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
                     const parsedText = actor.text.split(': ');
                     return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes};
                 });
-                
-                return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, info[0].nodes);
+                const nodes = info[0].nodes.map(node=>{
+                    console.log(node);
+                    const [name,tag] = node.text.split(': ');
+                    return new Node(name, vscode.TreeItemCollapsibleState.Collapsed, tag);
+                });
+                return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
             };
             const gms: {gm:GoalModel,filePath:string}[] = gmList.map(gm=>{
                 return {gm:JSON.parse(fs.readFileSync(path.join(gmFolderPath, gm), 'utf-8')) as GoalModel, filePath: path.join(gmFolderPath, gm)};
@@ -76,6 +80,18 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
     }
 }
 
+export class Node extends vscode.TreeItem {
+    constructor(
+        public readonly name: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+        public readonly tag: string,
+        public readonly command?: vscode.Command
+    ){
+        super(name, collapsibleState);
+        this.tooltip = `${this.tag}-${this.name}`;
+        this.description = tag;
+    }
+}
 export class Mission extends vscode.TreeItem {
     constructor(
         public readonly name: string,
