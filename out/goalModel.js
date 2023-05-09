@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Mission = exports.Node = exports.GoalModelProvider = void 0;
+exports.Mission = exports.Node = exports.NodeAttr = exports.GoalModelProvider = void 0;
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
@@ -24,10 +24,14 @@ class GoalModelProvider {
             return Promise.resolve([]);
         }
         if (element) {
+            if (element instanceof Node) {
+                return Promise.resolve(element.attributes);
+            }
+            else {
+                return Promise.resolve(element.nodes);
+            }
             // TODO: implement goal recursive getter
             // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
-            return Promise.resolve(element.nodes);
-            return Promise.resolve([]);
         }
         else {
             const gmFolderPath = path.join(this.workspaceRoot, 'gm');
@@ -55,7 +59,11 @@ class GoalModelProvider {
                 const nodes = info[0].nodes.map(node => {
                     console.log(node);
                     const [name, tag] = node.text.split(': ');
-                    return new Node(name, vscode.TreeItemCollapsibleState.Collapsed, tag);
+                    const customProperties = Object.keys(node.customProperties).map(key => {
+                        return { [key]: node.customProperties[key] };
+                    });
+                    const attributes = [...customProperties, { type: node.type }].map((attribute) => new NodeAttr(Object.keys(attribute)[0], Object.values(attribute)[0], vscode.TreeItemCollapsibleState.None));
+                    return new Node(name, attributes, vscode.TreeItemCollapsibleState.Collapsed, tag);
                 });
                 return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
             };
@@ -80,10 +88,23 @@ class GoalModelProvider {
     }
 }
 exports.GoalModelProvider = GoalModelProvider;
+class NodeAttr extends vscode.TreeItem {
+    constructor(attrName, attrValue, collapsibleState, command) {
+        super(attrValue == "" ? "\"\"" : attrValue, collapsibleState);
+        this.attrName = attrName;
+        this.attrValue = attrValue;
+        this.collapsibleState = collapsibleState;
+        this.command = command;
+        this.tooltip = `${this.attrName}-${this.attrValue}`;
+        this.description = attrName;
+    }
+}
+exports.NodeAttr = NodeAttr;
 class Node extends vscode.TreeItem {
-    constructor(name, collapsibleState, tag, command) {
+    constructor(name, attributes, collapsibleState, tag, command) {
         super(name, collapsibleState);
         this.name = name;
+        this.attributes = attributes;
         this.collapsibleState = collapsibleState;
         this.tag = tag;
         this.command = command;

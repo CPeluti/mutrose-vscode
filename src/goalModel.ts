@@ -4,9 +4,9 @@ import * as path from 'path';
 import { GoalModel } from './GoalModel';
 
 // It's suposed that all goal models are inside the "gm" folder
-export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node>{
-    private _onDidChangeTreeData: vscode.EventEmitter<Mission | Node |undefined | void> = new vscode.EventEmitter<Mission | Node |undefined | void>();
-    readonly onDidChangeTreeData: vscode.Event<void | Mission | Node | undefined> = this._onDidChangeTreeData.event;
+export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node | NodeAttr>{
+    private _onDidChangeTreeData: vscode.EventEmitter<Mission | Node | NodeAttr |undefined | void> = new vscode.EventEmitter<Mission | Node | NodeAttr | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<void | Mission | Node | NodeAttr | undefined> = this._onDidChangeTreeData.event;
     
     constructor(private workspaceRoot: string | undefined){}
 
@@ -19,16 +19,20 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
     }
 
     // GetChildren should be triggered by the click on the mission to get the goals;
-    getChildren(element?: Mission | undefined): Thenable<Mission[] | Node[]> {
+    getChildren(element?: Mission | Node | undefined): Thenable<Mission[] | Node[] | NodeAttr[]> {
         if(!this.workspaceRoot){
             vscode.window.showInformationMessage('No goal models in empty workspace');
             return Promise.resolve([]);
         }
         if(element){
+            if(element instanceof Node){
+                return Promise.resolve(element.attributes);
+            } else {
+
+                return Promise.resolve(element.nodes);
+            }
             // TODO: implement goal recursive getter
             // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
-            return Promise.resolve(element.nodes);
-            return Promise.resolve([]);
         } else {
             const gmFolderPath = path.join(this.workspaceRoot, 'gm');
             if(this.pathExists(gmFolderPath)){
@@ -56,7 +60,11 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
                 const nodes = info[0].nodes.map(node=>{
                     console.log(node);
                     const [name,tag] = node.text.split(': ');
-                    return new Node(name, vscode.TreeItemCollapsibleState.Collapsed, tag);
+                    const customProperties = Object.keys(node.customProperties).map(key => {
+                        return {[key]: node.customProperties[key]};
+                    });
+                    const attributes = [...customProperties, {type: node.type}].map((attribute) => new NodeAttr(Object.keys(attribute)[0],Object.values(attribute)[0],vscode.TreeItemCollapsibleState.None));
+                    return new Node(name, attributes, vscode.TreeItemCollapsibleState.Collapsed, tag);
                 });
                 return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
             };
@@ -80,9 +88,23 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
     }
 }
 
+export class NodeAttr extends vscode.TreeItem {
+    constructor(
+        public readonly attrName: string,
+        public readonly attrValue: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+        public readonly command?: vscode.Command
+    ){
+        super(attrValue=="" ? "\"\"" : attrValue, collapsibleState);
+        this.tooltip = `${this.attrName}-${this.attrValue}`;
+        this.description = attrName;
+    }
+}
+
 export class Node extends vscode.TreeItem {
     constructor(
         public readonly name: string,
+        public readonly attributes: NodeAttr[],
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly tag: string,
         public readonly command?: vscode.Command
