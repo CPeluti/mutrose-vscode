@@ -1,20 +1,83 @@
 {
-  "name": "gm-parser",
-  "displayName": "gm_parser",
-  "description": "parser from xml to gm",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.77.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "Example configuration",
+	"name": "lsp-sample",
+	"description": "A language server example",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples"
+	},
+	"publisher": "vscode-samples",
+	"categories": [],
+	"keywords": [
+		"multi-root ready"
+	],
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"activationEvents": [
+		"onLanguage:plaintext"
+	],
+	"main": "./client/out/extension",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+			  {
+				"id": "goal-model",
+				"title": "MutRoSe",
+				"icon": "media/icon.svg"
+			  }
+			]
+		},
+		"views": {
+			"goal-model": [
+				{
+				"id": "goalModel",
+				"name": "Goal Models",
+				"icon": "media/icon.svg",
+				"contextualTitle": "Goal Model"
+				}
+			]
+		},
+		"menus": {
+		"view/title": [
+			{
+				"command": "goalModel.refreshModels",
+				"when": "view == goalModel",
+				"group": "navigation"
+			},
+			{
+				"command": "goalModel.createNewMission",
+				"when": "view == goalModel"
+			}
+		]
+		},
+		"commands": [
+			{
+				"command": "goalModel.createNewMission",
+				"title": "Create Mission"
+			},
+			{
+				"command": "goalModel.refreshModels",
+				"title": "Refresh",
+				"icon":{
+				"light": "resources/light/refresh.svg",
+				"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "gm-parser.gm2DIO",
+				"title": "Parse Goal Model to Draw.io XML"
+			},
+			{
+				"command": "gm-parser.DIO2gm",
+				"title": "Parse Draw.io XML to Goal Model"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Example configuration",
 			"properties": {
 				"languageServerExample.maxNumberOfProblems": {
 					"scope": "resource",
@@ -33,86 +96,24 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				}
-      }
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "goal-model",
-          "title": "MutRoSe",
-          "icon": "media/icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "goal-model": [
-        {
-          "id": "goalModel",
-          "name": "Goal Models",
-          "icon": "media/icon.svg",
-          "contextualTitle": "Goal Model"
-        }
-      ]
-    },
-    "menus": {
-      "view/title": [
-        {
-          "command": "goalModel.refreshModels",
-          "when": "view == goalModel",
-          "group": "navigation"
-        },
-        {
-          "command": "goalModel.createNewMission",
-          "when": "view == goalModel"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "goalModel.createNewMission",
-        "title": "Create Mission"
-      },
-      {
-        "command": "goalModel.refreshModels",
-        "title": "Refresh",
-        "icon":{
-          "light": "resources/light/refresh.svg",
-          "dark": "resources/dark/refresh.svg"
-        }
-      },
-      {
-        "command": "gm-parser.gm2DIO",
-        "title": "Parse Goal Model to Draw.io XML"
-      },
-      {
-        "command": "gm-parser.DIO2gm",
-        "title": "Parse Draw.io XML to Goal Model"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.77.0",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "@vscode/test-electron": "^2.3.0",
-    "eslint": "^8.36.0",
-    "glob": "^8.1.0",
-    "mocha": "^10.2.0",
-    "typescript": "^4.9.5"
-  },
-  "dependencies": {
-    "xml-js": "^1.6.11",
-    "vscode-languageclient": "^7.0.0"
-  }
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test": "sh ./scripts/e2e.sh"
+	},
+	"devDependencies": {
+		"@types/mocha": "^9.1.0",
+		"@types/node": "^16.11.7",
+		"@typescript-eslint/eslint-plugin": "^5.54.0",
+		"@typescript-eslint/parser": "^5.54.0",
+		"eslint": "^8.35.0",
+		"mocha": "^9.2.1",
+		"typescript": "^5.0.2"
+	}
 }

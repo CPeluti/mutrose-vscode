@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GoalModel } from './GoalModel';
+import { convertDIOXML2GM, convertGM2DIOXML } from './parser';
 
 // It's suposed that all goal models are inside the "gm" folder
 export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node | NodeAttr>{
@@ -41,16 +42,17 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
             return Promise.resolve([]);
         }
     }
-    private getNodesFromMission(mission: Mission): Node[]{
-        return [];
-    }
+    // private getNodesFromMission(mission: Mission): Node[]{
+    //     return [];
+    // }
     // Should return all the missions inside a GoalModel
     // TODO: parse the goal model in a hierarchical way
     private getMissionsInGoalModelFolder(gmFolderPath: string): Mission[]{
         const workspaceRoot = this.workspaceRoot;
         if(this.pathExists(gmFolderPath) && workspaceRoot){
-            const gmList = fs.readdirSync(gmFolderPath);
-
+            let gmList = fs.readdirSync(gmFolderPath);
+            gmList = gmList.filter(gm => gm.includes('.drawio'))
+            
             const toMission = (goalModelJson: GoalModel, filePath: string): Mission => {
                 const actors = goalModelJson.actors;
                 const info = actors.map(actor=>{
@@ -68,11 +70,16 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
                 });
                 return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
             };
-            const gms: {gm:GoalModel,filePath:string}[] = gmList.map(gm=>{
-                return {gm:JSON.parse(fs.readFileSync(path.join(gmFolderPath, gm), 'utf-8')) as GoalModel, filePath: path.join(gmFolderPath, gm)};
+            const gmsDIO: {gm:string,filePath:string}[] = gmList.map(gm=>{
+                return {gm:fs.readFileSync(path.join(gmFolderPath, gm)).toString(), filePath: path.join(gmFolderPath, gm)};
             });
-            // console.log(gms);
+            console.log(gmsDIO);
+            const gms: {gm: GoalModel, filePath}[] = gmsDIO.map(({gm,filePath}) => {
+                const res = JSON.parse((convertDIOXML2GM(gm)));
+                return {gm: res as GoalModel, filePath}
+            });
             const res = gms.map((gm:{gm:GoalModel, filePath:string})=>toMission(gm.gm, gm.filePath));
+            // const res = [];
             return res;
         }
         return [];

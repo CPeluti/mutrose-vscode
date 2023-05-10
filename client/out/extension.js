@@ -13,11 +13,11 @@ let client;
 // Your extension is activated the very first time the command is executed
 function activate(context) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
-    let serverModule = context.asAbsolutePath(path.join('server', 'MutroseMissionDecomposer'));
+    const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "gm-parser" is now active!');
-    let debugOptions = {};
-    let serverOptions = {
+    const debugOptions = {};
+    const serverOptions = {
         run: { module: serverModule, transport: node_1.TransportKind.ipc },
         debug: {
             module: serverModule,
@@ -25,7 +25,7 @@ function activate(context) {
             options: debugOptions
         }
     };
-    let clientOptions = {
+    const clientOptions = {
         documentSelector: [{ scheme: 'file', language: 'plaintext' }],
         synchronize: {
             fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
@@ -36,13 +36,15 @@ function activate(context) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
-    let command = vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
+    const command = vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         const text = vscode.window.activeTextEditor?.document.getText();
         let res;
         if (text) {
+            console.log('convert');
             res = (0, parser_1.convertGM2DIOXML)(text);
+            console.log('res', res);
         }
         vscode.window.activeTextEditor?.edit(builder => {
             const doc = vscode.window.activeTextEditor?.document;
@@ -52,7 +54,7 @@ function activate(context) {
         });
     });
     context.subscriptions.push(command);
-    let command1 = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
+    const command1 = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         const text = vscode.window.activeTextEditor?.document.getText();
@@ -72,12 +74,12 @@ function activate(context) {
         ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
     const gmProvider = new goalModel_1.GoalModelProvider(rootPath);
     vscode.window.registerTreeDataProvider('goalModel', gmProvider);
-    let command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
+    const command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
         gmProvider.refresh();
         console.log(gmProvider.getChildren());
     });
     context.subscriptions.push(command2);
-    let command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
+    const command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
         console.log("TODO");
     });
     context.subscriptions.push(command3);

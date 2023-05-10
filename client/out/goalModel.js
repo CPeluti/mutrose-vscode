@@ -4,12 +4,14 @@ exports.Mission = exports.Node = exports.NodeAttr = exports.GoalModelProvider = 
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
+const parser_1 = require("./parser");
 // It's suposed that all goal models are inside the "gm" folder
 class GoalModelProvider {
+    workspaceRoot;
+    _onDidChangeTreeData = new vscode.EventEmitter();
+    onDidChangeTreeData = this._onDidChangeTreeData.event;
     constructor(workspaceRoot) {
         this.workspaceRoot = workspaceRoot;
-        this._onDidChangeTreeData = new vscode.EventEmitter();
-        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }
     refresh() {
         this._onDidChangeTreeData.fire();
@@ -41,15 +43,16 @@ class GoalModelProvider {
             return Promise.resolve([]);
         }
     }
-    getNodesFromMission(mission) {
-        return [];
-    }
+    // private getNodesFromMission(mission: Mission): Node[]{
+    //     return [];
+    // }
     // Should return all the missions inside a GoalModel
     // TODO: parse the goal model in a hierarchical way
     getMissionsInGoalModelFolder(gmFolderPath) {
         const workspaceRoot = this.workspaceRoot;
         if (this.pathExists(gmFolderPath) && workspaceRoot) {
-            const gmList = fs.readdirSync(gmFolderPath);
+            let gmList = fs.readdirSync(gmFolderPath);
+            gmList = gmList.filter(gm => gm.includes('.drawio'));
             const toMission = (goalModelJson, filePath) => {
                 const actors = goalModelJson.actors;
                 const info = actors.map(actor => {
@@ -67,11 +70,16 @@ class GoalModelProvider {
                 });
                 return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
             };
-            const gms = gmList.map(gm => {
-                return { gm: JSON.parse(fs.readFileSync(path.join(gmFolderPath, gm), 'utf-8')), filePath: path.join(gmFolderPath, gm) };
+            const gmsDIO = gmList.map(gm => {
+                return { gm: fs.readFileSync(path.join(gmFolderPath, gm)).toString(), filePath: path.join(gmFolderPath, gm) };
             });
-            // console.log(gms);
+            console.log(gmsDIO);
+            const gms = gmsDIO.map(({ gm, filePath }) => {
+                const res = JSON.parse(((0, parser_1.convertDIOXML2GM)(gm)));
+                return { gm: res, filePath };
+            });
             const res = gms.map((gm) => toMission(gm.gm, gm.filePath));
+            // const res = [];
             return res;
         }
         return [];
@@ -89,6 +97,10 @@ class GoalModelProvider {
 }
 exports.GoalModelProvider = GoalModelProvider;
 class NodeAttr extends vscode.TreeItem {
+    attrName;
+    attrValue;
+    collapsibleState;
+    command;
     constructor(attrName, attrValue, collapsibleState, command) {
         super(attrValue === "" ? "\"\"" : attrValue, collapsibleState);
         this.attrName = attrName;
@@ -101,6 +113,11 @@ class NodeAttr extends vscode.TreeItem {
 }
 exports.NodeAttr = NodeAttr;
 class Node extends vscode.TreeItem {
+    name;
+    attributes;
+    collapsibleState;
+    tag;
+    command;
     constructor(name, attributes, collapsibleState, tag, command) {
         super(name, collapsibleState);
         this.name = name;
@@ -114,6 +131,13 @@ class Node extends vscode.TreeItem {
 }
 exports.Node = Node;
 class Mission extends vscode.TreeItem {
+    name;
+    missionNumber;
+    collapsibleState;
+    filePath;
+    missionId;
+    nodes;
+    command;
     constructor(name, missionNumber, collapsibleState, filePath, missionId, nodes, command) {
         super(name, collapsibleState);
         this.name = name;
@@ -123,10 +147,10 @@ class Mission extends vscode.TreeItem {
         this.missionId = missionId;
         this.nodes = nodes;
         this.command = command;
-        this.contextValue = 'Mission';
         this.tooltip = `${missionNumber}-${this.name}`;
         this.description = this.missionNumber;
     }
+    contextValue = 'Mission';
 }
 exports.Mission = Mission;
 //# sourceMappingURL=goalModel.js.map
