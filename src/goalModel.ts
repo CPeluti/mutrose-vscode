@@ -95,7 +95,7 @@ export class NodeAttr extends vscode.TreeItem {
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly command?: vscode.Command
     ){
-        super(attrValue=="" ? "\"\"" : attrValue, collapsibleState);
+        super(attrValue==="" ? "\"\"" : attrValue, collapsibleState);
         this.tooltip = `${this.attrName}-${this.attrValue}`;
         this.description = attrName;
     }

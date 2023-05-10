@@ -4,14 +4,35 @@ exports.deactivate = exports.activate = void 0;
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const path = require("path");
 const parser_1 = require("./parser");
 const goalModel_1 = require("./goalModel");
+const node_1 = require("vscode-languageclient/node");
+let client;
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 function activate(context) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
+    let serverModule = context.asAbsolutePath(path.join('server', 'MutroseMissionDecomposer'));
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "gm-parser" is now active!');
+    let debugOptions = {};
+    let serverOptions = {
+        run: { module: serverModule, transport: node_1.TransportKind.ipc },
+        debug: {
+            module: serverModule,
+            transport: node_1.TransportKind.ipc,
+            options: debugOptions
+        }
+    };
+    let clientOptions = {
+        documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
+        }
+    };
+    client = new node_1.LanguageClient('languageServerExample', 'Language Server Example', serverOptions, clientOptions);
+    client.start();
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
@@ -62,7 +83,12 @@ function activate(context) {
     context.subscriptions.push(command3);
 }
 exports.activate = activate;
-// This method is called when your extension is deactivated
-function deactivate() { }
+function deactivate() {
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
+}
 exports.deactivate = deactivate;
+// This method is called when your extension is deactivated
 //# sourceMappingURL=extension.js.map

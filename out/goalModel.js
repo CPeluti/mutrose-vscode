@@ -90,7 +90,7 @@ class GoalModelProvider {
 exports.GoalModelProvider = GoalModelProvider;
 class NodeAttr extends vscode.TreeItem {
     constructor(attrName, attrValue, collapsibleState, command) {
-        super(attrValue == "" ? "\"\"" : attrValue, collapsibleState);
+        super(attrValue === "" ? "\"\"" : attrValue, collapsibleState);
         this.attrName = attrName;
         this.attrValue = attrValue;
         this.collapsibleState = collapsibleState;
