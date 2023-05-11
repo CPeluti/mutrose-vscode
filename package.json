@@ -41,19 +41,30 @@
 			]
 		},
 		"menus": {
-		"view/title": [
-			{
-				"command": "goalModel.refreshModels",
-				"when": "view == goalModel",
-				"group": "navigation"
-			},
-			{
-				"command": "goalModel.createNewMission",
-				"when": "view == goalModel"
-			}
-		]
+			"view/title": [
+				{
+					"command": "goalModel.refreshModels",
+					"when": "view == goalModel",
+					"group": "navigation"
+				},
+				{
+					"command": "goalModel.createNewMission",
+					"when": "view == goalModel"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "gm-parser.execMutRose",
+					"when": "viewItem == mission",
+					"group": "navigation"
+				}
+			]
 		},
 		"commands": [
+			{
+				"command": "gm-parser.execMutRose",
+				"title": "Decompose with MutRoSe"
+			},
 			{
 				"command": "goalModel.createNewMission",
 				"title": "Create Mission"

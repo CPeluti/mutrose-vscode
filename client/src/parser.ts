@@ -106,9 +106,7 @@ export function convertGM2DIOXML(input: string){
     
     const gm = JSON.parse(input);
     const res = convertActors2DIO(gm);
-    console.log('actors:', res);
     const resLinks = convertLinks2DIO(gm);
-    console.log('links:', resLinks);
 
     const actors = res.actors.map(actor=>{
         const {nodes, ...newActor} = actor;
@@ -140,7 +138,7 @@ export function convertDIOXML2GM(input: string){
             const customProperties = getMRAttributes(node.attributes);
             const attributes = getNonMRAttributes(node.attributes);
             const actor: any = {...attributes, customProperties, nodes: []};
-            delete Object.assign(actor, { text: actor.label })['label'];
+            delete Object.assign(actor, { text: actor.text })['label'];
             parsedGm.actors.push(actor);
         } else if (type === 'istar.AndRefinementLink') {
             const attributes = node.attributes;

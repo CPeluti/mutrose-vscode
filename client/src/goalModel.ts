@@ -42,9 +42,6 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
             return Promise.resolve([]);
         }
     }
-    // private getNodesFromMission(mission: Mission): Node[]{
-    //     return [];
-    // }
     // Should return all the missions inside a GoalModel
     // TODO: parse the goal model in a hierarchical way
     private getMissionsInGoalModelFolder(gmFolderPath: string): Mission[]{
@@ -60,7 +57,6 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
                     return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes};
                 });
                 const nodes = info[0].nodes.map(node=>{
-                    console.log(node);
                     const [name,tag] = node.text.split(': ');
                     const customProperties = Object.keys(node.customProperties).map(key => {
                         return {[key]: node.customProperties[key]};
@@ -73,7 +69,6 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
             const gmsDIO: {gm:string,filePath:string}[] = gmList.map(gm=>{
                 return {gm:fs.readFileSync(path.join(gmFolderPath, gm)).toString(), filePath: path.join(gmFolderPath, gm)};
             });
-            console.log(gmsDIO);
             const gms: {gm: GoalModel, filePath}[] = gmsDIO.map(({gm,filePath}) => {
                 const res = JSON.parse((convertDIOXML2GM(gm)));
                 return {gm: res as GoalModel, filePath}
@@ -135,5 +130,5 @@ export class Mission extends vscode.TreeItem {
         this.tooltip = `${missionNumber}-${this.name}`;
         this.description = this.missionNumber;
     }
-    contextValue = 'Mission';
+    contextValue = 'mission';
 }

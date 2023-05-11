@@ -92,12 +92,11 @@ function convertLinks2DIO(gm) {
     });
     return res;
 }
+// set text on mission
 function convertGM2DIOXML(input) {
     const gm = JSON.parse(input);
     const res = convertActors2DIO(gm);
-    console.log('actors:', res);
     const resLinks = convertLinks2DIO(gm);
-    console.log('links:', resLinks);
     const actors = res.actors.map(actor => {
         const { nodes, ...newActor } = actor;
         const style = xml_elements_1.default.actor;
@@ -110,6 +109,7 @@ function convertGM2DIOXML(input) {
     return output;
 }
 exports.convertGM2DIOXML = convertGM2DIOXML;
+//set text on mission
 function convertDIOXML2GM(input) {
     let gm = parser.xml2js(input);
     gm = gm.elements[0].elements[0].elements[0];
@@ -129,7 +129,7 @@ function convertDIOXML2GM(input) {
             const customProperties = getMRAttributes(node.attributes);
             const attributes = getNonMRAttributes(node.attributes);
             const actor = { ...attributes, customProperties, nodes: [] };
-            delete Object.assign(actor, { text: actor.label })['label'];
+            delete Object.assign(actor, { text: actor.text })['label'];
             parsedGm.actors.push(actor);
         }
         else if (type === 'istar.AndRefinementLink') {

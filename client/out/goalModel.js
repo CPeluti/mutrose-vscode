@@ -43,9 +43,6 @@ class GoalModelProvider {
             return Promise.resolve([]);
         }
     }
-    // private getNodesFromMission(mission: Mission): Node[]{
-    //     return [];
-    // }
     // Should return all the missions inside a GoalModel
     // TODO: parse the goal model in a hierarchical way
     getMissionsInGoalModelFolder(gmFolderPath) {
@@ -60,7 +57,6 @@ class GoalModelProvider {
                     return { name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes };
                 });
                 const nodes = info[0].nodes.map(node => {
-                    console.log(node);
                     const [name, tag] = node.text.split(': ');
                     const customProperties = Object.keys(node.customProperties).map(key => {
                         return { [key]: node.customProperties[key] };
@@ -73,7 +69,6 @@ class GoalModelProvider {
             const gmsDIO = gmList.map(gm => {
                 return { gm: fs.readFileSync(path.join(gmFolderPath, gm)).toString(), filePath: path.join(gmFolderPath, gm) };
             });
-            console.log(gmsDIO);
             const gms = gmsDIO.map(({ gm, filePath }) => {
                 const res = JSON.parse(((0, parser_1.convertDIOXML2GM)(gm)));
                 return { gm: res, filePath };
@@ -150,7 +145,7 @@ class Mission extends vscode.TreeItem {
         this.tooltip = `${missionNumber}-${this.name}`;
         this.description = this.missionNumber;
     }
-    contextValue = 'Mission';
+    contextValue = 'mission';
 }
 exports.Mission = Mission;
 //# sourceMappingURL=goalModel.js.map

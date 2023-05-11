@@ -13,6 +13,6 @@
 				"type": "npm",
 				"script": "watch"
 			}
-		},
+		}
 	]
 }

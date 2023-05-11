@@ -54,16 +54,13 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	const command = vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
+	const gm2DIO = vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		const text = vscode.window.activeTextEditor?.document.getText();
 		let res: string;
 		if(text){
-			console.log('convert');
 			res = convertGM2DIOXML(text);
-			console.log('res', res);
-
 		}
 		vscode.window.activeTextEditor?.edit(builder => {
 			const doc = vscode.window.activeTextEditor?.document;
@@ -72,9 +69,9 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		});
 	});
-	context.subscriptions.push(command);
+	context.subscriptions.push(gm2DIO);
 
-	const command1 = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
+	const DIO2gm = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		const text = vscode.window.activeTextEditor?.document.getText();
@@ -89,7 +86,12 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		});
 	});
-	context.subscriptions.push(command1);
+	context.subscriptions.push(DIO2gm);
+
+	const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', ()=>{
+		console.log('exec mutrose');
+	});
+	context.subscriptions.push(executeMutRose)
 
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
@@ -100,7 +102,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
 		gmProvider.refresh();
-		console.log(gmProvider.getChildren());
 	});
 	context.subscriptions.push(command2);
 	const command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
