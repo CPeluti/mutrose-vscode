@@ -5,6 +5,7 @@ exports.deactivate = exports.activate = void 0;
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
 const path = require("path");
+const child_process = require("child_process");
 const parser_1 = require("./parser");
 const goalModel_1 = require("./goalModel");
 const node_1 = require("vscode-languageclient/node");
@@ -69,7 +70,16 @@ function activate(context) {
     });
     context.subscriptions.push(DIO2gm);
     const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', () => {
-        console.log('exec mutrose');
+        child_process.exec('mutrose', (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${stdout}`);
+                return;
+            }
+            vscode.window.showInformationMessage(`Output: ${stdout}`);
+        });
+        // const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
+        // terminal.sendText("touch test.txt");
+        // terminal.dispose();
     });
     context.subscriptions.push(executeMutRose);
     const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))

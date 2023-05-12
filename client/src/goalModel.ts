@@ -48,7 +48,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
         const workspaceRoot = this.workspaceRoot;
         if(this.pathExists(gmFolderPath) && workspaceRoot){
             let gmList = fs.readdirSync(gmFolderPath);
-            gmList = gmList.filter(gm => gm.includes('.drawio'))
+            gmList = gmList.filter(gm => gm.includes('.drawio'));
             
             const toMission = (goalModelJson: GoalModel, filePath: string): Mission => {
                 const actors = goalModelJson.actors;
@@ -71,7 +71,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
             });
             const gms: {gm: GoalModel, filePath}[] = gmsDIO.map(({gm,filePath}) => {
                 const res = JSON.parse((convertDIOXML2GM(gm)));
-                return {gm: res as GoalModel, filePath}
+                return {gm: res as GoalModel, filePath};
             });
             const res = gms.map((gm:{gm:GoalModel, filePath:string})=>toMission(gm.gm, gm.filePath));
             // const res = [];

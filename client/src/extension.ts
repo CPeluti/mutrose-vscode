@@ -2,7 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {convertDIOXML2GM, convertGM2DIOXML} from "./parser";
+import * as child_process from 'child_process';
+import { convertDIOXML2GM, convertGM2DIOXML } from "./parser";
 import { GoalModelProvider } from './goalModel';
 
 import {
@@ -26,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const debugOptions = {};
 
 	const serverOptions: ServerOptions = {
-		run: {module: serverModule, transport: TransportKind.ipc},
+		run: { module: serverModule, transport: TransportKind.ipc },
 		debug: {
 			module: serverModule,
 			transport: TransportKind.ipc,
@@ -35,7 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	const clientOptions: LanguageClientOptions = {
-		documentSelector: [{scheme: 'file', language: 'plaintext'}],
+		documentSelector: [{ scheme: 'file', language: 'plaintext' }],
 		synchronize: {
 			fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
 		}
@@ -47,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 		serverOptions,
 		clientOptions
 	);
-	
+
 	client.start();
 
 
@@ -59,12 +60,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// Display a message box to the user
 		const text = vscode.window.activeTextEditor?.document.getText();
 		let res: string;
-		if(text){
+		if (text) {
 			res = convertGM2DIOXML(text);
 		}
 		vscode.window.activeTextEditor?.edit(builder => {
 			const doc = vscode.window.activeTextEditor?.document;
-			if(doc){
+			if (doc) {
 				builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), res);
 			}
 		});
@@ -76,26 +77,35 @@ export function activate(context: vscode.ExtensionContext) {
 		// Display a message box to the user
 		const text = vscode.window.activeTextEditor?.document.getText();
 		let res: string;
-		if(text){
+		if (text) {
 			res = convertDIOXML2GM(text);
 		}
 		vscode.window.activeTextEditor?.edit(builder => {
 			const doc = vscode.window.activeTextEditor?.document;
-			if(doc){
+			if (doc) {
 				builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), res);
 			}
 		});
 	});
 	context.subscriptions.push(DIO2gm);
 
-	const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', ()=>{
-		console.log('exec mutrose');
+	const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', () => {
+		child_process.exec('mutrose', (error, stdout, stderr) => {
+			if (error) {
+				console.error(`exec error: ${stdout}`);
+				return;
+			}
+			vscode.window.showInformationMessage(`Output: ${stdout}`);
+		});
+		// const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
+		// terminal.sendText("touch test.txt");
+		// terminal.dispose();
 	});
-	context.subscriptions.push(executeMutRose)
+	context.subscriptions.push(executeMutRose);
 
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
-	
+
 	const gmProvider = new GoalModelProvider(rootPath);
 
 	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
@@ -116,6 +126,6 @@ export function deactivate(): Thenable<void> | undefined {
 		return undefined;
 	}
 	return client.stop();
-  }
+}
 
 // This method is called when your extension is deactivated
