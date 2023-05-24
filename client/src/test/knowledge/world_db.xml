@@ -1,0 +1,55 @@
+<world_db>
+	<Delivery>
+		<name>Delivery1</name>
+		<patient>Patient1</patient>
+		<delivery_location>RoomA</delivery_location>
+	</Delivery>
+	<Delivery>
+		<name>Delivery2</name>
+		<patient>Patient3</patient>
+		<delivery_location>RoomC</delivery_location>
+	</Delivery>
+
+	<Pickup>
+		<name>Pickup1</name>
+		<patient>Patient1</patient>
+		<pickup_location>RoomA</pickup_location>
+	</Pickup>
+	<Pickup>
+		<name>Pickup2</name>
+		<patient>Patient3</patient>
+		<pickup_location>RoomC</pickup_location>
+	</Pickup>
+
+	<Location>
+		<name>RoomA</name>
+		<patient>Patient1</patient>
+	</Location>
+	<Location>
+		<name>RoomB</name>
+		<patient>Patient2</patient>
+	</Location>
+	<Location>
+		<name>RoomC</name>
+		<patient>Patient3</patient>
+	</Location>
+	<Location>
+		<name>Kitchen</name>
+	</Location>
+
+	<Patient>
+		<name>Patient1</name>
+		<can_fetch>True</can_fetch>
+		<can_open>False</can_open>
+	</Patient>
+	<Patient>
+		<name>Patient2</name>
+		<can_fetch>False</can_fetch>
+		<can_open>False</can_open>
+	</Patient>
+	<Patient>
+		<name>Patient3</name>
+		<can_fetch>False</can_fetch>
+		<can_open>True</can_open>
+	</Patient>
+</world_db>

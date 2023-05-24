@@ -1,0 +1,259 @@
+(define (domain hospital)
+	(:types 
+		delivery pickup patient location - object
+	)
+	(:predicates
+		(patientcanfetch ?p - patient)
+		(patientcanopen ?p - patient)
+		(deliverypatient ?p - patient ?d - delivery)
+		(deliverylocation ?l - location ?d - delivery)
+		(pickuppatient ?p - patient ?pk - pickup)
+		(pickuplocation ?l - location ?pk - pickup)
+		(pickeddishes ?r - robot)
+		(pickedmeal ?r - robot)
+		(at ?r - robot ?l - location)
+	)
+	(:capabilities manipulation door-opening)
+
+	(:task GetFood :parameters (?r - robot ?l - location ?d - delivery))
+	(:method food-pickup
+		:parameters (?r - robot ?l - location ?d -delivery)
+		:task (GetFood ?r ?l ?d)
+		:ordered-subtasks (and
+			(navto ?r ?l)
+			(wait-for-food ?r ?l ?d)
+		)
+	)
+	(:action wait-for-food
+		:parameters (?r - robot ?l - location ?d - delivery)
+		:effect (and
+			(pickedmeal ?r)
+		)
+	)
+
+	(:task DeliverToTable :parameters (?r - robot ?l - location ?p - patient))
+	(:method table-deliver
+		:parameters (?r - robot ?l - location ?p - patient)
+		:task (DeliverToTable ?r ?l ?p)
+		:precondition (and
+			(pickedmeal ?r)
+		)
+		:ordered-subtasks (and
+			(navto ?r ?l)
+			(approach-patient-table ?r ?l ?p)
+			(deliver-to-table ?r ?l)
+		)
+	)
+	(:action approach-patient-table
+		:parameters (?r - robot ?l - location ?p - patient)
+	)
+	(:action deliver-to-table
+		:parameters (?r - robot ?l - location)
+		:required-capabilities (manipulation)
+	)
+
+	(:task DeliverToFetch :parameters (?r1 ?r2 - robot ?l - location ?p - patient))
+	(:method fetch-deliver
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (DeliverToFetch ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(pickedmeal ?r1)
+		)
+		:ordered-subtasks (and
+			(navto ?r1 ?l)
+			(FetchMeal ?r1 ?r2 ?l ?p)
+		)
+	)
+
+	(:task FetchMeal :parameters (?r1 ?r2 - robot ?l - location ?p - patient))
+	(:method fetch-meal-with-human
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (FetchMeal ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(patientcanfetch ?p)
+		)
+		:ordered-subtasks (and
+			(approach-human ?r1 ?l ?p)
+			(wait-for-human-to-fetch ?r1 ?l ?p)
+		)
+	)
+	(:method fetch-meal-with-robot
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (FetchMeal ?r1 ?r2 ?l ?p)
+		:ordered-subtasks (and
+			(navto ?r2 ?l)
+			(approach-robot ?r1 ?r2)
+			(grasp-meal ?r2 ?r1)
+			(deliver-meal-to-patient ?r2 ?p ?l)
+		)
+	)
+
+	(:task PickupDishes :parameters (?r1 ?r2 - robot ?l - location ?p - patient))
+	(:method pickup-with-door-opening
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickupDishes ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(not (pickeddishes ?r1))
+		)
+		:ordered-subtasks (and
+			(navto ?r1 ?l)
+			(navto ?r2 ?l)
+			(approach-door ?r1 ?l)
+			(approach-door ?r2 ?l)
+			(open-door ?r1 ?r2 ?l)
+			(PickDishesTwoRobotsAtLocation ?r1 ?r2 ?l ?p)
+		)
+	)
+	(:method pickup-without-door-opening
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickupDishes ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(patientcanopen ?p)
+			(not (pickeddishes ?r1))
+		)
+		:ordered-subtasks (and
+			(navto ?r1 ?l)
+			(approach-door ?r1)
+			(wait-for-door-opening ?r1)
+			(PickDishesOneRobotAtLocation ?r1 ?r2 ?l ?p)
+		)
+	)
+
+	(:task PickDishesTwoRobotsAtLocation :parameters (?r1 ?r2 - robot ?l - location ?p - patient))
+	(:method pick-dishes-two-robots-at-location
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickDishesTwoRobotsAtLocation ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(at ?r1 ?l)
+			(at ?r2 ?l)
+		)
+		:ordered-subtasks (and
+			(PickDishes ?r1 ?r2 ?l ?p)
+		)
+	)
+
+	(:task PickDishesOneRobotAtLocation :parameters (?r1 ?r2 - robot ?l - location ?p - patient))
+	(:method pick-dishes-one-robot-at-location
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickDishesOneRobotAtLocation ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(at ?r1 ?l)
+			(not (at ?r2 ?l))
+		)
+		:ordered-subtasks (and
+			(PickDishes ?r1 ?r2 ?l ?p)
+		)
+	)
+
+	(:task PickDishes :parameters (?r1 ?r2 - robot ?l - location ?p - patient))
+	(:method pick-dishes-with-human
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickDishes ?r1 ?r2 ?l ?p)
+		:ordered-subtasks (and
+			(approach-human ?r1 ?l ?p)
+			(wait-for-human-to-place-dish ?r1 ?p)
+		)
+	)
+	(:method pick-dishes-with-robot-at-location
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickDishes ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(at ?r2 ?l)
+		)
+		:ordered-subtasks (and
+			(pick-patient-dishes ?r2 ?p)
+			(load-dishes ?r2 ?r1)
+		)
+	)
+	(:method pick-dishes-with-robot-not-at-location
+		:parameters (?r1 ?r2 - robot ?l - location ?p - patient)
+		:task (PickDishes ?r1 ?r2 ?l ?p)
+		:precondition (and
+			(not (at ?r2 ?l))
+		)
+		:ordered-subtasks (and
+			(navto ?r2 ?l)
+			(pick-patient-dishes ?r2 ?p)
+			(load-dishes ?r2 ?r1)
+		)
+	)
+
+	(:task RetrieveDishes :parameters (?r - robot ?l - location))
+	(:method dishes-retrieval
+		:parameters (?r - robot ?l - location)
+		:task (RetrieveDishes ?r ?l)
+		:ordered-subtasks (and
+			(navto ?r ?l)
+			(retrieve-dishes ?r ?l)
+		)
+	)
+
+	(:action approach-human
+		:parameters (?r - robot ?l - location ?p - patient)
+	)
+	(:action approach-robot
+		:parameters (?r1 ?r2 - robot)
+	)
+	(:action grasp-meal
+		:parameters (?r1 ?r2 - robot)
+		:effect (and
+			(not (pickedmeal ?r2))
+			(pickedmeal ?r1)
+		)
+	)
+	(:action deliver-meal-to-patient
+		:parameters (?r - robot ?p - patient ?l - location)
+		:effect (and
+			(not (pickedmeal ?r))
+		)
+	)
+	(:action wait-for-human-to-fetch
+		:parameters (?r - robot ?l - location ?p - patient)
+		:effect (and
+			(not (pickedmeal ?r))
+		)
+	)
+
+	(:action wait-for-human-to-place-dish
+		:parameters (?r - robot ?p - patient)
+		:effect (and
+			(pickeddishes ?r)
+		)
+	)
+	(:action pick-patient-dishes
+		:parameters (?r - robot ?p - patient)
+		:effect (and
+			(pickeddishes ?r)
+		)
+	)
+	(:action load-dishes
+		:parameters (?r1 ?r2 - robot)
+		:effect (and
+			(not (pickeddishes ?r1))
+			(pickeddishes ?r2)
+		)
+	)
+	(:action approach-door
+		:parameters (?r1 - robot ?l - location)
+	)
+	(:action open-door
+		:parameters (?r1 ?r2 - robot ?l - location)
+		:required-capabilities (door-opening)
+	)
+	(:action wait-for-door-opening
+		:parameters (?r - robot)
+	)
+	(:action pickup-dishes-with-robot
+		:parameters (?r1 ?r2 - robot ?l - location)
+		:effect (and
+			(pickeddishes ?r1)
+		)
+	)
+	(:action retrieve-dishes
+		:parameters (?r - robot ?l - location)
+	)
+
+	(:action navto
+		:parameters (?r - robot ?l - location)
+	)
+)

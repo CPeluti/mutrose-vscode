@@ -5,6 +5,7 @@ exports.deactivate = exports.activate = void 0;
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
 const path = require("path");
+const fs = require("fs");
 const child_process = require("child_process");
 const parser_1 = require("./parser");
 const goalModel_1 = require("./goalModel");
@@ -69,13 +70,29 @@ function activate(context) {
         });
     });
     context.subscriptions.push(DIO2gm);
-    const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', () => {
-        child_process.exec('mutrose', (error, stdout, stderr) => {
+    const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', (element) => {
+        console.log(element);
+        const cfg = vscode.workspace.getConfiguration().get('gmParser');
+        const showInfo = vscode.window.showInformationMessage;
+        if (!fs.existsSync(cfg.hddlPath)) {
+            showInfo("hddl file doesn't exists");
+            return;
+        }
+        else if (!fs.existsSync(cfg.configPath)) {
+            showInfo("config file doesn't exists");
+            return;
+        }
+        const xml = fs.readFileSync(element.filePath).toString();
+        const gmJson = (0, parser_1.convertDIOXML2GM)(xml);
+        fs.writeFileSync('./temp.txt', gmJson);
+        child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath}`, (error, stdout, stderr) => {
             if (error) {
-                console.error(`exec error: ${stdout}`);
-                return;
+                showInfo(`Error: ${stdout}`);
             }
-            vscode.window.showInformationMessage(`Output: ${stdout}`);
+            else {
+                showInfo(`GM decomposto com sucesso`);
+            }
+            fs.unlinkSync('./temp.txt');
         });
         // const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
         // terminal.sendText("touch test.txt");

@@ -2,6 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
+
 import * as child_process from 'child_process';
 import { convertDIOXML2GM, convertGM2DIOXML } from "./parser";
 import { GoalModelProvider } from './goalModel';
@@ -89,13 +91,27 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(DIO2gm);
 
-	const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', () => {
-		child_process.exec('mutrose', (error, stdout, stderr) => {
-			if (error) {
-				console.error(`exec error: ${stdout}`);
-				return;
+	const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', (element) => {
+		console.log(element)
+		const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
+		const showInfo = vscode.window.showInformationMessage;
+		if (!fs.existsSync(cfg.hddlPath)) {
+			showInfo("hddl file doesn't exists");
+			return;
+		} else if (!fs.existsSync(cfg.configPath)) {
+			showInfo("config file doesn't exists");
+			return;
+		}
+		const xml: string = fs.readFileSync(element.filePath).toString()
+		const gmJson = convertDIOXML2GM(xml);
+		fs.writeFileSync('./temp.txt',gmJson);
+		child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath}` , (error, stdout, stderr) => {
+			if(error){
+				showInfo(`Error: ${stdout}`);
+			} else {
+				showInfo(`GM decomposto com sucesso`);
 			}
-			vscode.window.showInformationMessage(`Output: ${stdout}`);
+			fs.unlinkSync('./temp.txt');
 		});
 		// const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
 		// terminal.sendText("touch test.txt");

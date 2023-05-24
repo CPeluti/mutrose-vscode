@@ -1,0 +1,107 @@
+{
+    "world_db": {
+        "type": "file",
+        "file_type": "xml",
+        "path": "knowledge/world_db.xml",
+        "xml_root": "world_db"
+    },
+
+    "output": {
+        "output_type": "file",
+        "file_path": "output/task_outputPickup.json",
+        "file_type": "json"
+    },
+
+    "location_types": ["Location"],
+
+    "type_mapping": [
+        {
+            "hddl_type": "location",
+            "ocl_type": "Location"
+        },
+        {
+            "hddl_type": "patient",
+            "ocl_type": "Patient"
+        },
+        {
+            "hddl_type": "pickup",
+            "ocl_type": "Pickup"
+        }
+    ],
+
+    "var_mapping": [
+        {
+            "task_id": "AT1",
+            "map": [
+                {
+                    "gm_var": "pickup_room",
+                    "hddl_var": "?l"
+                },
+                {
+                    "gm_var": "current_pickup_patient",
+                    "hddl_var": "?p"
+                }
+            ]
+        },
+        {
+            "task_id": "AT2",
+            "map": [
+                {
+                    "gm_var": "kitchen_loc",
+                    "hddl_var": "?l"
+                }
+            ]
+        }
+    ],
+
+    "semantic_mapping": [
+        {
+            "type": "attribute",
+            "name": "can_open",
+            "relates_to": "Patient",
+            "belongs_to": "world_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "patientcanopen",
+                "arg_sorts": ["patient"]
+            }
+        },
+        {
+            "type": "attribute",
+            "name": "picked_dishes",
+            "relates_to": "robot",
+            "belongs_to": "robots_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "pickeddishes",
+                "arg_sorts": ["robot"]
+            }
+        },
+        {
+            "type": "relationship",
+            "main_entity": "Pickup",
+            "related_entity": "Patient",
+            "relationship_type": "attribute",
+            "attribute_name": "patient",
+            "belongs_to": "world_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "pickuppatient",
+                "arg_sorts": ["patient", "pickup"]
+            }
+        },
+        {
+            "type": "relationship",
+            "main_entity": "Pickup",
+            "related_entity": "Location",
+            "relationship_type": "attribute",
+            "attribute_name": "pickup_location",
+            "belongs_to": "world_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "pickuplocation",
+                "arg_sorts": ["location", "pickup"]
+            }
+        }
+    ]
+}

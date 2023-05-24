@@ -1,5 +1,5 @@
 {
-	"name": "lsp-sample",
+	"name": "gm-parser",
 	"description": "A language server example",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
@@ -94,6 +94,12 @@
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
+					"description": "Controls the maximum number of problems produced by the server."
+				},
+				"gmParser.hddlPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "./hddl/hddl.txt",
 					"description": "Controls the maximum number of problems produced by the server."
 				},
 				"languageServerExample.trace.server": {
