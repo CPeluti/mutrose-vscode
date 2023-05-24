@@ -105,11 +105,14 @@ export function activate(context: vscode.ExtensionContext) {
 		const xml: string = fs.readFileSync(element.filePath).toString()
 		const gmJson = convertDIOXML2GM(xml);
 		fs.writeFileSync('./temp.txt',gmJson);
-		child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath}` , (error, stdout, stderr) => {
+		child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p` , (error, stdout, stderr) => {
 			if(error){
 				showInfo(`Error: ${stdout}`);
 			} else {
 				showInfo(`GM decomposto com sucesso`);
+				let mutrose = vscode.window.createOutputChannel('Mutrose')
+				mutrose.append(stdout)
+				mutrose.show()
 			}
 			fs.unlinkSync('./temp.txt');
 		});
