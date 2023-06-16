@@ -5,59 +5,87 @@ const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
 const parser_1 = require("./parser");
-// It's suposed that all goal models are inside the "gm" folder
 class GoalModelProvider {
-    workspaceRoot;
-    _onDidChangeTreeData = new vscode.EventEmitter();
-    onDidChangeTreeData = this._onDidChangeTreeData.event;
-    constructor(workspaceRoot) {
-        this.workspaceRoot = workspaceRoot;
-        const gmFolderPath = path.join(this.workspaceRoot, 'gm');
-        if (this.pathExists(gmFolderPath) && workspaceRoot) {
-            let gmList = fs.readdirSync(gmFolderPath);
-            gmList = gmList.filter(gm => gm.includes('.drawio'));
-            gmList.forEach(gm => {
-                let fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(gmFolderPath, gm));
-                fileWatcher.onDidChange(() => {
-                    this.refresh();
-                });
-            });
-        }
+    _extensionUri;
+    _rootPath;
+    static viewType = 'goalModel.goalTree';
+    _view;
+    constructor(_extensionUri, _rootPath) {
+        this._extensionUri = _extensionUri;
+        this._rootPath = _rootPath;
     }
-    refresh() {
-        this._onDidChangeTreeData.fire();
-    }
-    getTreeItem(element) {
-        return element;
-    }
-    // GetChildren should be triggered by the click on the mission to get the goals;
-    getChildren(element) {
-        if (!this.workspaceRoot) {
-            vscode.window.showInformationMessage('No goal models in empty workspace');
-            return Promise.resolve([]);
-        }
-        if (element) {
-            if (element instanceof Node) {
-                return Promise.resolve(element.attributes);
+    resolveWebviewView(webviewView, context, _token) {
+        this._view = webviewView;
+        webviewView.webview.options = {
+            // Allow scripts in the webview
+            enableScripts: true,
+            localResourceRoots: [
+                this._extensionUri
+            ]
+        };
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        webviewView.webview.onDidReceiveMessage(data => {
+            switch (data.type) {
+                case 'colorSelected':
+                    {
+                        vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(`#${data.value}`));
+                        break;
+                    }
             }
-            else {
-                return Promise.resolve(element.nodes);
-            }
-            // TODO: implement goal recursive getter
-            // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
-        }
-        else {
-            const gmFolderPath = path.join(this.workspaceRoot, 'gm');
-            if (this.pathExists(gmFolderPath)) {
-                return Promise.resolve(this.getMissionsInGoalModelFolder(gmFolderPath));
-            }
-            return Promise.resolve([]);
-        }
+        });
     }
-    // Should return all the missions inside a GoalModel
-    // TODO: parse the goal model in a hierarchical way
+    _getHtmlForWebview(webview) {
+        // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
+        // Do the same for the stylesheet.
+        const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
+        const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
+        const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
+        let elements = [];
+        const gmFolderPath = path.join(this._rootPath, 'gm');
+        if (this.pathExists(gmFolderPath)) {
+            elements = this.getMissionsInGoalModelFolder(gmFolderPath);
+        }
+        // Use a nonce to only allow a specific script to be run.
+        const nonce = getNonce();
+        return `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+
+				<!--
+					Use a content security policy to only allow loading styles from our extension directory,
+					and only allow scripts that have a specific nonce.
+					(See the 'webview-sample' extension sample for img-src content security policy examples)
+				-->
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+				<link href="${styleResetUri}" rel="stylesheet">
+				<link href="${styleVSCodeUri}" rel="stylesheet">
+				<link href="${styleMainUri}" rel="stylesheet">
+
+				<title>Cat Colors</title>
+			</head>
+			<body>
+				<p>
+				${elements[0].name}
+				</p>
+			</body>
+			</html>`;
+    }
+    pathExists(path) {
+        try {
+            fs.accessSync(path);
+        }
+        catch (err) {
+            return false;
+        }
+        return true;
+    }
     getMissionsInGoalModelFolder(gmFolderPath) {
-        const workspaceRoot = this.workspaceRoot;
+        const workspaceRoot = this._rootPath;
         if (this.pathExists(gmFolderPath) && workspaceRoot) {
             let gmList = fs.readdirSync(gmFolderPath);
             gmList = gmList.filter(gm => gm.includes('.drawio'));
@@ -90,18 +118,16 @@ class GoalModelProvider {
         }
         return [];
     }
-    // Check if path exists
-    pathExists(path) {
-        try {
-            fs.accessSync(path);
-        }
-        catch (err) {
-            return false;
-        }
-        return true;
-    }
 }
 exports.GoalModelProvider = GoalModelProvider;
+function getNonce() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
 class NodeAttr extends vscode.TreeItem {
     attrName;
     attrValue;
@@ -141,16 +167,16 @@ class Mission extends vscode.TreeItem {
     missionNumber;
     collapsibleState;
     filePath;
-    customId;
+    missionId;
     nodes;
     command;
-    constructor(name, missionNumber, collapsibleState, filePath, customId, nodes, command) {
+    constructor(name, missionNumber, collapsibleState, filePath, missionId, nodes, command) {
         super(name, collapsibleState);
         this.name = name;
         this.missionNumber = missionNumber;
         this.collapsibleState = collapsibleState;
         this.filePath = filePath;
-        this.customId = customId;
+        this.missionId = missionId;
         this.nodes = nodes;
         this.command = command;
         this.tooltip = `${missionNumber}-${this.name}`;
@@ -159,4 +185,4 @@ class Mission extends vscode.TreeItem {
     contextValue = 'mission';
 }
 exports.Mission = Mission;
-//# sourceMappingURL=goalModel.js.map
+//# sourceMappingURL=webview.bkp.js.map

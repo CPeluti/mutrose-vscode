@@ -9,7 +9,19 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
     private _onDidChangeTreeData: vscode.EventEmitter<Mission | Node | NodeAttr |undefined | void> = new vscode.EventEmitter<Mission | Node | NodeAttr | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<void | Mission | Node | NodeAttr | undefined> = this._onDidChangeTreeData.event;
     
-    constructor(private workspaceRoot: string | undefined){}
+    constructor(private workspaceRoot: string | undefined){
+        const gmFolderPath = path.join(this.workspaceRoot, 'gm');
+        if(this.pathExists(gmFolderPath) && workspaceRoot){
+            let gmList = fs.readdirSync(gmFolderPath);
+            gmList = gmList.filter(gm => gm.includes('.drawio'));
+            gmList.forEach(gm=>{
+                let fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(gmFolderPath, gm))
+                fileWatcher.onDidChange(()=>{
+                    this.refresh();
+                })
+            })
+        }
+    }
 
     refresh(): void{
         this._onDidChangeTreeData.fire();
@@ -122,7 +134,7 @@ export class Mission extends vscode.TreeItem {
         private readonly missionNumber: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly filePath: string,
-        public readonly missionId: string,
+        public readonly customId: string,
         public readonly nodes: Node[],
         public readonly command?: vscode.Command
     ){

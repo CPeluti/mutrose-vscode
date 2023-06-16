@@ -14,6 +14,8 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
+import { freemem } from 'os';
+import { GoalModel } from './GoalModel';
 
 let client: LanguageClient;
 
@@ -57,6 +59,25 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
+
+	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+
+	const gmProvider = new GoalModelProvider(rootPath);
+
+	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
+
+	const command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
+		gmProvider.refresh();
+	});
+	context.subscriptions.push(command2);
+
+	// const provider = new GoalModelProvider(context.extensionUri, rootPath);
+
+	// context.subscriptions.push(
+	// 	vscode.window.registerWebviewViewProvider(GoalModelProvider.viewType, provider)
+	// );
+
 	const gm2DIO = vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
@@ -122,22 +143,28 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(executeMutRose);
 
-	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
-	const gmProvider = new GoalModelProvider(rootPath);
 
-	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
 
-	const command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
-		gmProvider.refresh();
-	});
-	context.subscriptions.push(command2);
 	const command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
 		console.log("TODO");
 	});
 	context.subscriptions.push(command3);
-
+	const editCommand = vscode.commands.registerCommand('goalModel.rename', async (element) => {
+		const newName = await vscode.window.showInputBox({
+			placeHolder: "Type new name",
+			prompt: "Rename selected mission",
+			value: ""
+		});
+		let file = fs.readFileSync(element.filePath).toString()
+		let gm = JSON.parse(convertDIOXML2GM(file))
+		let name = gm.actors[0].text.split(": ")
+		name[1] = newName
+		gm.actors[0].text = name.join(": ")
+		let xml = convertGM2DIOXML(JSON.stringify(gm))
+		fs.writeFileSync(element.filePath, xml)
+	})
+	context.subscriptions.push(editCommand);
 }
 
 export function deactivate(): Thenable<void> | undefined {
