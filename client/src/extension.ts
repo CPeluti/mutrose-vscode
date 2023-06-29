@@ -165,6 +165,44 @@ export function activate(context: vscode.ExtensionContext) {
 		fs.writeFileSync(element.filePath, xml)
 	})
 	context.subscriptions.push(editCommand);
+	const addNewProperty = vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
+		let items: vscode.QuickPickItem[]
+		switch(element.nodeType){
+			case 'goal':
+				items = [
+					{
+						label: "teste goal",
+					}
+				]
+				break
+			case 'task':
+				items = [
+					{
+						label: "teste task",
+					}
+				]
+				break
+		}
+		try{
+			const selected = await vscode.window.showQuickPick(items)
+			let file = fs.readFileSync(element.parent.filePath).toString()
+			let gm = JSON.parse(convertDIOXML2GM(file))
+			let actor = gm.actors.find(actor=> actor.id == element.parent.customId)
+			let node
+			if(actor){
+				node = actor.nodes.find(node=>node.id == element.customId)
+			}
+			if(node){
+				node.customProperties[selected.label] = ''
+			}
+			let xml = convertGM2DIOXML(JSON.stringify(gm))
+			fs.writeFileSync(element.parent.filePath, xml)
+		} catch (e){
+			console.log(e, "erro ao adicionar property")
+		}
+		
+	})
+	context.subscriptions.push(addNewProperty);
 }
 
 export function deactivate(): Thenable<void> | undefined {

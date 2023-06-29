@@ -68,15 +68,17 @@ export class GoalModelProvider implements vscode.TreeDataProvider<Mission | Node
                     const parsedText = actor.text.split(': ');
                     return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes};
                 });
+                const mission = new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, []);
                 const nodes = info[0].nodes.map(node=>{
                     const [name,tag] = node.text.split(': ');
                     const customProperties = Object.keys(node.customProperties).map(key => {
                         return {[key]: node.customProperties[key]};
                     });
                     const attributes = [...customProperties, {type: node.type}].map((attribute) => new NodeAttr(Object.keys(attribute)[0],Object.values(attribute)[0],vscode.TreeItemCollapsibleState.None));
-                    return new Node(name, attributes, vscode.TreeItemCollapsibleState.Collapsed, tag);
+                    return new Node(name, attributes, vscode.TreeItemCollapsibleState.Collapsed, tag,(name.startsWith("AT")? "task" : "goal"), mission, node.id);
                 });
-                return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
+                mission.setNodes(nodes)
+                return mission
             };
             const gmsDIO: {gm:string,filePath:string}[] = gmList.map(gm=>{
                 return {gm:fs.readFileSync(path.join(gmFolderPath, gm)).toString(), filePath: path.join(gmFolderPath, gm)};
@@ -121,12 +123,16 @@ export class Node extends vscode.TreeItem {
         public readonly attributes: NodeAttr[],
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly tag: string,
+        public readonly nodeType: string,
+        public readonly parent: Mission,
+        public readonly customId: string,
         public readonly command?: vscode.Command
     ){
         super(name, collapsibleState);
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
     }
+    contextValue = 'node';
 }
 export class Mission extends vscode.TreeItem {
     constructor(
@@ -135,12 +141,18 @@ export class Mission extends vscode.TreeItem {
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly filePath: string,
         public readonly customId: string,
-        public readonly nodes: Node[],
+        public nodes: Node[],
         public readonly command?: vscode.Command
     ){
         super(name, collapsibleState);
         this.tooltip = `${missionNumber}-${this.name}`;
         this.description = this.missionNumber;
+    }
+    addNode(node: Node){
+        this.nodes.push(node)
+    }
+    setNodes(nodes: Node[]){
+        this.nodes = nodes
     }
     contextValue = 'mission';
 }

@@ -67,15 +67,17 @@ class GoalModelProvider {
                     const parsedText = actor.text.split(': ');
                     return { name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes };
                 });
+                const mission = new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, []);
                 const nodes = info[0].nodes.map(node => {
                     const [name, tag] = node.text.split(': ');
                     const customProperties = Object.keys(node.customProperties).map(key => {
                         return { [key]: node.customProperties[key] };
                     });
                     const attributes = [...customProperties, { type: node.type }].map((attribute) => new NodeAttr(Object.keys(attribute)[0], Object.values(attribute)[0], vscode.TreeItemCollapsibleState.None));
-                    return new Node(name, attributes, vscode.TreeItemCollapsibleState.Collapsed, tag);
+                    return new Node(name, attributes, vscode.TreeItemCollapsibleState.Collapsed, tag, (name.startsWith("AT") ? "task" : "goal"), mission, node.id);
                 });
-                return new Mission(info[0].name, info[0].missionNumber, vscode.TreeItemCollapsibleState.Collapsed, filePath, info[0].id, nodes);
+                mission.setNodes(nodes);
+                return mission;
             };
             const gmsDIO = gmList.map(gm => {
                 return { gm: fs.readFileSync(path.join(gmFolderPath, gm)).toString(), filePath: path.join(gmFolderPath, gm) };
@@ -123,17 +125,24 @@ class Node extends vscode.TreeItem {
     attributes;
     collapsibleState;
     tag;
+    nodeType;
+    parent;
+    customId;
     command;
-    constructor(name, attributes, collapsibleState, tag, command) {
+    constructor(name, attributes, collapsibleState, tag, nodeType, parent, customId, command) {
         super(name, collapsibleState);
         this.name = name;
         this.attributes = attributes;
         this.collapsibleState = collapsibleState;
         this.tag = tag;
+        this.nodeType = nodeType;
+        this.parent = parent;
+        this.customId = customId;
         this.command = command;
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
     }
+    contextValue = 'node';
 }
 exports.Node = Node;
 class Mission extends vscode.TreeItem {
@@ -155,6 +164,12 @@ class Mission extends vscode.TreeItem {
         this.command = command;
         this.tooltip = `${missionNumber}-${this.name}`;
         this.description = this.missionNumber;
+    }
+    addNode(node) {
+        this.nodes.push(node);
+    }
+    setNodes(nodes) {
+        this.nodes = nodes;
     }
     contextValue = 'mission';
 }

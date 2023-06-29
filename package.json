@@ -57,10 +57,25 @@
 					"command": "gm-parser.execMutRose",
 					"when": "viewItem == mission",
 					"group": "navigation"
+				},
+				{
+					"command": "goalModel.rename",
+					"when": "viewItem == mission",
+					"group": "navigation"
+				},
+				{
+					"command": "goalModel.addProperty",
+					"when": "viewItem == node",
+					"group": "navigation"
 				}
 			]
+			
 		},
 		"commands": [
+			{
+				"command": "goalModel.rename",
+				"title": "Rename"
+			},
 			{
 				"command": "gm-parser.execMutRose",
 				"title": "Decompose with MutRoSe"
@@ -68,6 +83,10 @@
 			{
 				"command": "goalModel.createNewMission",
 				"title": "Create Mission"
+			},
+			{
+				"command": "goalModel.addProperty",
+				"title": "Add new property"
 			},
 			{
 				"command": "goalModel.refreshModels",
