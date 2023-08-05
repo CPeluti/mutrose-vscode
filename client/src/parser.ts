@@ -1,6 +1,6 @@
 import * as parser from 'xml-js';
 import * as fs from 'fs';
-import { Actor, Node, Link } from './GoalModel';
+import { Actor, Node, Link, GoalModel } from './GoalModel';
 import gmDIOElements from './elements/xml_elements';
 
 function convertJS2XML(obj: { object: { _attributes: any; _text: any; } | { _attributes: any; _text: any; }; }, cmp=false){
@@ -120,7 +120,7 @@ export function convertGM2DIOXML(input: string){
     return output;
 }
 //set text on mission
-export function convertDIOXML2GM(input: string){
+export function convertDIOXML2GM(input: string):GoalModel{
     let gm = parser.xml2js(input);
     gm = gm.elements[0].elements[0].elements[0];
     const size = [parseInt(gm.attributes.pageWidth), parseInt(gm.attributes.pageHeight)];
@@ -146,5 +146,5 @@ export function convertDIOXML2GM(input: string){
             parsedGm.links.push(link);
         }
     });
-    return JSON.stringify(parsedGm);
+    return parsedGm;
 }

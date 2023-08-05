@@ -101,7 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const text = vscode.window.activeTextEditor?.document.getText();
 		let res: string;
 		if (text) {
-			res = convertDIOXML2GM(text);
+			res = JSON.stringify(convertDIOXML2GM(text));
 		}
 		vscode.window.activeTextEditor?.edit(builder => {
 			const doc = vscode.window.activeTextEditor?.document;
@@ -117,14 +117,14 @@ export function activate(context: vscode.ExtensionContext) {
 		const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 		const showInfo = vscode.window.showInformationMessage;
 		if (!fs.existsSync(cfg.hddlPath)) {
-			showInfo("hddl file doesn't exists");
+			showInfo("hddl file doesn't exists!");
 			return;
 		} else if (!fs.existsSync(cfg.configPath)) {
 			showInfo("config file doesn't exists");
 			return;
 		}
 		const xml: string = fs.readFileSync(element.filePath).toString()
-		const gmJson = convertDIOXML2GM(xml);
+		const gmJson = JSON.stringify(convertDIOXML2GM(xml));
 		fs.writeFileSync('./temp.txt',gmJson);
 		child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p` , (error, stdout, stderr) => {
 			if(error){
@@ -157,7 +157,7 @@ export function activate(context: vscode.ExtensionContext) {
 			value: ""
 		});
 		let file = fs.readFileSync(element.filePath).toString()
-		let gm = JSON.parse(convertDIOXML2GM(file))
+		let gm = convertDIOXML2GM(file)
 		let name = gm.actors[0].text.split(": ")
 		name[1] = newName
 		gm.actors[0].text = name.join(": ")
@@ -165,20 +165,23 @@ export function activate(context: vscode.ExtensionContext) {
 		fs.writeFileSync(element.filePath, xml)
 	})
 	context.subscriptions.push(editCommand);
+	
 	const addNewProperty = vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
 		let items: vscode.QuickPickItem[]
 		switch(element.nodeType){
 			case 'goal':
 				items = [
 					{
-						label: "teste goal",
+						label: "teste",
+						description: "goal"
 					}
 				]
 				break
 			case 'task':
 				items = [
 					{
-						label: "teste task",
+						label: "teste",
+						description: "task"
 					}
 				]
 				break
@@ -186,7 +189,7 @@ export function activate(context: vscode.ExtensionContext) {
 		try{
 			const selected = await vscode.window.showQuickPick(items)
 			let file = fs.readFileSync(element.parent.filePath).toString()
-			let gm = JSON.parse(convertDIOXML2GM(file))
+			let gm = convertDIOXML2GM(file)
 			let actor = gm.actors.find(actor=> actor.id == element.parent.customId)
 			let node
 			if(actor){
@@ -203,6 +206,13 @@ export function activate(context: vscode.ExtensionContext) {
 		
 	})
 	context.subscriptions.push(addNewProperty);
+
+	const deleteProperty = vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
+		const node = element.node;
+		node.attributes = node.attributes.filter(attr => attr != element)
+		console.log(node.mission)
+	})
+	context.subscriptions.push(deleteProperty)
 }
 
 export function deactivate(): Thenable<void> | undefined {

@@ -138,7 +138,7 @@ function convertDIOXML2GM(input) {
             parsedGm.links.push(link);
         }
     });
-    return JSON.stringify(parsedGm);
+    return parsedGm;
 }
 exports.convertDIOXML2GM = convertDIOXML2GM;
 //# sourceMappingURL=parser.js.map

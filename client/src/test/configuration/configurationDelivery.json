@@ -2,13 +2,13 @@
     "world_db": {
         "type": "file",
         "file_type": "xml",
-        "path": "/home/caio/unb/pibic/gm-parser/client/src/test/knowledge/world_db.xml",
+        "path": "/home/caio/projetos/les/parserGMXML/client/src/test/knowledge/world_db.xml",
         "xml_root": "world_db"
     },
 
     "output": {
         "output_type": "file",
-        "file_path": "/home/caio/unb/pibic/gm-parser/client/src/test/output/task_outputDelivery.json",
+        "file_path": "/home/caio/projetos/les/parserGMXML/client/src/test/output/task_outputDelivery.json",
         "file_type": "json"
     },
 

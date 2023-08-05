@@ -72,7 +72,7 @@ function activate(context) {
         const text = vscode.window.activeTextEditor?.document.getText();
         let res;
         if (text) {
-            res = (0, parser_1.convertDIOXML2GM)(text);
+            res = JSON.stringify((0, parser_1.convertDIOXML2GM)(text));
         }
         vscode.window.activeTextEditor?.edit(builder => {
             const doc = vscode.window.activeTextEditor?.document;
@@ -87,7 +87,7 @@ function activate(context) {
         const cfg = vscode.workspace.getConfiguration().get('gmParser');
         const showInfo = vscode.window.showInformationMessage;
         if (!fs.existsSync(cfg.hddlPath)) {
-            showInfo("hddl file doesn't exists");
+            showInfo("hddl file doesn't exists!");
             return;
         }
         else if (!fs.existsSync(cfg.configPath)) {
@@ -95,7 +95,7 @@ function activate(context) {
             return;
         }
         const xml = fs.readFileSync(element.filePath).toString();
-        const gmJson = (0, parser_1.convertDIOXML2GM)(xml);
+        const gmJson = JSON.stringify((0, parser_1.convertDIOXML2GM)(xml));
         fs.writeFileSync('./temp.txt', gmJson);
         child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p`, (error, stdout, stderr) => {
             if (error) {
@@ -125,7 +125,7 @@ function activate(context) {
             value: ""
         });
         let file = fs.readFileSync(element.filePath).toString();
-        let gm = JSON.parse((0, parser_1.convertDIOXML2GM)(file));
+        let gm = (0, parser_1.convertDIOXML2GM)(file);
         let name = gm.actors[0].text.split(": ");
         name[1] = newName;
         gm.actors[0].text = name.join(": ");
@@ -139,14 +139,16 @@ function activate(context) {
             case 'goal':
                 items = [
                     {
-                        label: "teste goal",
+                        label: "teste",
+                        description: "goal"
                     }
                 ];
                 break;
             case 'task':
                 items = [
                     {
-                        label: "teste task",
+                        label: "teste",
+                        description: "task"
                     }
                 ];
                 break;
@@ -154,7 +156,7 @@ function activate(context) {
         try {
             const selected = await vscode.window.showQuickPick(items);
             let file = fs.readFileSync(element.parent.filePath).toString();
-            let gm = JSON.parse((0, parser_1.convertDIOXML2GM)(file));
+            let gm = (0, parser_1.convertDIOXML2GM)(file);
             let actor = gm.actors.find(actor => actor.id == element.parent.customId);
             let node;
             if (actor) {
@@ -171,6 +173,12 @@ function activate(context) {
         }
     });
     context.subscriptions.push(addNewProperty);
+    const deleteProperty = vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
+        const node = element.node;
+        node.attributes = node.attributes.filter(attr => attr != element);
+        console.log(node.mission);
+    });
+    context.subscriptions.push(deleteProperty);
 }
 exports.activate = activate;
 function deactivate() {

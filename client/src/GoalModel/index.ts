@@ -13,7 +13,7 @@ export interface GoalModel {
 }
 
 export interface Actor extends Node {
-    nodes: Node[]
+    nodes: Node[],
 }
 
 export type NodeType = 'istar.Task' | 'istar.Goal' | 'istar.Actor';
