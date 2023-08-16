@@ -73,9 +73,9 @@ export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mi
                 return {gm: res as gmTypes.GoalModel, filePath};
             });
             const goalModels = gms.map((gm:{gm:gmTypes.GoalModel, filePath:string}) => {
-                console.log(gm.gm)
-                const goalModel = new GoalModel(gm.filePath, vscode.TreeItemCollapsibleState.Collapsed,gm.gm, gm.filePath)
-                console.log(goalModel)
+                
+                const gmName = gm.filePath.replace(/(^.*[\\\/])|(\.drawio)/gi, '')
+                const goalModel = new GoalModel(gmName, vscode.TreeItemCollapsibleState.Collapsed,gm.gm, gm.filePath)
                 return goalModel
             })
             return goalModels;
@@ -94,6 +94,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mi
 }
 
 export class NodeAttr extends vscode.TreeItem {
+    contextValue = 'attribute';
     constructor(
         public readonly attrName: string,
         public readonly attrValue: string,
@@ -106,10 +107,10 @@ export class NodeAttr extends vscode.TreeItem {
         this.tooltip = `${this.attrName}-${this.attrValue}`;
         this.description = attrName;
     }
-    contextValue = 'attribute';
 }
 
 export class Node extends vscode.TreeItem {
+    contextValue = 'node';
     constructor(
         public readonly name: string,
         public attributes: NodeAttr[],
@@ -118,40 +119,73 @@ export class Node extends vscode.TreeItem {
         public readonly nodeType: string,
         public readonly mission: Mission,
         public readonly customId: string,
+        public pos: {x: number, y: number},
         public readonly command?: vscode.Command
     ){
         super(name, collapsibleState);
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
     }
-    contextValue = 'node';
     parseNode(): gmTypes.Node {
-        return;
+        const customProperties: Record<string,string> = this.attributes.filter(el => el.custom == true).reduce((acc, el)=>{
+            acc[el.attrName] = el.attrValue
+            return acc
+        },{})
+        return {
+            id: this.customId,
+            text: `${this.name}: ${this.description}`,
+            x: this.pos.x,
+            y: this.pos.y,
+            type: `istar.${this.nodeType}` as gmTypes.NodeType,
+            customProperties: customProperties
+        };
+    }
+    addAttribute(tag, value){
+        const newAttr = new NodeAttr(tag, value, true, vscode.TreeItemCollapsibleState.None, this)
+        this.attributes.push(newAttr)
+        try{
+            this.mission.goalModel.saveGoalModel()
+            return
+        } catch (e){
+            return e;
+        }
+    }
+    removeAttribute(tag){
+		this.attributes = this.attributes.filter(attr => attr != tag)
+        try{
+            this.mission.goalModel.saveGoalModel()
+            return
+        } catch (e){
+            return e;
+        } 
     }
 }
 
 export class Mission extends vscode.TreeItem {
+    contextValue = 'mission';
     public nodes: Node[]
     constructor(
         public readonly name: string,
         private readonly missionNumber: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly customId: string,
+        public readonly goalModel: GoalModel,
         private nodesToInstatiate: gmTypes.Node[],
         public pos: {x: number, y: number},
+        public readonly customProperties: Record<string,string>,
         public readonly command?: vscode.Command
     ){
         super(name, collapsibleState);
         this.tooltip = `${missionNumber}-${this.name}`;
-        this.description = this.missionNumber;
+        this.description = this.customProperties.description;
 
         const nodes = nodesToInstatiate.map(node=>{
             const [name,tag] = node.text.split(': ');
-            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag,(name.startsWith("AT")? "task" : "goal"), this, node.id);
+            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag,(name.startsWith("AT")? "Task" : "Goal"), this, node.id, {x: node.x, y:node.y});
             const customProperties= Object.keys(node.customProperties).map(key => {
                 return new NodeAttr(key,node.customProperties[key], true,vscode.TreeItemCollapsibleState.None, nodeInst)
             });
-            const attributes = [...customProperties, new NodeAttr("type",node.type, true,vscode.TreeItemCollapsibleState.None, nodeInst)]
+            const attributes = [...customProperties, new NodeAttr("type",node.type, false,vscode.TreeItemCollapsibleState.None, nodeInst)]
                 
             nodeInst.attributes = attributes;
             return nodeInst;
@@ -159,7 +193,8 @@ export class Mission extends vscode.TreeItem {
         this.nodes = nodes;
     }
     parseToActor(): gmTypes.Actor{
-        let actor: gmTypes.Actor;
+        let actor: gmTypes.Actor = {} as gmTypes.Actor;
+        actor.customProperties = this.customProperties
         actor.id = this.customId;
         actor.nodes = this.parseNodes();
         actor.text = `${this.missionNumber}: ${this.name}`;
@@ -177,10 +212,10 @@ export class Mission extends vscode.TreeItem {
     setNodes(nodes: Node[]){
         this.nodes = nodes
     }
-    contextValue = 'mission';
 }
 
 export class GoalModel extends vscode.TreeItem{
+    contextValue = 'goalModel'
     public actors: gmTypes.Actor[]
     public missions: Mission[]
     public orphans: never[]
@@ -199,7 +234,7 @@ export class GoalModel extends vscode.TreeItem{
     ){
         super(name, collapsibleState);
         this.tooltip = `${this.name}`;
-        this.description = this.name;
+        this.description = this.filePath;
         this.actors = gm.actors
         this.links = gm.links
         this.display = gm.display
@@ -207,13 +242,15 @@ export class GoalModel extends vscode.TreeItem{
         this.istar = gm.istar
         this.saveDate = gm.saveDate
         this.diagram = gm.diagram
+        this.orphans = []
+        this.dependencies=[]
 
         const actors = gm.actors;
         const info = actors.map(actor=>{
             const parsedText = actor.text.split(': ');
-            return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: {x: actor.x, y: actor.y}};
+            return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: {x: actor.x, y: actor.y}, customProperties: actor.customProperties};
         });
-        this.missions = info.map(info => new Mission(info.name, info.missionNumber, vscode.TreeItemCollapsibleState.Collapsed, info.id, info.nodes, info.pos));
+        this.missions = info.map(info => new Mission(info.name, info.missionNumber, vscode.TreeItemCollapsibleState.Collapsed, info.id, this,info.nodes, info.pos, info.customProperties));
         
     }
     parseMissions(): gmTypes.Actor[]{
@@ -231,5 +268,10 @@ export class GoalModel extends vscode.TreeItem{
             saveDate: this.saveDate,
             diagram: this.diagram
         }
+    }
+    public saveGoalModel(){
+        const gm = this.parseToGm()
+        const xml = convertGM2DIOXML(JSON.stringify(gm))
+        fs.writeFileSync(this.filePath, xml)
     }
 }

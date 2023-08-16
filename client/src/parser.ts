@@ -65,8 +65,8 @@ function convertActors2DIO(gm: { actors: Actor[]; }){
         });
 
         // Removing customProperties and substituting with MR_Properties
-        const {customProperties: cp, ...newActor} = actor;
-        const customProperties = Object.entries(cp).reduce((propAcc, [key, value]) => {
+        let {customProperties, ...newActor} = actor;
+        customProperties = Object.entries(customProperties).reduce((propAcc, [key, value]) => {
             if(key === 'text'){
                 return {...propAcc, label: value};
             }
@@ -107,7 +107,6 @@ export function convertGM2DIOXML(input: string){
     const gm = JSON.parse(input);
     const res = convertActors2DIO(gm);
     const resLinks = convertLinks2DIO(gm);
-
     const actors = res.actors.map(actor=>{
         const {nodes, ...newActor} = actor;
         const style = gmDIOElements.actor;
@@ -116,16 +115,18 @@ export function convertGM2DIOXML(input: string){
     let output = `<mxfile host="65bd71144e">\n<diagram id="JPszrsa7NkP3LcdA_txE" name="Página-1">\n<mxGraphModel dx="322" dy="417" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="${gm.diagram.width}" pageHeight="${gm.diagram.height}" math="0" shadow="0">\n<root>\n<mxCell id="0"/>\n
     <mxCell id="1" parent="0"/>\n`;
     output += "\n" +actors.join('\n')+'\n'+ res.nodes.join('\n')+'\n'+resLinks.join('\n')+'\n';
-    output += '</root>\n</mxGraphModel>\n</diagram>\n</mxfile>';
+    output += '</root>\n</mxGraphModel>\n</diagram>\n</mxfile>\n<fileInfo teste="teste"></fileInfo>';
     return output;
 }
 //set text on mission
 export function convertDIOXML2GM(input: string):GoalModel{
     let gm = parser.xml2js(input);
+    const fileInfo = gm.elements[1]
     gm = gm.elements[0].elements[0].elements[0];
     const size = [parseInt(gm.attributes.pageWidth), parseInt(gm.attributes.pageHeight)];
     const nodes = gm.elements[0].elements;
-    const parsedGm: any = {actors: [], orphans:[], dependencies:[], links:[], display: [], diagram: {width:size[0], height: size[1]}};
+    const parsedGm: GoalModel = {actors: [], orphans:[], dependencies:[], links:[], display: [], diagram: {width:size[0], height: size[1]}, ...fileInfo.attributes};
+    
     nodes.forEach((node: any)=>{
         const type = node.attributes.type;
         if(['istar.Goal','istar.Task'].includes(type)){

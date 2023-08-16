@@ -83,7 +83,6 @@ function activate(context) {
     });
     context.subscriptions.push(DIO2gm);
     const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', (element) => {
-        console.log(element);
         const cfg = vscode.workspace.getConfiguration().get('gmParser');
         const showInfo = vscode.window.showInformationMessage;
         if (!fs.existsSync(cfg.hddlPath)) {
@@ -99,7 +98,7 @@ function activate(context) {
         fs.writeFileSync('./temp.txt', gmJson);
         child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p`, (error, stdout, stderr) => {
             if (error) {
-                showInfo(`Error: ${stdout}`);
+                showInfo(`Error: ${error}`);
             }
             else {
                 showInfo(`GM decomposto com sucesso`);
@@ -107,7 +106,7 @@ function activate(context) {
                 mutrose.append(stdout);
                 mutrose.show();
             }
-            fs.unlinkSync('./temp.txt');
+            // fs.unlinkSync('./temp.txt');
         });
         // const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
         // terminal.sendText("touch test.txt");
@@ -136,7 +135,7 @@ function activate(context) {
     const addNewProperty = vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
         let items;
         switch (element.nodeType) {
-            case 'goal':
+            case 'Goal':
                 items = [
                     {
                         label: "teste",
@@ -144,7 +143,7 @@ function activate(context) {
                     }
                 ];
                 break;
-            case 'task':
+            case 'Task':
                 items = [
                     {
                         label: "teste",
@@ -155,18 +154,8 @@ function activate(context) {
         }
         try {
             const selected = await vscode.window.showQuickPick(items);
-            let file = fs.readFileSync(element.parent.filePath).toString();
-            let gm = (0, parser_1.convertDIOXML2GM)(file);
-            let actor = gm.actors.find(actor => actor.id == element.parent.customId);
-            let node;
-            if (actor) {
-                node = actor.nodes.find(node => node.id == element.customId);
-            }
-            if (node) {
-                node.customProperties[selected.label] = '';
-            }
-            let xml = (0, parser_1.convertGM2DIOXML)(JSON.stringify(gm));
-            fs.writeFileSync(element.parent.filePath, xml);
+            element.addAttribute(selected.label, "");
+            element.mission.goalModel.saveGoalModel();
         }
         catch (e) {
             console.log(e, "erro ao adicionar property");
@@ -175,8 +164,7 @@ function activate(context) {
     context.subscriptions.push(addNewProperty);
     const deleteProperty = vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
         const node = element.node;
-        node.attributes = node.attributes.filter(attr => attr != element);
-        console.log(node.mission);
+        node.removeAttribute(element);
     });
     context.subscriptions.push(deleteProperty);
 }

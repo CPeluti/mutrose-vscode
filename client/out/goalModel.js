@@ -72,9 +72,8 @@ class GoalModelProvider {
                 return { gm: res, filePath };
             });
             const goalModels = gms.map((gm) => {
-                console.log(gm.gm);
-                const goalModel = new GoalModel(gm.filePath, vscode.TreeItemCollapsibleState.Collapsed, gm.gm, gm.filePath);
-                console.log(goalModel);
+                const gmName = gm.filePath.replace(/(^.*[\\\/])|(\.drawio)/gi, '');
+                const goalModel = new GoalModel(gmName, vscode.TreeItemCollapsibleState.Collapsed, gm.gm, gm.filePath);
                 return goalModel;
             });
             return goalModels;
@@ -100,6 +99,7 @@ class NodeAttr extends vscode.TreeItem {
     collapsibleState;
     node;
     command;
+    contextValue = 'attribute';
     constructor(attrName, attrValue, custom, collapsibleState, node, command) {
         super(attrValue === "" ? "\"\"" : attrValue, collapsibleState);
         this.attrName = attrName;
@@ -111,7 +111,6 @@ class NodeAttr extends vscode.TreeItem {
         this.tooltip = `${this.attrName}-${this.attrValue}`;
         this.description = attrName;
     }
-    contextValue = 'attribute';
 }
 exports.NodeAttr = NodeAttr;
 class Node extends vscode.TreeItem {
@@ -122,8 +121,10 @@ class Node extends vscode.TreeItem {
     nodeType;
     mission;
     customId;
+    pos;
     command;
-    constructor(name, attributes, collapsibleState, tag, nodeType, mission, customId, command) {
+    contextValue = 'node';
+    constructor(name, attributes, collapsibleState, tag, nodeType, mission, customId, pos, command) {
         super(name, collapsibleState);
         this.name = name;
         this.attributes = attributes;
@@ -132,13 +133,45 @@ class Node extends vscode.TreeItem {
         this.nodeType = nodeType;
         this.mission = mission;
         this.customId = customId;
+        this.pos = pos;
         this.command = command;
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
     }
-    contextValue = 'node';
     parseNode() {
-        return;
+        const customProperties = this.attributes.filter(el => el.custom == true).reduce((acc, el) => {
+            acc[el.attrName] = el.attrValue;
+            return acc;
+        }, {});
+        return {
+            id: this.customId,
+            text: `${this.name}: ${this.description}`,
+            x: this.pos.x,
+            y: this.pos.y,
+            type: `istar.${this.nodeType}`,
+            customProperties: customProperties
+        };
+    }
+    addAttribute(tag, value) {
+        const newAttr = new NodeAttr(tag, value, true, vscode.TreeItemCollapsibleState.None, this);
+        this.attributes.push(newAttr);
+        try {
+            this.mission.goalModel.saveGoalModel();
+            return;
+        }
+        catch (e) {
+            return e;
+        }
+    }
+    removeAttribute(tag) {
+        this.attributes = this.attributes.filter(attr => attr != tag);
+        try {
+            this.mission.goalModel.saveGoalModel();
+            return;
+        }
+        catch (e) {
+            return e;
+        }
     }
 }
 exports.Node = Node;
@@ -147,35 +180,41 @@ class Mission extends vscode.TreeItem {
     missionNumber;
     collapsibleState;
     customId;
+    goalModel;
     nodesToInstatiate;
     pos;
+    customProperties;
     command;
+    contextValue = 'mission';
     nodes;
-    constructor(name, missionNumber, collapsibleState, customId, nodesToInstatiate, pos, command) {
+    constructor(name, missionNumber, collapsibleState, customId, goalModel, nodesToInstatiate, pos, customProperties, command) {
         super(name, collapsibleState);
         this.name = name;
         this.missionNumber = missionNumber;
         this.collapsibleState = collapsibleState;
         this.customId = customId;
+        this.goalModel = goalModel;
         this.nodesToInstatiate = nodesToInstatiate;
         this.pos = pos;
+        this.customProperties = customProperties;
         this.command = command;
         this.tooltip = `${missionNumber}-${this.name}`;
-        this.description = this.missionNumber;
+        this.description = this.customProperties.description;
         const nodes = nodesToInstatiate.map(node => {
             const [name, tag] = node.text.split(': ');
-            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag, (name.startsWith("AT") ? "task" : "goal"), this, node.id);
+            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag, (name.startsWith("AT") ? "Task" : "Goal"), this, node.id, { x: node.x, y: node.y });
             const customProperties = Object.keys(node.customProperties).map(key => {
                 return new NodeAttr(key, node.customProperties[key], true, vscode.TreeItemCollapsibleState.None, nodeInst);
             });
-            const attributes = [...customProperties, new NodeAttr("type", node.type, true, vscode.TreeItemCollapsibleState.None, nodeInst)];
+            const attributes = [...customProperties, new NodeAttr("type", node.type, false, vscode.TreeItemCollapsibleState.None, nodeInst)];
             nodeInst.attributes = attributes;
             return nodeInst;
         });
         this.nodes = nodes;
     }
     parseToActor() {
-        let actor;
+        let actor = {};
+        actor.customProperties = this.customProperties;
         actor.id = this.customId;
         actor.nodes = this.parseNodes();
         actor.text = `${this.missionNumber}: ${this.name}`;
@@ -193,13 +232,13 @@ class Mission extends vscode.TreeItem {
     setNodes(nodes) {
         this.nodes = nodes;
     }
-    contextValue = 'mission';
 }
 exports.Mission = Mission;
 class GoalModel extends vscode.TreeItem {
     name;
     collapsibleState;
     filePath;
+    contextValue = 'goalModel';
     actors;
     missions;
     orphans;
@@ -216,7 +255,7 @@ class GoalModel extends vscode.TreeItem {
         this.collapsibleState = collapsibleState;
         this.filePath = filePath;
         this.tooltip = `${this.name}`;
-        this.description = this.name;
+        this.description = this.filePath;
         this.actors = gm.actors;
         this.links = gm.links;
         this.display = gm.display;
@@ -224,12 +263,14 @@ class GoalModel extends vscode.TreeItem {
         this.istar = gm.istar;
         this.saveDate = gm.saveDate;
         this.diagram = gm.diagram;
+        this.orphans = [];
+        this.dependencies = [];
         const actors = gm.actors;
         const info = actors.map(actor => {
             const parsedText = actor.text.split(': ');
-            return { name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: { x: actor.x, y: actor.y } };
+            return { name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: { x: actor.x, y: actor.y }, customProperties: actor.customProperties };
         });
-        this.missions = info.map(info => new Mission(info.name, info.missionNumber, vscode.TreeItemCollapsibleState.Collapsed, info.id, info.nodes, info.pos));
+        this.missions = info.map(info => new Mission(info.name, info.missionNumber, vscode.TreeItemCollapsibleState.Collapsed, info.id, this, info.nodes, info.pos, info.customProperties));
     }
     parseMissions() {
         return this.missions.map(mission => mission.parseToActor());
@@ -246,6 +287,11 @@ class GoalModel extends vscode.TreeItem {
             saveDate: this.saveDate,
             diagram: this.diagram
         };
+    }
+    saveGoalModel() {
+        const gm = this.parseToGm();
+        const xml = (0, parser_1.convertGM2DIOXML)(JSON.stringify(gm));
+        fs.writeFileSync(this.filePath, xml);
     }
 }
 exports.GoalModel = GoalModel;
