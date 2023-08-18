@@ -111,6 +111,8 @@ export class NodeAttr extends vscode.TreeItem {
 
 export class Node extends vscode.TreeItem {
     contextValue = 'node';
+    terminal = false
+    decompositions: Array<string> = []
     constructor(
         public readonly name: string,
         public attributes: NodeAttr[],
@@ -123,6 +125,28 @@ export class Node extends vscode.TreeItem {
         public readonly command?: vscode.Command
     ){
         super(name, collapsibleState);
+        const runtimeAnnotation = tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
+        let type: "and"|"or"|"fallback"| undefined;
+        if(runtimeAnnotation){
+            const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
+            switch(separator){
+                case ';':
+                    type = "and"
+                    break;
+                case ',':
+                    type = "fallback"
+                    break;
+                case '#':
+                    type = "and"
+                    break;
+            }
+        } else {
+            this.terminal = true
+        }
+        console.log(type, this.terminal)
+        if(!this.terminal){
+            this.decompositions = runtimeAnnotation[0].split(/;|,|#/g)
+        }
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
     }

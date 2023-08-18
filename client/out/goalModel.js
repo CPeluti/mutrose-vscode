@@ -124,6 +124,8 @@ class Node extends vscode.TreeItem {
     pos;
     command;
     contextValue = 'node';
+    terminal = false;
+    decompositions = [];
     constructor(name, attributes, collapsibleState, tag, nodeType, mission, customId, pos, command) {
         super(name, collapsibleState);
         this.name = name;
@@ -135,6 +137,29 @@ class Node extends vscode.TreeItem {
         this.customId = customId;
         this.pos = pos;
         this.command = command;
+        const runtimeAnnotation = tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
+        let type;
+        if (runtimeAnnotation) {
+            const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
+            switch (separator) {
+                case ';':
+                    type = "and";
+                    break;
+                case ',':
+                    type = "fallback";
+                    break;
+                case '#':
+                    type = "and";
+                    break;
+            }
+        }
+        else {
+            this.terminal = true;
+        }
+        console.log(type, this.terminal);
+        if (!this.terminal) {
+            this.decompositions = runtimeAnnotation[0].split(/;|,|#/g);
+        }
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
     }
