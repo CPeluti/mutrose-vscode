@@ -17,6 +17,7 @@
 		"vscode": "^1.75.0"
 	},
 	"activationEvents": [
+		"onCommand:goalModel.openVue",
 		"onLanguage:plaintext"
 	],
 	"main": "./client/out/extension",
@@ -27,6 +28,11 @@
 				"id": "goal-model",
 				"title": "MutRoSe",
 				"icon": "media/icon.svg"
+			  },
+			  {
+				"id": "vueapp-teste",
+				"title": "vue app",
+				"icon": "$(remote-explorer)"
 			  }
 			]
 		},
@@ -37,6 +43,15 @@
 				"name": "Goal Models",
 				"icon": "media/icon.svg",
 				"contextualTitle": "Goal Model"
+				}
+			],
+			"vueapp-teste": [
+				{
+					"type": "webview",
+					"id": "vueapp-teste:sidebar",
+					"name": "vue app",
+					"icon": "$(remote-explorer)",
+					"contextualTitle": "vue app 2"
 				}
 			]
 		},
@@ -77,6 +92,10 @@
 			
 		},
 		"commands": [
+			{
+				"command": "goalModel.openVue",
+				"title" : "Open Vue"
+			},
 			{
 				"command": "goalModel.rename",
 				"title": "Rename"
@@ -146,6 +165,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
+		"start:webview": "cd webview-ui && npm run dev",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",

@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as child_process from 'child_process';
 import { convertDIOXML2GM, convertGM2DIOXML } from "./parser";
 import { GoalModelProvider } from './goalModel';
+import { SidebarProvider } from './panels/SidebarProvider';
 
 import {
 	LanguageClient,
@@ -14,8 +15,8 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
-import { freemem } from 'os';
-import { GoalModel } from './GoalModel';
+
+import { HelloWorldPanel } from './panels/helloWordPanel';
 
 let client: LanguageClient;
 
@@ -67,140 +68,172 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
 
-	const command2 = vscode.commands.registerCommand('goalModel.refreshModels', () => {
-		gmProvider.refresh();
-	});
-	context.subscriptions.push(command2);
+	
 
+	const commands: Array<vscode.Disposable> = []
+
+	commands.push(
+		vscode.commands.registerCommand('goalModel.refreshModels', () => {
+			gmProvider.refresh();
+		})
+	);
 	// const provider = new GoalModelProvider(context.extensionUri, rootPath);
 
 	// context.subscriptions.push(
 	// 	vscode.window.registerWebviewViewProvider(GoalModelProvider.viewType, provider)
 	// );
 
-	const gm2DIO = vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		const text = vscode.window.activeTextEditor?.document.getText();
-		let res: string;
-		if (text) {
-			res = convertGM2DIOXML(text);
-		}
-		vscode.window.activeTextEditor?.edit(builder => {
-			const doc = vscode.window.activeTextEditor?.document;
-			if (doc) {
-				builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), res);
+
+	// convert goalmodel to draw.io xml command
+	commands.push(
+			vscode.commands.registerCommand('gm-parser.gm2DIO', () => {
+			// The code you place here will be executed every time your command is executed
+			// Display a message box to the user
+			const text = vscode.window.activeTextEditor?.document.getText();
+			let res: string;
+			if (text) {
+				res = convertGM2DIOXML(text);
 			}
-		});
-	});
-	context.subscriptions.push(gm2DIO);
+			vscode.window.activeTextEditor?.edit(builder => {
+				const doc = vscode.window.activeTextEditor?.document;
+				if (doc) {
+					builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), res);
+				}
+			});
+		})
+	);
 
-	const DIO2gm = vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		const text = vscode.window.activeTextEditor?.document.getText();
-		let res: string;
-		if (text) {
-			res = JSON.stringify(convertDIOXML2GM(text));
-		}
-		vscode.window.activeTextEditor?.edit(builder => {
-			const doc = vscode.window.activeTextEditor?.document;
-			if (doc) {
-				builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), res);
+	// convert from draw.io xml to goal model command
+	commands.push(
+		vscode.commands.registerCommand('gm-parser.DIO2gm', () => {
+			// The code you place here will be executed every time your command is executed
+			// Display a message box to the user
+			const text = vscode.window.activeTextEditor?.document.getText();
+			let res: string;
+			if (text) {
+				res = JSON.stringify(convertDIOXML2GM(text));
 			}
-		});
-	});
-	context.subscriptions.push(DIO2gm);
+			vscode.window.activeTextEditor?.edit(builder => {
+				const doc = vscode.window.activeTextEditor?.document;
+				if (doc) {
+					builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), res);
+				}
+			});
+		})
+	)
 
-	const executeMutRose = vscode.commands.registerCommand('gm-parser.execMutRose', (element) => {
-		const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
-		const showInfo = vscode.window.showInformationMessage;
-		if (!fs.existsSync(cfg.hddlPath)) {
-			showInfo("hddl file doesn't exists!");
-			return;
-		} else if (!fs.existsSync(cfg.configPath)) {
-			showInfo("config file doesn't exists");
-			return;
-		}
-		const xml: string = fs.readFileSync(element.filePath).toString()
-		const gmJson = JSON.stringify(convertDIOXML2GM(xml));
-		fs.writeFileSync('./temp.txt',gmJson);
-		child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p` , (error, stdout, stderr) => {
-			if(error){
-				showInfo(`Error: ${error}`);
-			} else {
-				showInfo(`GM decomposto com sucesso`);
-				let mutrose = vscode.window.createOutputChannel('Mutrose')
-				mutrose.append(stdout)
-				mutrose.show()
+	// execute mutrose command
+	commands.push(
+		vscode.commands.registerCommand('gm-parser.execMutRose', (element) => {
+			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
+			const showInfo = vscode.window.showInformationMessage;
+			if (!fs.existsSync(cfg.hddlPath)) {
+				showInfo("hddl file doesn't exists!");
+				return;
+			} else if (!fs.existsSync(cfg.configPath)) {
+				showInfo("config file doesn't exists");
+				return;
 			}
-			// fs.unlinkSync('./temp.txt');
-		});
-		// const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
-		// terminal.sendText("touch test.txt");
-		// terminal.dispose();
-	});
-	context.subscriptions.push(executeMutRose);
+			const xml: string = fs.readFileSync(element.filePath).toString()
+			const gmJson = JSON.stringify(convertDIOXML2GM(xml));
+			fs.writeFileSync('./temp.txt',gmJson);
+			child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p` , (error, stdout, stderr) => {
+				if(error){
+					showInfo(`Error: ${error}`);
+				} else {
+					showInfo(`GM decomposto com sucesso`);
+					let mutrose = vscode.window.createOutputChannel('Mutrose')
+					mutrose.append(stdout)
+					mutrose.show()
+				}
+				// fs.unlinkSync('./temp.txt');
+			});
+			// const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
+			// terminal.sendText("touch test.txt");
+			// terminal.dispose();
+		})
+	)
 
+	// create new mission command
+	commands.push(
+		vscode.commands.registerCommand('goalModel.createNewMission', () => {
+			console.log("TODO");
+		})
+	)
 
+	// rename mission command
+	commands.push(
+		vscode.commands.registerCommand('goalModel.rename', async (element) => {
+			const newName = await vscode.window.showInputBox({
+				placeHolder: "Type new name",
+				prompt: "Rename selected mission",
+				value: ""
+			});
+			let file = fs.readFileSync(element.filePath).toString()
+			let gm = convertDIOXML2GM(file)
+			let name = gm.actors[0].text.split(": ")
+			name[1] = newName
+			gm.actors[0].text = name.join(": ")
+			let xml = convertGM2DIOXML(JSON.stringify(gm))
+			fs.writeFileSync(element.filePath, xml)
+		})
+	);
 
+	// add property to node command
+	commands.push(
+		vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
+			let items: vscode.QuickPickItem[]
+			switch(element.nodeType){
+				case 'Goal':
+					items = [
+						{
+							label: "teste",
+							description: "goal"
+						}
+					]
+					break
+				case 'Task':
+					items = [
+						{
+							label: "teste",
+							description: "task"
+						}
+					]
+					break
+			}
+			try{
+				const selected = await vscode.window.showQuickPick(items)
+				element.addAttribute(selected.label, "")
+				element.mission.goalModel.saveGoalModel()
+			} catch (e){
+				console.log(e, "erro ao adicionar property")
+			}
+			
+		})
+	);
 
-	const command3 = vscode.commands.registerCommand('goalModel.createNewMission', () => {
-		console.log("TODO");
-	});
-	context.subscriptions.push(command3);
-	const editCommand = vscode.commands.registerCommand('goalModel.rename', async (element) => {
-		const newName = await vscode.window.showInputBox({
-			placeHolder: "Type new name",
-			prompt: "Rename selected mission",
-			value: ""
-		});
-		let file = fs.readFileSync(element.filePath).toString()
-		let gm = convertDIOXML2GM(file)
-		let name = gm.actors[0].text.split(": ")
-		name[1] = newName
-		gm.actors[0].text = name.join(": ")
-		let xml = convertGM2DIOXML(JSON.stringify(gm))
-		fs.writeFileSync(element.filePath, xml)
-	})
-	context.subscriptions.push(editCommand);
+	// delete property from node command
+	commands.push(
+		vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
+			const node = element.node;
+			node.removeAttribute(element)
+		})
+	);
+
+	const sidebarProvider = new SidebarProvider(context.extensionUri);
 	
-	const addNewProperty = vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
-		let items: vscode.QuickPickItem[]
-		switch(element.nodeType){
-			case 'Goal':
-				items = [
-					{
-						label: "teste",
-						description: "goal"
-					}
-				]
-				break
-			case 'Task':
-				items = [
-					{
-						label: "teste",
-						description: "task"
-					}
-				]
-				break
-		}
-		try{
-			const selected = await vscode.window.showQuickPick(items)
-			element.addAttribute(selected.label, "")
-			element.mission.goalModel.saveGoalModel()
-		} catch (e){
-			console.log(e, "erro ao adicionar property")
-		}
-		
-	})
-	context.subscriptions.push(addNewProperty);
+	const webviewProvider = vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider)
+	
+	commands.push(webviewProvider);
 
-	const deleteProperty = vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
-		const node = element.node;
-		node.removeAttribute(element)
-	})
-	context.subscriptions.push(deleteProperty)
+	commands.push(
+		vscode.commands.registerCommand('goalModel.openVue', () => {
+			HelloWorldPanel.render(context.extensionUri)
+		})
+	)
+
+	commands.forEach(command=>context.subscriptions.push(command))
+	
 }
 
 export function deactivate(): Thenable<void> | undefined {
