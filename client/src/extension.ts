@@ -6,7 +6,7 @@ import * as fs from 'fs';
 
 import * as child_process from 'child_process';
 import { convertDIOXML2GM, convertGM2DIOXML } from "./parser";
-import { GoalModelProvider } from './goalModel';
+import { GoalModelProvider, NodeRefinement, Refinement } from './goalModel';
 import { SidebarProvider } from './panels/SidebarProvider';
 
 import {
@@ -17,6 +17,7 @@ import {
 } from 'vscode-languageclient/node';
 
 import { HelloWorldPanel } from './panels/helloWorldPanel';
+import { GoalModel } from './GoalModel';
 
 let client: LanguageClient;
 
@@ -227,6 +228,24 @@ export function activate(context: vscode.ExtensionContext) {
 			node.removeAttribute(element)
 		})
 	);
+	commands.push(
+		vscode.commands.registerCommand('goalModel.addRefinement', async (element: NodeRefinement) => {
+			const targetNode = element.node
+			// const items = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
+			// 	return {
+			// 		label: node.name,
+			// 		description: node.customId
+			// 	}
+			// })
+			console.log(targetNode.mission.goalModel.generateNewId())
+		})
+	)
+	commands.push(
+		vscode.commands.registerCommand('goalModel.deleteRefinement', async (element: Refinement)=> {
+			element.refinements.removeRefinement(element)
+			element.refinements.node.mission.goalModel.saveGoalModel()
+		})
+	)
 
 	const sidebarProvider = new SidebarProvider(context.extensionUri);
 	

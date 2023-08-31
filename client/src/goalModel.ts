@@ -79,7 +79,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mi
                 
                 const gmName = gm.filePath.replace(/(^.*[\\\/])|(\.drawio)/gi, '')
                 const goalModel = new GoalModel(gmName, vscode.TreeItemCollapsibleState.Collapsed,gm.gm, gm.filePath)
-                const test = goalModel.parseToGm()
+                // const test = goalModel.parseToGm()
                 return goalModel
 
             })
@@ -114,6 +114,7 @@ export class Refinement extends vscode.TreeItem {
         this.tooltip = `${info.tag}`;
         this.sourceId = info.customId;
         this.customId = info.linkId;
+        this.refinements.node.mission.goalModel.usedIds.add(this.customId)
     }
     parseLink(target: string, type: "istar.AndRefinementLink" | "istar.OrRefinementLink"): gmTypes.Link{
         return {
@@ -144,6 +145,9 @@ export class NodeRefinement extends vscode.TreeItem {
     }
     parseRefinements(): gmTypes.Link[] {
         return this.refinements.map(r=> r.parseLink(this.node.customId, this.type))
+    }
+    removeRefinement(refinement: Refinement){
+        this.refinements = this.refinements.filter(e=> e != refinement)
     }
 }
 
@@ -184,6 +188,7 @@ export class Node extends vscode.TreeItem {
             this.terminal = true
         }
         this.tooltip = `${this.tag}-${this.name}`;
+        this.mission.goalModel.usedIds.add(this.customId)
         this.description = tag;
     }
     parseNode(): gmTypes.Node {
@@ -285,6 +290,7 @@ export class Mission extends vscode.TreeItem {
             nodeInst.attributes = attributes;
             return nodeInst;
         });
+        this.goalModel.usedIds.add(this.customId)
         this.nodes = nodes;
         this.nodes.forEach(node=>node.getRefinements())
     }
@@ -321,6 +327,7 @@ export class Mission extends vscode.TreeItem {
 
 export class GoalModel extends vscode.TreeItem{
     contextValue = 'goalModel'
+    public usedIds = new Set<string>()
     public actors: gmTypes.Actor[]
     public missions: Mission[]
     public orphans: never[]
@@ -381,5 +388,16 @@ export class GoalModel extends vscode.TreeItem{
         const gm = this.parseToGm()
         const xml = convertGM2DIOXML(JSON.stringify(gm))
         fs.writeFileSync(this.filePath, xml)
+    }
+    generateNewId(){
+        let id = 2
+        this.usedIds.forEach(el=>{
+            const parsedId = Number(el)
+            if(!isNaN(parsedId) && parsedId >= id) {
+                id = parsedId+1
+            }
+        })
+        this.usedIds.add(id.toString())
+        return id
     }
 }

@@ -73,6 +73,16 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.deleteRefinement",
+					"when": "viewItem == refinement",
+					"group": "navigation"
+				},
+				{
+					"command": "goalModel.addRefinement",
+					"when": "viewItem == refinements",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.rename",
 					"when": "viewItem == mission",
 					"group": "navigation"
@@ -127,6 +137,14 @@
 				"light": "resources/light/refresh.svg",
 				"dark": "resources/dark/refresh.svg"
 				}
+			},
+			{
+				"command": "goalModel.deleteRefinement",
+				"title": "Remove refinement"
+			},
+			{
+				"command": "goalModel.addRefinement",
+				"title": "Add refinement"
 			},
 			{
 				"command": "goalModel.deleteProperty",

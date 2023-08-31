@@ -174,6 +174,20 @@ function activate(context) {
         const node = element.node;
         node.removeAttribute(element);
     }));
+    commands.push(vscode.commands.registerCommand('goalModel.addRefinement', async (element) => {
+        const targetNode = element.node;
+        // const items = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
+        // 	return {
+        // 		label: node.name,
+        // 		description: node.customId
+        // 	}
+        // })
+        console.log(targetNode.mission.goalModel.generateNewId());
+    }));
+    commands.push(vscode.commands.registerCommand('goalModel.deleteRefinement', async (element) => {
+        element.refinements.removeRefinement(element);
+        element.refinements.node.mission.goalModel.saveGoalModel();
+    }));
     const sidebarProvider = new SidebarProvider_1.SidebarProvider(context.extensionUri);
     const webviewProvider = vscode.window.registerWebviewViewProvider(SidebarProvider_1.SidebarProvider.viewType, sidebarProvider);
     commands.push(webviewProvider);
