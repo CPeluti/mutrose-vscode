@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GoalModel = exports.Mission = exports.Node = exports.NodeAttr = exports.NodeDecompositions = exports.Decomposition = exports.GoalModelProvider = void 0;
+exports.GoalModel = exports.Mission = exports.Node = exports.NodeAttr = exports.NodeRefinement = exports.Refinement = exports.GoalModelProvider = void 0;
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
@@ -38,13 +38,13 @@ class GoalModelProvider {
         }
         if (element) {
             if (element instanceof Node) {
-                return Promise.resolve([...element.attributes, element.decompositions]);
+                return Promise.resolve([...element.attributes, element.refinements]);
             }
             else if (element instanceof GoalModel) {
                 return Promise.resolve(element.missions);
             }
-            else if (element instanceof NodeDecompositions) {
-                return Promise.resolve(element.decompositions);
+            else if (element instanceof NodeRefinement) {
+                return Promise.resolve(element.refinements);
             }
             else {
                 return Promise.resolve(element.nodes);
@@ -96,48 +96,61 @@ class GoalModelProvider {
     }
 }
 exports.GoalModelProvider = GoalModelProvider;
-class Decomposition extends vscode.TreeItem {
+class Refinement extends vscode.TreeItem {
     info;
     collapsibleState;
-    decompositions;
+    refinements;
     command;
-    contextValue = 'decomposition';
-    targetId;
+    contextValue = 'refinement';
+    sourceId;
     tag;
-    constructor(info, collapsibleState, decompositions, command) {
+    customId;
+    constructor(info, collapsibleState, refinements, command) {
         super(info.tag, collapsibleState);
         this.info = info;
         this.collapsibleState = collapsibleState;
-        this.decompositions = decompositions;
+        this.refinements = refinements;
         this.command = command;
         this.tooltip = `${info.tag}`;
-        this.targetId = info.customId;
+        this.sourceId = info.customId;
+        this.customId = info.linkId;
+    }
+    parseLink(target, type) {
+        return {
+            source: this.sourceId,
+            target: target,
+            id: this.customId,
+            type
+        };
     }
 }
-exports.Decomposition = Decomposition;
-class NodeDecompositions extends vscode.TreeItem {
+exports.Refinement = Refinement;
+class NodeRefinement extends vscode.TreeItem {
     type;
-    decompositionsToInstantiate;
+    refinementsToInstantiate;
     collapsibleState;
     node;
     command;
-    contextValue = 'decompositions';
-    decompositions = [];
-    constructor(type, decompositionsToInstantiate, collapsibleState, node, command) {
-        super('decompositions', collapsibleState);
+    contextValue = 'refinements';
+    refinements = [];
+    constructor(type, refinementsToInstantiate, collapsibleState, node, command) {
+        super('Refinements', collapsibleState);
         this.type = type;
-        this.decompositionsToInstantiate = decompositionsToInstantiate;
+        this.refinementsToInstantiate = refinementsToInstantiate;
         this.collapsibleState = collapsibleState;
         this.node = node;
         this.command = command;
-        this.tooltip = 'decompositions';
+        this.tooltip = 'Refinements';
         this.description = `type ${type}`;
-        this.decompositions = decompositionsToInstantiate.map(decomposition => {
-            return new Decomposition(decomposition, vscode.TreeItemCollapsibleState.None, this);
+        this.refinements = refinementsToInstantiate.map(refinement => {
+            return new Refinement(refinement, vscode.TreeItemCollapsibleState.None, this);
         });
     }
+    parseRefinements() {
+        return this.refinements.map(r => r.parseLink(this.node.customId, this.type));
+    }
 }
-exports.NodeDecompositions = NodeDecompositions;
+exports.NodeRefinement = NodeRefinement;
 class NodeAttr extends vscode.TreeItem {
     attrName;
     attrValue;
@@ -171,7 +184,7 @@ class Node extends vscode.TreeItem {
     command;
     contextValue = 'node';
     terminal = false;
-    decompositions;
+    refinements;
     constructor(name, attributes, collapsibleState, tag, nodeType, mission, customId, pos, command) {
         super(name, collapsibleState);
         this.name = name;
@@ -225,29 +238,41 @@ class Node extends vscode.TreeItem {
             return e;
         }
     }
-    getDecompositions() {
-        if (!this.terminal) {
-            const runtimeAnnotation = this.tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
-            const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
-            let type;
-            switch (separator) {
-                case ';':
-                    type = "and";
-                    break;
-                case ',':
-                    type = "fallback";
-                    break;
-                case '#':
-                    type = "and";
-                    break;
-            }
-            const decompositions = runtimeAnnotation[0].split(/;|,|#/g);
-            const aux = decompositions.map(tag => {
-                const node = this.mission.nodes.find(node => node.name === tag);
-                return { tag, customId: node.customId };
+    getRefinements() {
+        let links = this.mission.goalModel.links.filter(link => link.target === this.customId);
+        if (links.length) {
+            const type = links[0].type;
+            const aux = links.map(link => {
+                return {
+                    customId: link.source,
+                    tag: this.mission.nodes.find(n => link.source === n.customId).name,
+                    linkId: link.id
+                };
             });
-            this.decompositions = new NodeDecompositions(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this);
+            this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this);
         }
+        // if(!this.terminal){
+        // const runtimeAnnotation = this.tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
+        // const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
+        // let type: "and"|"or"|"fallback"| undefined;
+        // switch(separator){
+        // case ';':
+        // type = "and"
+        // break;
+        // case ',':
+        // type = "fallback"
+        // break;
+        // case '#':
+        // type = "and"
+        // break;
+        // }
+        // const refinements = runtimeAnnotation[0].split(/;|,|#/g)
+        // const aux = refinements.map( tag => {
+        // const node = this.mission.nodes.find(node => node.name === tag)
+        // return {tag, customId: node.customId}
+        // })
+        // this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
+        // }
     }
 }
 exports.Node = Node;
@@ -287,7 +312,16 @@ class Mission extends vscode.TreeItem {
             return nodeInst;
         });
         this.nodes = nodes;
-        this.nodes.forEach(node => node.getDecompositions());
+        this.nodes.forEach(node => node.getRefinements());
+    }
+    getLinks() {
+        const links = [];
+        this.nodes.forEach(node => {
+            if (node.refinements) {
+                links.push(node.refinements.parseRefinements());
+            }
+        });
+        return links;
     }
     parseToActor() {
         let actor = {};
@@ -352,12 +386,15 @@ class GoalModel extends vscode.TreeItem {
     parseMissions() {
         return this.missions.map(mission => mission.parseToActor());
     }
+    parseLinks() {
+        return this.missions.map(mission => mission.getLinks()).flat(Infinity);
+    }
     parseToGm() {
         return {
             actors: this.parseMissions(),
             orphans: this.orphans,
             dependencies: this.dependencies,
-            links: this.links,
+            links: this.parseLinks(),
             display: this.display,
             tool: this.tool,
             istar: this.istar,

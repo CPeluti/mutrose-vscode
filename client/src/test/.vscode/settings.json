@@ -1,4 +1,4 @@
 {
-	"gmParser.hddlPath": "/home/caio/projetos/les/parserGMXML/client/src/test/hddl/FoodLogistics.hddl",
-	"gmParser.configPath": "/home/caio/projetos/les/parserGMXML/client/src/test/configuration/configurationDelivery.json"
+	"gmParser.hddlPath": "/home/caio/unb/pibic/gm-parser/client/src/test/hddl/FoodLogistics.hddl",
+	"gmParser.configPath": "/home/caio/unb/pibic/gm-parser/client/src/test/configuration/configurationDelivery.json"
 }

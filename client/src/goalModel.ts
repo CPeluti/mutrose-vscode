@@ -6,9 +6,9 @@ import { convertDIOXML2GM, convertGM2DIOXML } from './parser';
 import { getVSCodeDownloadUrl } from '@vscode/test-electron/out/util';
 
 // It's suposed that all goal models are inside the "gm" folder
-export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mission | Node | NodeAttr | Decomposition | NodeDecompositions>{
-    private _onDidChangeTreeData: vscode.EventEmitter<GoalModel | Mission | Node | NodeAttr | NodeDecompositions | Decomposition | undefined | void> = new vscode.EventEmitter<Mission | Node | NodeAttr | NodeDecompositions | Decomposition | undefined | void>();
-    readonly onDidChangeTreeData: vscode.Event<void | GoalModel | Mission | Node | NodeAttr | NodeDecompositions | Decomposition | undefined> = this._onDidChangeTreeData.event;
+export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mission | Node | NodeAttr | Refinement | NodeRefinement>{
+    private _onDidChangeTreeData: vscode.EventEmitter<GoalModel | Mission | Node | NodeAttr | NodeRefinement | Refinement | undefined | void> = new vscode.EventEmitter<Mission | Node | NodeAttr | NodeRefinement | Refinement | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<void | GoalModel | Mission | Node | NodeAttr | NodeRefinement | Refinement | undefined> = this._onDidChangeTreeData.event;
     
     constructor(private workspaceRoot: string | undefined){
         const gmFolderPath = path.join(this.workspaceRoot, 'gm');
@@ -33,18 +33,18 @@ export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mi
     }
 
     // GetChildren should be triggered by the click on the mission to get the goals;
-    getChildren(element?: GoalModel | Mission | Node | undefined): Thenable<GoalModel[] | Mission[] | Node[] | Decomposition[] | (NodeAttr|NodeDecompositions)[]> {
+    getChildren(element?: GoalModel | Mission | Node | undefined): Thenable<GoalModel[] | Mission[] | Node[] | Refinement[] | (NodeAttr|NodeRefinement)[]> {
         if(!this.workspaceRoot){
             vscode.window.showInformationMessage('No goal models in empty workspace');
             return Promise.resolve([]);
         }
         if(element){
             if(element instanceof Node){
-                return Promise.resolve([...element.attributes, element.decompositions]);
+                return Promise.resolve([...element.attributes, element.refinements]);
             } else if (element instanceof GoalModel) {
                 return Promise.resolve(element.missions)
-            }else if (element instanceof NodeDecompositions) {
-                return Promise.resolve(element.decompositions)
+            }else if (element instanceof NodeRefinement) {
+                return Promise.resolve(element.refinements)
             }else {
 
                 return Promise.resolve(element.nodes);
@@ -98,38 +98,52 @@ export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mi
     }
 }
 
-export class Decomposition extends vscode.TreeItem {
-    contextValue = 'decomposition';
-    public readonly targetId: string
+export class Refinement extends vscode.TreeItem {
+    contextValue = 'refinement';
+    public readonly sourceId: string
     public readonly tag
+    public readonly customId: string
+
     constructor(
-        private readonly info: {tag: string, customId: string},
+        private readonly info: {tag: string, customId: string, linkId: string},
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly decompositions: NodeDecompositions,
+        public readonly refinements: NodeRefinement,
         public readonly command?: vscode.Command
     ){
         super(info.tag, collapsibleState);
         this.tooltip = `${info.tag}`;
-        this.targetId = info.customId
+        this.sourceId = info.customId;
+        this.customId = info.linkId;
+    }
+    parseLink(target: string, type: "istar.AndRefinementLink" | "istar.OrRefinementLink"): gmTypes.Link{
+        return {
+            source: this.sourceId,
+            target: target,
+            id: this.customId,
+            type
+        }
     }
 }
 
-export class NodeDecompositions extends vscode.TreeItem {
-    contextValue = 'decompositions';
-    public decompositions: Decomposition[] = []
+export class NodeRefinement extends vscode.TreeItem {
+    contextValue = 'refinements';
+    public refinements: Refinement[] = []
     constructor(
-        public readonly type: string,
-        public decompositionsToInstantiate: Array<{tag: string, customId: string}>,
+        public readonly type: "istar.AndRefinementLink" | "istar.OrRefinementLink",
+        public refinementsToInstantiate: Array<{tag: string, customId: string, linkId: string}>,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly node: Node,
         public readonly command?: vscode.Command
     ){
-        super('decompositions', collapsibleState);
-        this.tooltip = 'decompositions';
+        super('Refinements', collapsibleState);
+        this.tooltip = 'Refinements';
         this.description = `type ${type}`;
-        this.decompositions = decompositionsToInstantiate.map(decomposition => {
-            return new Decomposition(decomposition, vscode.TreeItemCollapsibleState.None, this)
+        this.refinements = refinementsToInstantiate.map(refinement => {
+            return new Refinement(refinement, vscode.TreeItemCollapsibleState.None, this)
         })
+    }
+    parseRefinements(): gmTypes.Link[] {
+        return this.refinements.map(r=> r.parseLink(this.node.customId, this.type))
     }
 }
 
@@ -152,7 +166,7 @@ export class NodeAttr extends vscode.TreeItem {
 export class Node extends vscode.TreeItem {
     contextValue = 'node';
     terminal = false
-    decompositions: NodeDecompositions
+    refinements: NodeRefinement
     constructor(
         public readonly name: string,
         public attributes: NodeAttr[],
@@ -205,29 +219,40 @@ export class Node extends vscode.TreeItem {
             return e;
         } 
     }
-    getDecompositions(){
-        if(!this.terminal){
-            const runtimeAnnotation = this.tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
-            const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
-            let type: "and"|"or"|"fallback"| undefined;
-            switch(separator){
-                case ';':
-                    type = "and"
-                    break;
-                case ',':
-                    type = "fallback"
-                    break;
-                case '#':
-                    type = "and"
-                    break;
-            }
-            const decompositions = runtimeAnnotation[0].split(/;|,|#/g)
-            const aux = decompositions.map( tag => {
-                const node = this.mission.nodes.find(node => node.name === tag)
-                return {tag, customId: node.customId}
-            })
-            this.decompositions = new NodeDecompositions(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
+    getRefinements(){
+        let links = this.mission.goalModel.links.filter(link => link.target === this.customId)
+        if(links.length){
+            const type = links[0].type
+            const aux = links.map(link=>{return {
+                customId: link.source,
+                tag: this.mission.nodes.find(n=>link.source===n.customId).name,
+                linkId: link.id
+            }})
+            this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
         }
+        // if(!this.terminal){
+            // const runtimeAnnotation = this.tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
+            // const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
+            // let type: "and"|"or"|"fallback"| undefined;
+            // switch(separator){
+                // case ';':
+                    // type = "and"
+                    // break;
+                // case ',':
+                    // type = "fallback"
+                    // break;
+                // case '#':
+                    // type = "and"
+                    // break;
+            // }
+            // const refinements = runtimeAnnotation[0].split(/;|,|#/g)
+
+            // const aux = refinements.map( tag => {
+                // const node = this.mission.nodes.find(node => node.name === tag)
+                // return {tag, customId: node.customId}
+            // })
+            // this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
+        // }
     }
 }
 
@@ -261,7 +286,16 @@ export class Mission extends vscode.TreeItem {
             return nodeInst;
         });
         this.nodes = nodes;
-        this.nodes.forEach(node=>node.getDecompositions())
+        this.nodes.forEach(node=>node.getRefinements())
+    }
+    getLinks(): gmTypes.Link[]{
+        const links = []
+        this.nodes.forEach(node => {
+            if(node.refinements){
+                links.push(node.refinements.parseRefinements())
+            }
+        })
+        return links
     }
     parseToActor(): gmTypes.Actor{
         let actor: gmTypes.Actor = {} as gmTypes.Actor;
@@ -326,13 +360,16 @@ export class GoalModel extends vscode.TreeItem{
     parseMissions(): gmTypes.Actor[]{
         return this.missions.map(mission => mission.parseToActor())
     }
+    parseLinks(){
+        return this.missions.map(mission => mission.getLinks()).flat(Infinity) as gmTypes.Link[]
+    }
     parseToGm(): gmTypes.GoalModel{
         
         return {
             actors: this.parseMissions(),
             orphans: this.orphans,
             dependencies: this.dependencies,
-            links: this.links,
+            links: this.parseLinks(),
             display: this.display,
             tool: this.tool,
             istar: this.istar,
