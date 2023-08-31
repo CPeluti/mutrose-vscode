@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GoalModel = exports.Mission = exports.Node = exports.NodeAttr = exports.GoalModelProvider = void 0;
+exports.GoalModel = exports.Mission = exports.Node = exports.NodeAttr = exports.NodeDecompositions = exports.Decomposition = exports.GoalModelProvider = void 0;
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
@@ -38,10 +38,13 @@ class GoalModelProvider {
         }
         if (element) {
             if (element instanceof Node) {
-                return Promise.resolve(element.attributes);
+                return Promise.resolve([...element.attributes, element.decompositions]);
             }
             else if (element instanceof GoalModel) {
                 return Promise.resolve(element.missions);
+            }
+            else if (element instanceof NodeDecompositions) {
+                return Promise.resolve(element.decompositions);
             }
             else {
                 return Promise.resolve(element.nodes);
@@ -74,6 +77,7 @@ class GoalModelProvider {
             const goalModels = gms.map((gm) => {
                 const gmName = gm.filePath.replace(/(^.*[\\\/])|(\.drawio)/gi, '');
                 const goalModel = new GoalModel(gmName, vscode.TreeItemCollapsibleState.Collapsed, gm.gm, gm.filePath);
+                const test = goalModel.parseToGm();
                 return goalModel;
             });
             return goalModels;
@@ -92,6 +96,48 @@ class GoalModelProvider {
     }
 }
 exports.GoalModelProvider = GoalModelProvider;
+class Decomposition extends vscode.TreeItem {
+    info;
+    collapsibleState;
+    decompositions;
+    command;
+    contextValue = 'decomposition';
+    targetId;
+    tag;
+    constructor(info, collapsibleState, decompositions, command) {
+        super(info.tag, collapsibleState);
+        this.info = info;
+        this.collapsibleState = collapsibleState;
+        this.decompositions = decompositions;
+        this.command = command;
+        this.tooltip = `${info.tag}`;
+        this.targetId = info.customId;
+    }
+}
+exports.Decomposition = Decomposition;
+class NodeDecompositions extends vscode.TreeItem {
+    type;
+    decompositionsToInstantiate;
+    collapsibleState;
+    node;
+    command;
+    contextValue = 'decompositions';
+    decompositions = [];
+    constructor(type, decompositionsToInstantiate, collapsibleState, node, command) {
+        super('decompositions', collapsibleState);
+        this.type = type;
+        this.decompositionsToInstantiate = decompositionsToInstantiate;
+        this.collapsibleState = collapsibleState;
+        this.node = node;
+        this.command = command;
+        this.tooltip = 'decompositions';
+        this.description = `type ${type}`;
+        this.decompositions = decompositionsToInstantiate.map(decomposition => {
+            return new Decomposition(decomposition, vscode.TreeItemCollapsibleState.None, this);
+        });
+    }
+}
+exports.NodeDecompositions = NodeDecompositions;
 class NodeAttr extends vscode.TreeItem {
     attrName;
     attrValue;
@@ -125,7 +171,7 @@ class Node extends vscode.TreeItem {
     command;
     contextValue = 'node';
     terminal = false;
-    decompositions = [];
+    decompositions;
     constructor(name, attributes, collapsibleState, tag, nodeType, mission, customId, pos, command) {
         super(name, collapsibleState);
         this.name = name;
@@ -138,27 +184,8 @@ class Node extends vscode.TreeItem {
         this.pos = pos;
         this.command = command;
         const runtimeAnnotation = tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
-        let type;
-        if (runtimeAnnotation) {
-            const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
-            switch (separator) {
-                case ';':
-                    type = "and";
-                    break;
-                case ',':
-                    type = "fallback";
-                    break;
-                case '#':
-                    type = "and";
-                    break;
-            }
-        }
-        else {
+        if (!runtimeAnnotation) {
             this.terminal = true;
-        }
-        console.log(type, this.terminal);
-        if (!this.terminal) {
-            this.decompositions = runtimeAnnotation[0].split(/;|,|#/g);
         }
         this.tooltip = `${this.tag}-${this.name}`;
         this.description = tag;
@@ -196,6 +223,30 @@ class Node extends vscode.TreeItem {
         }
         catch (e) {
             return e;
+        }
+    }
+    getDecompositions() {
+        if (!this.terminal) {
+            const runtimeAnnotation = this.tag.match(/(?<=\[)[a-zA-Z\d\,|\#|\;?]*(?=\])/g);
+            const separator = runtimeAnnotation[0].match(/[^a-zA-Z\d]/)[0];
+            let type;
+            switch (separator) {
+                case ';':
+                    type = "and";
+                    break;
+                case ',':
+                    type = "fallback";
+                    break;
+                case '#':
+                    type = "and";
+                    break;
+            }
+            const decompositions = runtimeAnnotation[0].split(/;|,|#/g);
+            const aux = decompositions.map(tag => {
+                const node = this.mission.nodes.find(node => node.name === tag);
+                return { tag, customId: node.customId };
+            });
+            this.decompositions = new NodeDecompositions(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this);
         }
     }
 }
@@ -236,6 +287,7 @@ class Mission extends vscode.TreeItem {
             return nodeInst;
         });
         this.nodes = nodes;
+        this.nodes.forEach(node => node.getDecompositions());
     }
     parseToActor() {
         let actor = {};

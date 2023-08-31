@@ -137,4 +137,4 @@ class HelloWorldPanel {
     }
 }
 exports.HelloWorldPanel = HelloWorldPanel;
-//# sourceMappingURL=helloWordPanel.js.map
+//# sourceMappingURL=helloWorldPanel.js.map

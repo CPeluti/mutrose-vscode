@@ -11,7 +11,7 @@ const parser_1 = require("./parser");
 const goalModel_1 = require("./goalModel");
 const SidebarProvider_1 = require("./panels/SidebarProvider");
 const node_1 = require("vscode-languageclient/node");
-const helloWordPanel_1 = require("./panels/helloWordPanel");
+const helloWorldPanel_1 = require("./panels/helloWorldPanel");
 let client;
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -126,13 +126,8 @@ function activate(context) {
             prompt: "Rename selected mission",
             value: ""
         });
-        let file = fs.readFileSync(element.filePath).toString();
-        let gm = (0, parser_1.convertDIOXML2GM)(file);
-        let name = gm.actors[0].text.split(": ");
-        name[1] = newName;
-        gm.actors[0].text = name.join(": ");
-        let xml = (0, parser_1.convertGM2DIOXML)(JSON.stringify(gm));
-        fs.writeFileSync(element.filePath, xml);
+        element.name = newName;
+        element.goalModel.saveGoalModel();
     }));
     // add property to node command
     commands.push(vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
@@ -164,6 +159,16 @@ function activate(context) {
             console.log(e, "erro ao adicionar property");
         }
     }));
+    commands.push(vscode.commands.registerCommand('goalModel.editProperty', async (element) => {
+        // TODO: add logic to different types of attributes
+        const newContent = await vscode.window.showInputBox({
+            placeHolder: "Type new content",
+            prompt: "Edit property content",
+            value: element.attrValue
+        });
+        element.attrValue = newContent;
+        element.node.mission.goalModel.saveGoalModel();
+    }));
     // delete property from node command
     commands.push(vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
         const node = element.node;
@@ -173,7 +178,7 @@ function activate(context) {
     const webviewProvider = vscode.window.registerWebviewViewProvider(SidebarProvider_1.SidebarProvider.viewType, sidebarProvider);
     commands.push(webviewProvider);
     commands.push(vscode.commands.registerCommand('goalModel.openVue', () => {
-        helloWordPanel_1.HelloWorldPanel.render(context.extensionUri);
+        helloWorldPanel_1.HelloWorldPanel.render(context.extensionUri);
     }));
     commands.forEach(command => context.subscriptions.push(command));
 }

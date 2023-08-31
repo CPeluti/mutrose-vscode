@@ -17,7 +17,6 @@
 		"vscode": "^1.75.0"
 	},
 	"activationEvents": [
-		"onCommand:goalModel.openVue",
 		"onLanguage:plaintext"
 	],
 	"main": "./client/out/extension",
@@ -84,6 +83,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.editProperty",
+					"when": "viewItem == attribute",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.deleteProperty",
 					"when": "viewItem == attribute",
 					"group": "navigation"
@@ -99,6 +103,10 @@
 			{
 				"command": "goalModel.rename",
 				"title": "Rename"
+			},
+			{
+				"command": "goalModel.editProperty",
+				"title": "Edit Property"
 			},
 			{
 				"command": "gm-parser.execMutRose",
@@ -166,6 +174,7 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"start:webview": "cd webview-ui && npm run dev",
+		"build:webview": "cd webview-ui && npm run build && cd ..",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",

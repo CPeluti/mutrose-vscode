@@ -16,7 +16,7 @@ import {
 	TransportKind
 } from 'vscode-languageclient/node';
 
-import { HelloWorldPanel } from './panels/helloWordPanel';
+import { HelloWorldPanel } from './panels/helloWorldPanel';
 
 let client: LanguageClient;
 
@@ -169,13 +169,8 @@ export function activate(context: vscode.ExtensionContext) {
 				prompt: "Rename selected mission",
 				value: ""
 			});
-			let file = fs.readFileSync(element.filePath).toString()
-			let gm = convertDIOXML2GM(file)
-			let name = gm.actors[0].text.split(": ")
-			name[1] = newName
-			gm.actors[0].text = name.join(": ")
-			let xml = convertGM2DIOXML(JSON.stringify(gm))
-			fs.writeFileSync(element.filePath, xml)
+			element.name = newName
+			element.goalModel.saveGoalModel()
 		})
 	);
 
@@ -211,6 +206,19 @@ export function activate(context: vscode.ExtensionContext) {
 			
 		})
 	);
+
+	commands.push(
+		vscode.commands.registerCommand('goalModel.editProperty', async (element) => {
+			// TODO: add logic to different types of attributes
+			const newContent = await vscode.window.showInputBox({
+				placeHolder: "Type new content",
+				prompt: "Edit property content",
+				value: element.attrValue
+			});
+			element.attrValue=newContent
+			element.node.mission.goalModel.saveGoalModel()
+		})
+	)
 
 	// delete property from node command
 	commands.push(
