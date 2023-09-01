@@ -147,6 +147,9 @@ class NodeRefinement extends vscode.TreeItem {
             return new Refinement(refinement, vscode.TreeItemCollapsibleState.None, this);
         });
     }
+    addRefinement(targetId, tag, newId) {
+        this.refinements.push(new Refinement({ tag, linkId: newId, customId: targetId }, vscode.TreeItemCollapsibleState.None, this));
+    }
     parseRefinements() {
         return this.refinements.map(r => r.parseLink(this.node.customId, this.type));
     }

@@ -231,13 +231,16 @@ export function activate(context: vscode.ExtensionContext) {
 	commands.push(
 		vscode.commands.registerCommand('goalModel.addRefinement', async (element: NodeRefinement) => {
 			const targetNode = element.node
-			// const items = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
-			// 	return {
-			// 		label: node.name,
-			// 		description: node.customId
-			// 	}
-			// })
-			console.log(targetNode.mission.goalModel.generateNewId())
+			const gm = targetNode.mission.goalModel
+			const items: vscode.QuickPickItem[] = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
+				return {
+					label: node.name,
+					description: node.customId
+				}
+			})
+			const selected = await vscode.window.showQuickPick(items)
+			element.addRefinement(selected.description, selected.label, gm.generateNewId())
+			gm.saveGoalModel()
 		})
 	)
 	commands.push(

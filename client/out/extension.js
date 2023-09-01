@@ -176,13 +176,16 @@ function activate(context) {
     }));
     commands.push(vscode.commands.registerCommand('goalModel.addRefinement', async (element) => {
         const targetNode = element.node;
-        // const items = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
-        // 	return {
-        // 		label: node.name,
-        // 		description: node.customId
-        // 	}
-        // })
-        console.log(targetNode.mission.goalModel.generateNewId());
+        const gm = targetNode.mission.goalModel;
+        const items = targetNode.mission.nodes.filter(e => e != targetNode).map(node => {
+            return {
+                label: node.name,
+                description: node.customId
+            };
+        });
+        const selected = await vscode.window.showQuickPick(items);
+        element.addRefinement(selected.description, selected.label, gm.generateNewId());
+        gm.saveGoalModel();
     }));
     commands.push(vscode.commands.registerCommand('goalModel.deleteRefinement', async (element) => {
         element.refinements.removeRefinement(element);
