@@ -83,8 +83,23 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.addNode",
+					"when": "viewItem == mission",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.rename",
 					"when": "viewItem == mission",
+					"group": "navigation"
+				},
+				{
+					"command": "goalModel.deleteNode",
+					"when": "viewItem == node",
+					"group": "navigation"
+				},
+				{
+					"command": "goalModel.addRefinementToNode",
+					"when": "viewItem == node",
 					"group": "navigation"
 				},
 				{
@@ -109,6 +124,18 @@
 			{
 				"command": "goalModel.openVue",
 				"title" : "Open Vue"
+			},
+			{
+				"command": "goalModel.addRefinementToNode",
+				"title": "Add refinments to the node"
+			},
+			{
+				"command": "goalModel.addNode",
+				"title": "Create New Node"
+			},
+			{
+				"command": "goalModel.deleteNode",
+				"title": "Remove Node"
 			},
 			{
 				"command": "goalModel.rename",

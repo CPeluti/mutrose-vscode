@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as gmTypes from './GoalModel';
 import { convertDIOXML2GM, convertGM2DIOXML } from './parser';
-import { getVSCodeDownloadUrl } from '@vscode/test-electron/out/util';
 
 // It's suposed that all goal models are inside the "gm" folder
 export class GoalModelProvider implements vscode.TreeDataProvider<GoalModel | Mission | Node | NodeAttr | Refinement | NodeRefinement>{
@@ -264,11 +263,21 @@ export class Node extends vscode.TreeItem {
             // this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
         // }
     }
+    addRefinement(type, targetId, tag, newId){
+        type = type == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink'
+        this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this)
+        this.refinements.addRefinement(targetId, tag, newId)
+    }
+    remove(){
+        this.mission.deleteNode(this)
+    }
 }
 
 export class Mission extends vscode.TreeItem {
     contextValue = 'mission';
     public nodes: Node[]
+    lastGoalNumber: number = 0
+    lastTaskNumber: number = 0
     constructor(
         public readonly name: string,
         private readonly missionNumber: string,
@@ -286,6 +295,12 @@ export class Mission extends vscode.TreeItem {
 
         const nodes = nodesToInstatiate.map(node=>{
             const [name,tag] = node.text.split(': ');
+            const number = parseInt(name.replace(/[a-zA-Z]/g, ''))
+            if (name.startsWith("AT")){
+                this.lastTaskNumber = Math.max(this.lastTaskNumber, number)
+            } else {
+                this.lastGoalNumber = Math.max(this.lastGoalNumber, number)
+            }
             const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag,(name.startsWith("AT")? "Task" : "Goal"), this, node.id, {x: node.x, y:node.y});
             const customProperties= Object.keys(node.customProperties).map(key => {
                 return new NodeAttr(key,node.customProperties[key], true,vscode.TreeItemCollapsibleState.None, nodeInst)
@@ -321,6 +336,20 @@ export class Mission extends vscode.TreeItem {
     }
     parseNodes(): gmTypes.Node[] {
         return this.nodes.map(node => node.parseNode());
+    }
+    addNewNode(type: "Task" | "Goal", title: string){
+        const name = type === 'Task'? `AT${this.lastTaskNumber}` : `G${this.lastGoalNumber}`
+        const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, title, type, this, this.goalModel.generateNewId().toString(), {x: 0, y:0});
+        nodeInst.addAttribute('Description', '')
+        this.addNode(nodeInst)
+    }
+    deleteNode(node: Node){
+        this.nodes.forEach(n=>{
+            if(n.refinements){
+                n.refinements.refinements = n.refinements.refinements.filter(r => r.sourceId !== node.customId)
+            }
+        })
+        this.nodes = this.nodes.filter(el => el !== node)
     }
     addNode(node: Node){
         this.nodes.push(node)

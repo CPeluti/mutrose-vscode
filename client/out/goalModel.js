@@ -282,6 +282,14 @@ class Node extends vscode.TreeItem {
         // this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
         // }
     }
+    addRefinement(type, targetId, tag, newId) {
+        type = type == 'and' ? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
+        this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
+        this.refinements.addRefinement(targetId, tag, newId);
+    }
+    remove() {
+        this.mission.deleteNode(this);
+    }
 }
 exports.Node = Node;
 class Mission extends vscode.TreeItem {
@@ -296,6 +304,8 @@ class Mission extends vscode.TreeItem {
     command;
     contextValue = 'mission';
     nodes;
+    lastGoalNumber = 0;
+    lastTaskNumber = 0;
     constructor(name, missionNumber, collapsibleState, customId, goalModel, nodesToInstatiate, pos, customProperties, command) {
         super(name, collapsibleState);
         this.name = name;
@@ -311,6 +321,13 @@ class Mission extends vscode.TreeItem {
         this.description = this.customProperties.description;
         const nodes = nodesToInstatiate.map(node => {
             const [name, tag] = node.text.split(': ');
+            const number = parseInt(name.replace(/[a-zA-Z]/g, ''));
+            if (name.startsWith("AT")) {
+                this.lastTaskNumber = Math.max(this.lastTaskNumber, number);
+            }
+            else {
+                this.lastGoalNumber = Math.max(this.lastGoalNumber, number);
+            }
             const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag, (name.startsWith("AT") ? "Task" : "Goal"), this, node.id, { x: node.x, y: node.y });
             const customProperties = Object.keys(node.customProperties).map(key => {
                 return new NodeAttr(key, node.customProperties[key], true, vscode.TreeItemCollapsibleState.None, nodeInst);
@@ -345,6 +362,20 @@ class Mission extends vscode.TreeItem {
     }
     parseNodes() {
         return this.nodes.map(node => node.parseNode());
+    }
+    addNewNode(type, title) {
+        const name = type === 'Task' ? `AT${this.lastTaskNumber}` : `G${this.lastGoalNumber}`;
+        const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, title, type, this, this.goalModel.generateNewId().toString(), { x: 0, y: 0 });
+        nodeInst.addAttribute('Description', '');
+        this.addNode(nodeInst);
+    }
+    deleteNode(node) {
+        this.nodes.forEach(n => {
+            if (n.refinements) {
+                n.refinements.refinements = n.refinements.refinements.filter(r => r.sourceId !== node.customId);
+            }
+        });
+        this.nodes = this.nodes.filter(el => el !== node);
     }
     addNode(node) {
         this.nodes.push(node);

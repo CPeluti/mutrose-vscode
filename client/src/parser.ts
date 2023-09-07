@@ -1,6 +1,6 @@
 import * as parser from 'xml-js';
 import * as fs from 'fs';
-import { Actor, Node, Link, GoalModel } from './GoalModel';
+import { Actor, Node, Link, GoalModel, Diagram, Display } from './GoalModel';
 import gmDIOElements from './elements/xml_elements';
 
 function convertJS2XML(obj: { object: { _attributes: any; _text: any; } | { _attributes: any; _text: any; }; }, cmp=false){
@@ -115,17 +115,26 @@ export function convertGM2DIOXML(input: string){
     let output = `<mxfile host="65bd71144e">\n<diagram id="JPszrsa7NkP3LcdA_txE" name="Página-1">\n<mxGraphModel dx="322" dy="417" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="${gm.diagram.width}" pageHeight="${gm.diagram.height}" math="0" shadow="0">\n<root>\n<mxCell id="0"/>\n
     <mxCell id="1" parent="0"/>\n`;
     output += "\n" +actors.join('\n')+'\n'+ res.nodes.join('\n')+'\n'+resLinks.join('\n')+'\n';
-    output += '</root>\n</mxGraphModel>\n</diagram>\n</mxfile>\n<fileInfo teste="teste"></fileInfo>';
+    output += '</root>\n</mxGraphModel>\n</diagram>\n</mxfile>';
     return output;
 }
 //set text on mission
 export function convertDIOXML2GM(input: string):GoalModel{
     let gm = parser.xml2js(input);
-    const fileInfo = gm.elements[1]
     gm = gm.elements[0].elements[0].elements[0];
     const size = [parseInt(gm.attributes.pageWidth), parseInt(gm.attributes.pageHeight)];
     const nodes = gm.elements[0].elements;
-    const parsedGm: GoalModel = {actors: [], orphans:[], dependencies:[], links:[], display: [], diagram: {width:size[0], height: size[1]}, ...fileInfo.attributes};
+    const parsedGm: GoalModel = {
+        actors: [],
+        orphans:[],
+        dependencies:[],
+        links:[],
+        display: [] as unknown as Display,
+        diagram: {width:size[0], height: size[1]} as Diagram,
+        tool: '',
+        istar: '',
+        saveDate: new Date()
+    };
     
     nodes.forEach((node: any)=>{
         const type = node.attributes.type;

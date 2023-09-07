@@ -129,6 +129,32 @@ function activate(context) {
         element.name = newName;
         element.goalModel.saveGoalModel();
     }));
+    // add node to mission command
+    commands.push(vscode.commands.registerCommand('goalModel.addNode', async (element) => {
+        let items;
+        items = [
+            {
+                label: "Goal",
+                description: "goal"
+            }, {
+                label: "Task",
+                description: "Task"
+            }
+        ];
+        try {
+            const type = await vscode.window.showQuickPick(items);
+            const title = await vscode.window.showInputBox({
+                placeHolder: "Type node title",
+                prompt: "Node Title",
+                value: ''
+            });
+            element.addNewNode(type.label, title);
+            element.goalModel.saveGoalModel();
+        }
+        catch (e) {
+            console.log(e, "erro ao adicionar property");
+        }
+    }));
     // add property to node command
     commands.push(vscode.commands.registerCommand('goalModel.addProperty', async (element) => {
         let items;
@@ -168,6 +194,36 @@ function activate(context) {
         });
         element.attrValue = newContent;
         element.node.mission.goalModel.saveGoalModel();
+    }));
+    // delete node from mission command
+    commands.push(vscode.commands.registerCommand('goalModel.deleteNode', async (element) => {
+        element.remove();
+        element.mission.goalModel.saveGoalModel();
+    }));
+    // add refinements to a node command
+    commands.push(vscode.commands.registerCommand('goalModel.addRefinementToNode', async (element) => {
+        const types = [
+            {
+                label: "and",
+                description: "and"
+            },
+            {
+                label: "or",
+                description: "or"
+            }
+        ];
+        const targetNode = element;
+        const gm = targetNode.mission.goalModel;
+        const type = await vscode.window.showQuickPick(types);
+        const items = targetNode.mission.nodes.filter(e => e != targetNode).map(node => {
+            return {
+                label: node.name,
+                description: node.customId
+            };
+        });
+        const selected = await vscode.window.showQuickPick(items);
+        element.addRefinement(type, selected.description, selected.label, gm.generateNewId());
+        gm.saveGoalModel();
     }));
     // delete property from node command
     commands.push(vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
