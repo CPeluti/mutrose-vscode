@@ -23,37 +23,37 @@
 	"contributes": {
 		"customEditors": [
 			{
-			"viewType": "mutrose.pistar",
-			"displayName": "PiStar Editor",
-			"selector": [
-				{
-				"filenamePattern": "*.gm"
-				}
-			],
-			"priority": "default"
+				"viewType": "mutrose.pistar",
+				"displayName": "PiStar Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.gm"
+					}
+				],
+				"priority": "default"
 			}
 		],
 		"viewsContainers": {
 			"activitybar": [
-			  {
-				"id": "goal-model",
-				"title": "MutRoSe",
-				"icon": "media/icon.svg"
-			  },
-			  {
-				"id": "vueapp-teste",
-				"title": "vue app",
-				"icon": "$(remote-explorer)"
-			  }
+				{
+					"id": "goal-model",
+					"title": "MutRoSe",
+					"icon": "media/icon.svg"
+				},
+				{
+					"id": "vueapp-teste",
+					"title": "vue app",
+					"icon": "$(remote-explorer)"
+				}
 			]
 		},
 		"views": {
 			"goal-model": [
 				{
-				"id": "goalModel",
-				"name": "Goal Models",
-				"icon": "media/icon.svg",
-				"contextualTitle": "Goal Model"
+					"id": "goalModel",
+					"name": "Goal Models",
+					"icon": "media/icon.svg",
+					"contextualTitle": "Goal Model"
 				}
 			],
 			"vueapp-teste": [
@@ -130,12 +130,11 @@
 					"group": "navigation"
 				}
 			]
-			
 		},
 		"commands": [
 			{
 				"command": "goalModel.openVue",
-				"title" : "Open Vue"
+				"title": "Open Vue"
 			},
 			{
 				"command": "goalModel.addRefinementToNode",
@@ -172,9 +171,9 @@
 			{
 				"command": "goalModel.refreshModels",
 				"title": "Refresh",
-				"icon":{
-				"light": "resources/light/refresh.svg",
-				"dark": "resources/dark/refresh.svg"
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
 				}
 			},
 			{
@@ -238,7 +237,7 @@
 		"test": "sh ./scripts/e2e.sh"
 	},
 	"devDependencies": {
-    "@types/vscode": "^1.96.0",
+		"@types/vscode": "^1.96.0",
 		"@types/mocha": "^9.1.0",
 		"@types/node": "^16.11.7",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",

@@ -70,7 +70,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
     private getHtmlForWebview(webview: vscode.Webview): string {
 		const getUri = (path: string) => {
             return webview.asWebviewUri(vscode.Uri.joinPath(
-                this.context.extensionUri,"src","pistar","tool",path
+                this.context.extensionUri,"src","piStar","tool",path
             ));
         };
 
@@ -100,24 +100,6 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 
                 <body>
                 <div id="tool">
-                    <div class="menu-bar">
-                        <div id="logo">
-                            <img src="${getUri('app/ui/images/logo-pie.svg')}" width="21" height="21" title="a pie" alt=""/>
-                            <img id="star" src="${getUri('app/ui/images/logo-star.svg')}" width="12" height="12" title="a star" alt=""/>
-                            <a id="logo-name" href="index.html" target="_blank" title="Open an instance of the tool in a new tab">piStar</a>
-                        </div>
-                        <nav class="menu-items">
-                            <a class="menu-item" href="#" id="menu-item-file" data-toggle="menu-file">File</a>
-                            <a class="menu-item active" href="#" id="menu-item-add" data-toggle="menu-add">Add</a>
-                            <a class="menu-item" href="#" id="menu-item-diagram" data-toggle="menu-diagram">Options</a>
-                            <a class="menu-item" href="#" id="menu-item-help" data-toggle="menu-help">Help</a>
-                            <a class="menu-item" href="#" id="menu-item-plugin" data-toggle="menu-plugin">Plugins</a>
-                        </nav>
-                        <button class="menu-item-quick-button inactive" href="#" id="menu-item-undo" title="Undo delete">
-                            <span class="glyphicon glyphicon-share-alt icon-flipped" aria-hidden="true"></span>
-                        </button>
-                    </div>
-
                     <div id="menu-bodies">
                         <div id="menu-file" class="menu-body hidden">
                             <div class="menu-group">
@@ -154,7 +136,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                                 </div>
                             </div>
                         </div>
-                        <div id="menu-add" class="menu-body">
+                        <!--<div id="menu-add" class="menu-body">
                             <div class="menu-group">
                                 <div class="menu-line">
 
@@ -201,7 +183,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                             <div id="status-bar">
                                 <span id="status"></span>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div id="menu-diagram" class="menu-body hidden">
                             <div class="menu-group">
@@ -302,7 +284,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                     </div>
 
                     <div id="workspace">
-                        <div id="sidepanel" class="size2">
+                        <!--<div id="sidepanel" class="size2">
                             <div id="regular-size-options">
                                 <a href="#" class="collapse-sidepanel-button" title="Collapse panel">-</a>
                                 <a href="#" id="uncollapsed-expand-sidepanel-button" class="expand-sidepanel-button" title="Expand panel">+</a>
@@ -344,38 +326,11 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                                         Color:&nbsp;
                                         <input id="single-element-color-picker" class="jscolor {hash:true}" value="ccfacd" size="8">
                                         <a id="reset-element-color-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset color</a>
-                                        <!-- <br>Line style:&nbsp;
-                                        <select>
-                                        <option value="volvo">solid</option>
-                                        <option value="saab">dashed</option>
-                                        <option value="mercedes">dotted</option>
-                                        </select>
-                                        <br>Line thickness:&nbsp;
-                                        <input type="number" name="quantity" min="1" max="25" value ="2">
-                                        <br><input type="checkbox" name="" value=""> shadow
-                                        <br><input type="checkbox" name="" value=""> hand-drawn
-                                        <br><input type="checkbox" name="" value=""> auto-break lines -->
                                     </div>
-
-
-                                    <!-- <div class="sidepanel-title">Text:</div>
-                                    <div class="group">
-                                    Color: <input id="single-element-color-picker" class="jscolor {hash:true}" value="000" size="8">
-                                    <a id="reset-element-color-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset color</a>
-                                    <br><button style="font-weight:1000;">B</button><button style="font-style: italic;">I</button><button style="text-decoration: underline;">U</button><button style="text-decoration: line-through;">S</button>
-                                    <br>Size: <input type="number" name="quantity" min="1" max="25" value ="12">
-                                    <br>Top padding: <input type="number" name="quantity" min="1" max="25" value ="2">
-                                    <br>Letter spacing: <input type="number" name="quantity" min="-10" max="25" value ="0">
-                                    <br>Word spacing: <input type="number" name="quantity" min="-10" max="25" value ="0">
-                                    <br>Line height: <input type="number" name="quantity" min="0.1" max="10" value ="1.1" step="0.1">
-                                    <br><input type="checkbox" name="" value=""> shadow
-                                    <br><input type="checkbox" name="" value=""> uppercase
-                                    </div> -->
-
                                 </div>
                             </div>
 
-                        </div>
+                        </div> -->
 
                         <div id="out">
                             <div class="cell-selection" style="display: none;"></div>
