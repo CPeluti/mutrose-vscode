@@ -17,7 +17,7 @@ import {
 } from 'vscode-languageclient/node';
 
 import { HelloWorldPanel } from './panels/helloWorldPanel';
-import { GoalModel } from './GoalModel';
+import { GoalModel } from './GoalModel/index';
 
 let client: LanguageClient;
 

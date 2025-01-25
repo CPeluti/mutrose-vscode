@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as gmTypes from './GoalModel';
+import * as gmTypes from './GoalModel/index';
 import { convertDIOXML2GM, convertGM2DIOXML } from './parser';
 
 // It's suposed that all goal models are inside the "gm" folder
@@ -173,8 +173,8 @@ export class NodeAttr extends vscode.TreeItem {
 
 export class Node extends vscode.TreeItem {
     contextValue = 'node';
-    terminal = false
-    refinements: NodeRefinement
+    terminal = false;
+    refinements: NodeRefinement;
     constructor(
         public readonly name: string,
         public attributes: NodeAttr[],

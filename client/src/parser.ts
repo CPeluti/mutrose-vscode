@@ -1,6 +1,6 @@
 import * as parser from 'xml-js';
 import * as fs from 'fs';
-import { Actor, Node, Link, GoalModel, Diagram, Display } from './GoalModel';
+import { Actor, Node, Link, GoalModel, Diagram, Display } from './GoalModel/index';
 import gmDIOElements from './elements/xml_elements';
 
 function convertJS2XML(obj: { object: { _attributes: any; _text: any; } | { _attributes: any; _text: any; }; }, cmp=false){
