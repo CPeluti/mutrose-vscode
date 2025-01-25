@@ -6,6 +6,7 @@ import * as fs from 'fs';
 
 import * as child_process from 'child_process';
 import { GoalModelProvider, NodeRefinement, Refinement } from './goalModel';
+import { PistarEditorProvider } from './pistarEditor';
 
 
 // This method is called when your extension is activated
@@ -30,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
 
-	
+	context.subscriptions.push(PistarEditorProvider.register(context));
 
 	const commands: Array<vscode.Disposable> = [];
 
