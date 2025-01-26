@@ -1,3 +1,4 @@
+/* eslint-disable*/
 /*!
  * This is open-source. Which means that you can contribute to it, and help
  * make it better! Also, feel free to use, modify, redistribute, and so on.
@@ -142,14 +143,6 @@ var ui = function() {
                 this.deselectCell();
                 this.selectedCell = istar.graph;
                 istar.paper.trigger('change:selection', {selectedCell: istar.graph});
-
-                //closes any color picker that may be open
-                $('.jscolor').each(function () {
-                    this.jscolor.hide();
-                });
-
-                $('#sidepanel-tab-style').hide();
-                $('#sidepanel-tab-properties a').tab('show');
             }
         },
         hideSelection: function() {
@@ -393,6 +386,7 @@ ui.defineInteractions = function () {
         }
     });
     istar.paper.on('cell:pointerdown', function (cellView, evt, x, y) {
+        istar.holding = true;
         if (! ui.states.editor.isAdding()) {
             if (!cellView.model.isLink()) {
                 ui.selectCell(cellView.model, cellView);
@@ -518,6 +512,14 @@ ui.defineInteractions = function () {
 
             ui.showSelection();
         }
+
+        istar.holding = false;
+            // if(!istar.fileManager.loading){
+            //     istar.vscode.postMessage({
+            //         type: 'change',
+            //         text: istar.fileManager.saveModel()
+            //     })
+            // }
     });
 
     istar.paper.on('cell:pointerdblclick', function (cellView, evt, x, y) {
@@ -589,7 +591,7 @@ istar.resizePaperBasedOnCell = function(cellView) {
         istar.paper.setDimensions(paperWidth, paperHeight + delta);
         istar.graph.translate(0, delta);
     }
-}
+};
 
 ui.addElementOnPaper = function (options) {
     'use strict';
@@ -713,7 +715,7 @@ ui.addDependency = function (source, dependencyType, target) {
 
     node.prop('customProperties/Description', '');
     ui.selectCell(node);
-}
+};
 
 ui.setupDependencyRemoval = function (links) {
     'use strict';
@@ -1217,7 +1219,7 @@ ui.deleteCell = function (cellToDelete) {
                 }
                 istar.paper.findViewByModel(link).hideTools(); // Hide the vertices' handles
             }
-        }
+        };
     }
 
     if (cellToDelete.isDependum()) {
@@ -1237,7 +1239,7 @@ ui.deleteCell = function (cellToDelete) {
               return function () {
                   istar.graph.addCell(link);
                   link.attr('connection-wrap/stroke', 'transparent');  // Hide the link highlight
-              }
+              };
           }(cellToDelete)
         );
     }
@@ -1280,7 +1282,7 @@ ui.deleteCell = function (cellToDelete) {
                   }
 
                   cell.updateBoundary();
-              }
+              };
           }(cellToDelete, links, dependencies, children)
         );
     }
@@ -1312,7 +1314,7 @@ ui.deleteCell = function (cellToDelete) {
                   for (let dependency of dependencies) {
                       undoDeleteDependency(dependency.dependum, dependency.links)();
                   }
-              }
+              };
           }(cellToDelete, nodeLinks, cellToDelete.parent(), dependencies)
         );
     }
@@ -1326,13 +1328,13 @@ ui.deleteCell = function (cellToDelete) {
                   parent.embed(cell);
 
                   cell.attr('connection-wrap/stroke', 'transparent');  // Hide the link highlight
-              }
+              };
           }(cellToDelete, cellToDelete.parent())
         );
     }
     ui.getSelectedCells()[0].remove();
     ui.selectPaper();
-}
+};
 $(document).keyup(function (e) {
     'use strict';
 
@@ -1408,7 +1410,7 @@ ui.changeCustomPropertyValue = function (model, propertyName, propertyValue) {
     model.prop('customProperties/' + propertyName, propertyValue);
 
     return model;
-}
+};
 
 
 
@@ -1448,9 +1450,9 @@ ui.setupSidepanelInteraction = function () {
     var sidepanelCurrentSize = 1;
     ui.expandSidepanel = function () {
         if (sidepanelCurrentSize < (sidepanelSizes.length - 1)) {
-            $('#sidepanel').removeClass(sidepanelSizes[sidepanelCurrentSize])
+            $('#sidepanel').removeClass(sidepanelSizes[sidepanelCurrentSize]);
             sidepanelCurrentSize++;
-            $('#sidepanel').addClass(sidepanelSizes[sidepanelCurrentSize])
+            $('#sidepanel').addClass(sidepanelSizes[sidepanelCurrentSize]);
 
             if (sidepanelCurrentSize === 1) {
                 $('#sidepanel').removeClass('collapsed');
@@ -1466,9 +1468,9 @@ ui.setupSidepanelInteraction = function () {
                 $('#sidepanel').removeClass('full');
             }
 
-            $('#sidepanel').removeClass(sidepanelSizes[sidepanelCurrentSize])
+            $('#sidepanel').removeClass(sidepanelSizes[sidepanelCurrentSize]);
             sidepanelCurrentSize--;
-            $('#sidepanel').addClass(sidepanelSizes[sidepanelCurrentSize])
+            $('#sidepanel').addClass(sidepanelSizes[sidepanelCurrentSize]);
 
             if (sidepanelCurrentSize === 0) {
                 $('#sidepanel').addClass('collapsed');
@@ -1707,7 +1709,7 @@ ui.resetCellDisplayStates = function () {
 
     this.states.cellDisplay.dependencies.currentState = 0;
     this.states.cellDisplay.contributionLinks.currentState = 0;
-}
+};
 
 $('#menu-button-toggle-dependencies-display').click(function () {
     'use strict';
@@ -1755,7 +1757,7 @@ $('#menu-item-undo').click(function () {
 
 // Prevent accidental undos. There's no need to use this button through the keyboard, since the user can use
 // its shortcut instead
-$('#menu-item-undo').focus(function (e) {this.blur()});
+$('#menu-item-undo').focus(function (e) {this.blur();});
 
 istar.undoManager.callback = function(empty) {
     'use strict';
@@ -1766,7 +1768,7 @@ istar.undoManager.callback = function(empty) {
     else {
         $('#menu-item-undo').removeClass('inactive');
     }
-}
+};
 
 /*definition of globals to prevent undue JSHint warnings*/
 /*globals istar:false, console:false, $:false, _:false, joint:false, uiC:false, bootbox:false */

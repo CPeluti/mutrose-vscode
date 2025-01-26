@@ -1,3 +1,4 @@
+/*eslint-disable*/
 /*!
  * This is open-source. Which means that you can contribute to it, and help
  * make it better! Also, feel free to use, modify, redistribute, and so on.
@@ -343,21 +344,30 @@ var istar = function () {
              */
             addNode: function (nodeType, content, options) {
                 var newNode = new nodeType.shapeObject(options);
-                //add to the graph before changing properties, so that eventual UI event listeners can start acting at once
-                istar.graph.addCell(newNode);
+                newNode.finished = false;
+                newNode.promise = new Promise((resolve, reject)=>{
+                    try{
+        
+                        newNode.prop('name', content || nodeType.name);
+                        newNode.prop('type', nodeType.name);
+        
+                        //stores the initial size of the element in order to later be able to restore it to its initial size
+                        newNode.prop('originalSize', newNode.prop('size'));
+        
+                        if (newNode.attr('.stereotype')) {
+                            if (! newNode.attr('.stereotype/text')) {
+                                newNode.attr('.stereotype/text', '<<' + nodeType.name + '>>');
+                            }
+                        }
+                        resolve(newNode);
 
-                newNode.prop('name', content || nodeType.name);
-                newNode.prop('type', nodeType.name);
-
-                //stores the initial size of the element in order to later be able to restore it to its initial size
-                newNode.prop('originalSize', newNode.prop('size'));
-
-                if (newNode.attr('.stereotype')) {
-                    if (! newNode.attr('.stereotype/text')) {
-                        newNode.attr('.stereotype/text', '<<' + nodeType.name + '>>');
+                    } catch (e){
+                        reject(e);
                     }
-                }
-
+                });
+                istar.graph.addCell(newNode);
+                newNode.finished = true;
+                //add to the graph before changing properties, so that eventual UI event listeners can start acting at once
                 return newNode;
             },
         },
@@ -425,7 +435,7 @@ var istar = function () {
                 {
                     position: element.prop('position')
                 });
-
+            newNode.finished = false;
             //copy the old node properties to the new node
             newNode.prop('originalSize', newNode.prop('size')); //stores the (default) initial size of the element
             if (element.prop('size') !== element.prop('originalSize')) {
@@ -498,7 +508,13 @@ var istar = function () {
 
             //remove the old node
             element.remove();
-
+            newNode.finished = true;
+            if(!istar.fileManager.loading){
+                istar.vscode.postMessage({
+                    type: 'change',
+                    text: istar.fileManager.saveModel()
+                })
+            }
             return newNode;
         },
         /**
@@ -509,22 +525,29 @@ var istar = function () {
          * @param {Actor}   target      target of the link (the actual Cell, not just the id)
          */
         addLinkBetweenActors: function (linkType, source, target) {
-            var hasShape = istar.metamodel.shapesObject[linkType.name];
-            var link = new linkType.shapeObject({
-                'source': {id: source.id},
-                'target': {id: target.id}
-            });
-            link.prop('type', linkType.name);
-
-            if (linkType.label) {
-                link.attr('label/text', linkType.label);
-                link.attr('label-background/text', linkType.label);
-            }
-            else if (! hasShape) {
-                link.attr('label/text', '<<' + linkType.name + '>>');
-                link.attr('label-background/text', '<<' + linkType.name + '>>');
-            }
-
+            link.promise = new Promise((resolve,reject)=>{
+                try{
+                    var hasShape = istar.metamodel.shapesObject[linkType.name];
+                    var link = new linkType.shapeObject({
+                        'source': {id: source.id},
+                        'target': {id: target.id}
+                    });
+                    link.prop('type', linkType.name);
+        
+                    if (linkType.label) {
+                        link.attr('label/text', linkType.label);
+                        link.attr('label-background/text', linkType.label);
+                    }
+                    else if (! hasShape) {
+                        link.attr('label/text', '<<' + linkType.name + '>>');
+                        link.attr('label-background/text', '<<' + linkType.name + '>>');
+                    }
+                    resolve(link);
+                } catch (e){
+                    reject(e);
+                }
+                
+            })
             istar.graph.addCell(link);
             return link;
         },
@@ -583,33 +606,39 @@ var istar = function () {
         addLinkBetweenNodes: function (linkType, source, target, value) {
             var hasShape = istar.metamodel.shapesObject[linkType.name];
             var link = new linkType.shapeObject({'source': {id: source.id}, 'target': {id: target.id}});
-            link.prop('type', linkType.name);
+            link.promise = new Promise((resolve, reject)=>{
+                try{
+                    link.prop('type', linkType.name);
+        
+                    if (linkType.label) {
+                        link.attr('label/text', linkType.label);
+                        link.attr('label-background/text', linkType.label);
+                    }
+                    else if (! hasShape) {
+                        link.attr('label/text', '<<' + linkType.name + '>>');
+                        link.attr('label-background/text', '<<' + linkType.name + '>>');
+                    }
+        
+                    //embeds the link on the (parent) actor of its source element, to facilitate collapse/expand
+                    if (source.get('parent')) {
+                        istar.graph.getCell(source.get('parent')).embed(link);
+                    }
+        
+                    if (linkType.changeableLabel) {
+                        link.setContributionType = _setLinkLabel;
+                        link.on('change:value', function(link, newValue) {
+                            link.setContributionType(newValue);
+                        });
+                    }
+                    if (value) {
+                        link.prop('value', value);
+                    }
+                    resolve(link);
+                } catch (e){
+                    reject(e);
+                }
+            })
             istar.graph.addCell(link);
-
-            if (linkType.label) {
-                link.attr('label/text', linkType.label);
-                link.attr('label-background/text', linkType.label);
-            }
-            else if (! hasShape) {
-                link.attr('label/text', '<<' + linkType.name + '>>');
-                link.attr('label-background/text', '<<' + linkType.name + '>>');
-            }
-
-            //embeds the link on the (parent) actor of its source element, to facilitate collapse/expand
-            if (source.get('parent')) {
-                istar.graph.getCell(source.get('parent')).embed(link);
-            }
-
-            if (linkType.changeableLabel) {
-                link.setContributionType = _setLinkLabel;
-                link.on('change:value', function(link, newValue) {
-                    link.setContributionType(newValue);
-                });
-            }
-            if (value) {
-                link.prop('value', value);
-            }
-
             return link;
         },
         clearModel: function () {

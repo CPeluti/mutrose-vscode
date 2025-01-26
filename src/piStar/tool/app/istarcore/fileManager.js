@@ -1,3 +1,4 @@
+/* eslint-disable*/
 /*!
  * This is open-source. Which means that you can contribute to it, and help
  * make it better! Also, feel free to use, modify, redistribute, and so on.
@@ -112,7 +113,10 @@ istar.fileManager = function() {
             var vertices = [];
 
             _.forEach(istar.graph.getElements(), function (element) {
+                console.log("aquiaaaaa", element)
+                console.log(element.isKindOfActor())
                 if (element.isKindOfActor()) {
+                    console.log("aqui")
                     var actorJSON = elementToJSON(element);
 
                     //it is necessary to expand collapsed actors in order
@@ -206,8 +210,8 @@ istar.fileManager = function() {
                 modelJSON.display[actor.id] = {collapsed: true};//add the collapsing information to the save file
                 actor.collapse();//collapses the actor, thus returning it to its original state
             });
-
-            return outputSavedModel(modelJSON);
+            console.log(modelJSON);
+            return modelJSON;
 
             function childrenToJSON (element) {
                 var result = {nodes: [], display: {}};
@@ -286,6 +290,7 @@ istar.fileManager = function() {
             }
         },
         loadModel: function (inputRaw) {
+            istar.fileManager.loading = true;
             if (inputRaw) {
                 invalidMessages = [];
                 istar.clearModel();
@@ -294,16 +299,16 @@ istar.fileManager = function() {
                     var inputModel = $.parseJSON(inputRaw);
                 } catch (e) {
                     // if failed to parse, consider that the input already is a JSON object
+                    console.log(e)
                     var inputModel = inputRaw;
                 }
-
                 if (inputModel.diagram) {
                     if (inputModel.diagram.width && inputModel.diagram.height) {
                         istar.paper.setDimensions(inputModel.diagram.width, inputModel.diagram.height);
                     }
                     istar.graph.prop('name', inputModel.diagram.name);
                     if (inputModel.diagram.customProperties) {
-                        istar.graph.prop('customProperties', inputModel.diagram.customProperties)
+                        istar.graph.prop('customProperties', inputModel.diagram.customProperties);
                     }
                 }
 
@@ -319,7 +324,7 @@ istar.fileManager = function() {
 
                 if (inputModel.actors) {
                     //create actors and inner elements
-                    for (var i = 0; i < inputModel.actors.length; i++) {
+                for (var i = 0; i < inputModel.actors.length; i++) {
                         var actor = inputModel.actors[i];
                         var parent = addLoadedElement(actor, inputModel.display);
                         for (var j = 0; j < actor.nodes.length; j++) {
@@ -411,7 +416,7 @@ istar.fileManager = function() {
             if (_.size(invalidMessages)>0) {
                 istar.displayInvalidModelMessages(invalidMessages);
             }
-
+            istar.fileManager.loading = false;
             function addLoadedElement (element, display) {
                 if (element.id && element.type && element.x && element.y) {
                     element.text = element.text || '';
