@@ -41,7 +41,6 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		// editors (this happens for example when you split a custom editor)
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-            console.log("aqui", this.changeByWrite);
 			if (e.document.uri.toString() === document.uri.toString() && !this.changeByWrite) {
 				updateWebview();
 			}
@@ -59,7 +58,6 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.type) {
 				case 'change':
-                    console.log("updateDoc", this.changeByWrite);
 					this.updateDocument(document, e.text).then(()=>{
                         this.changeByWrite=true;
                     });
@@ -141,188 +139,188 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 
                 <body>
                 <div id="tool">
-                    <div id="menu-bodies">
-                        <div id="menu-file" class="menu-body hidden">
-                            <div class="menu-group">
-                                <div class="menu-line">
-                                    <a class="btn btn-default button-vertical" id="menu-button-new-model" title="Create a new model in the same window">
-                                        <!--data-toggle="modal" data-target="#modal-new-model"-->
-                                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span><br>
-                                        New Model
-                                    </a>
+                <div id="menu-bodies">
+                    <div id="menu-file" class="menu-body hidden">
+                        <div class="menu-group">
+                            <div class="menu-line">
+                                <a class="btn btn-default button-vertical" id="menu-button-new-model" title="Create a new model in the same window">
+                                    <!--data-toggle="modal" data-target="#modal-new-model"-->
+                                    <span class="glyphicon glyphicon-file" aria-hidden="true"></span><br>
+                                    New Model
+                                </a>
 
-                                    <a class="btn btn-default button-vertical" id="menu-button-save-model"
-                                    title="Save (download) the model to your computer">
-                                        <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span><br>
-                                        Save Model
-                                    </a>
+                                <a class="btn btn-default button-vertical" id="menu-button-save-model"
+                                title="Save (download) the model to your computer">
+                                    <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span><br>
+                                    Save Model
+                                </a>
 
-                                    <a class="btn btn-default button-vertical" id="menu-button-load-model" data-toggle="modal" data-target="#modal-load-model"
-                                    title="Load a previously saved model">
-                                        <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span><br>
-                                        Load Model
-                                    </a>
+                                <a class="btn btn-default button-vertical" id="menu-button-load-model" data-toggle="modal" data-target="#modal-load-model"
+                                title="Load a previously saved model">
+                                    <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span><br>
+                                    Load Model
+                                </a>
 
-                                </div>
                             </div>
-                            <div class="menu-group">
-                                <div class="menu-line">
+                        </div>
+                        <div class="menu-group">
+                            <div class="menu-line">
 
-                                    <a class="btn btn-default button-vertical" id="menu-button-save-image" title="Save (download) model as a SVG or PNG image file"
-                                    data-toggle="modal" data-target="#modal-save-image">
-                                        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span><br>
-                                        Save Image
-                                    </a>
+                                <a class="btn btn-default button-vertical" id="menu-button-save-image" title="Save (download) model as a SVG or PNG image file"
+                                data-toggle="modal" data-target="#modal-save-image">
+                                    <span class="glyphicon glyphicon-picture" aria-hidden="true"></span><br>
+                                    Save Image
+                                </a>
 
+                            </div>
+                        </div>
+                    </div>
+                    <div id="menu-add" class="menu-body">
+                        <div class="menu-group">
+                            <div class="menu-line">
+
+                                <div class="add-dropdown-button dropdown">
+                                    <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actors"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add some kind of Actor">
+                                        <img src="${getUri('language/images/Actor.svg')}" height="25" alt=""/><br>
+                                        Actor...
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul id="add-actor-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actors"></ul>
+                                </div>
+
+                                <div class="add-dropdown-button dropdown">
+                                    <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actor-links"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
+                                            title="Add links between actors">
+                                        <img src="${getUri('language/images/IsALink.svg')}" height="25" alt=""/><br>
+                                        Actor links...
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul id="add-actor-link-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actor-links"></ul>
+                                </div>
+
+                                <div class="add-dropdown-button dropdown">
+                                    <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-dependency-links"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add dependency link">
+                                        <img src="${getUri('language/images/DependencyLink.svg')}" height="25" alt=""/><br>
+                                        Dependency...
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul id="add-dependency-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-dependency-links"></ul>
                                 </div>
                             </div>
                         </div>
-                        <!--<div id="menu-add" class="menu-body">
-                            <div class="menu-group">
-                                <div class="menu-line">
 
-                                    <div class="add-dropdown-button dropdown">
-                                        <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actors"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add some kind of Actor">
-                                            <img src="${getUri('language/images/')}Actor.svg" height="25" alt=""/><br>
-                                            Actor...
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul id="add-actor-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actors"></ul>
-                                    </div>
-
-                                    <div class="add-dropdown-button dropdown">
-                                        <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actor-links"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
-                                                title="Add links between actors">
-                                            <img src="${getUri('language/images/')}IsALink.svg" height="25" alt=""/><br>
-                                            Actor links...
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul id="add-actor-link-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actor-links"></ul>
-                                    </div>
-
-                                    <div class="add-dropdown-button dropdown">
-                                        <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-dependency-links"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add dependency link">
-                                            <img src="${getUri('language/images/')}DependencyLink.svg" height="25" alt=""/><br>
-                                            Dependency...
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul id="add-dependency-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-dependency-links"></ul>
-                                    </div>
-                                </div>
+                        <div class="menu-group">
+                            <div class="menu-line">
+                                <span id="add-internal-cells-palette" class="add-button"></span>
                             </div>
+                        </div>
 
-                            <div class="menu-group">
-                                <div class="menu-line">
-                                    <span id="add-internal-cells-palette" class="add-button"></span>
-                                </div>
-                            </div>
+                        <div class="line-break"></div>
+                        <div id="status-bar">
+                            <span id="status"></span>
+                        </div>
+                    </div>
 
-                            <div class="line-break"></div>
-                            <div id="status-bar">
-                                <span id="status"></span>
+                    <div id="menu-diagram" class="menu-body hidden">
+                        <div class="menu-group">
+                            <div class="title">Diagram Size</div>
+                            <div class="menu-line">
+                                Width:&nbsp; <input id="input-diagram-width" type="text" name="width" value="500" size="4" maxlength="6"
+                                                    title="Set the diagram's width (in pixels)"> px
                             </div>
-                        </div> -->
+                            <div class="menu-line">
+                                Height:&nbsp; <input id="input-diagram-height" type="text" name="height" value="1200" size="4" maxlength="6"
+                                                    title="Set the diagram's height (in pixels)"> px
+                            </div>
+            <!--                <span class="menu-line"><a id="fit-to-content-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-resize-small"></i> Fit to content</a></span> TODO issue due to negative origins-->
+                        </div>
+                        <!--<div class="menu-group">-->
+                        <!--<span class="title">colors</span>-->
+                        <!--<span class="menu-line">Actor boundary:-->
+                        <!--<input id="all-actor-boundary-color-picker" onchange="console.log('change event');" class="jscolor {hash:true}" value="e6e6e6" size="8">-->
+                        <!--</span>-->
+                        <!--<span class="menu-line">Elements:-->
+                        <!--<input id="all-elements-color-picker" class="jscolor {hash:true}" value="ccfacd" size="8">-->
+                        <!--</span>-->
+                        <!--<span class="menu-line">-->
+                        <!--<a id="reset-all-colors-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset colors</a>-->
+                        <!--</span>-->
+                        <!--</div>-->
+                        <!--<div class="menu-group">-->
+                        <!--<span class="title">text</span>-->
+                        <!--<span class="menu-line">Font size: <input type="number" name="fontsize" value="12" min="4" max="999"></span>-->
+                        <!--<span class="menu-line"><a class="btn btn-default btn-xs" data-toggle="button"><i class="glyphicon glyphicon-italic"></i></a></span>-->
+                        <!--</div>-->
+                        <div class="menu-group">
+                            <span class="menu-line">
+                                <a id="menu-button-precise-links" class="btn btn-default btn-xs button-horizontal"
+                                title="Remove gaps between links and elements; recommended to apply before saving an image. It may take some seconds">
+                                <span class="glyphicon glyphicon-screenshot"></span> Pixel-perfect links
+                                </a>
+                                </span>
+                            <span class="menu-line">
+                                <a id="menu-button-auto-layout" class="btn btn-default btn-xs button-horizontal"
+                                title="Automatically update the layout of the actors and their links">
+                                <span class="glyphicon glyphicon-move"></span> Auto-layout
+                                </a>
+                                </span>
+                            <span class="menu-line">
+                                <a id="menu-button-straighten-links" class="btn btn-default btn-xs button-horizontal"
+                                title="Straighten all links">
+                                <span class="glyphicon glyphicon-minus"></span> Straighten all links
+                                </a>
+                            </span>
+                        </div>
 
-                        <div id="menu-diagram" class="menu-body hidden">
-                            <div class="menu-group">
-                                <div class="title">Diagram Size</div>
-                                <div class="menu-line">
-                                    Width:&nbsp; <input id="input-diagram-width" type="text" name="width" value="900" size="4" maxlength="6"
-                                                        title="Set the diagram's width (in pixels)"> px
-                                </div>
-                                <div class="menu-line">
-                                    Height:&nbsp; <input id="input-diagram-height" type="text" name="height" value="1200" size="4" maxlength="6"
-                                                        title="Set the diagram's height (in pixels)"> px
-                                </div>
-                <!--                <span class="menu-line"><a id="fit-to-content-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-resize-small"></i> Fit to content</a></span> TODO issue due to negative origins-->
-                            </div>
-                            <!--<div class="menu-group">-->
-                            <!--<span class="title">colors</span>-->
-                            <!--<span class="menu-line">Actor boundary:-->
-                            <!--<input id="all-actor-boundary-color-picker" onchange="console.log('change event');" class="jscolor {hash:true}" value="e6e6e6" size="8">-->
-                            <!--</span>-->
-                            <!--<span class="menu-line">Elements:-->
-                            <!--<input id="all-elements-color-picker" class="jscolor {hash:true}" value="ccfacd" size="8">-->
+                        <div class="menu-group">
+                            <span class="menu-line">
+                                <a id="menu-button-toggle-fullscreen" class="btn btn-default btn-xs button-horizontal"
+                                title="Fullscreen toggle">
+                                <span class="glyphicon glyphicon-fullscreen"></span> Toggle fullscreen
+                                </a>
+                            </span>
+                        </div>
+
+                        <!--<div class="menu-group">-->
+                            <!--<div class="title">View</div>-->
+                            <!--<span class="menu-line">-->
+                                <!--<a id="menu-button-toggle-dependencies-display" class="btn btn-default btn-xs button-horizontal"-->
+                                <!--title="Toggle between partially hiding, completely hiding, or displaying dependencies">-->
+                                <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show dependencies-->
+                                <!--</a>-->
                             <!--</span>-->
                             <!--<span class="menu-line">-->
-                            <!--<a id="reset-all-colors-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset colors</a>-->
+                                <!--<a id="menu-button-toggle-contributions-display" class="btn btn-default btn-xs button-horizontal"-->
+                                <!--title="Toggle between partially hiding, completely hiding, or displaying contribution links">-->
+                                <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show contribution links-->
+                                <!--</a>-->
                             <!--</span>-->
-                            <!--</div>-->
-                            <!--<div class="menu-group">-->
-                            <!--<span class="title">text</span>-->
-                            <!--<span class="menu-line">Font size: <input type="number" name="fontsize" value="12" min="4" max="999"></span>-->
-                            <!--<span class="menu-line"><a class="btn btn-default btn-xs" data-toggle="button"><i class="glyphicon glyphicon-italic"></i></a></span>-->
-                            <!--</div>-->
-                            <div class="menu-group">
-                                <span class="menu-line">
-                                    <a id="menu-button-precise-links" class="btn btn-default btn-xs button-horizontal"
-                                    title="Remove gaps between links and elements; recommended to apply before saving an image. It may take some seconds">
-                                    <span class="glyphicon glyphicon-screenshot"></span> Pixel-perfect links
-                                    </a>
-                                    </span>
-                                <span class="menu-line">
-                                    <a id="menu-button-auto-layout" class="btn btn-default btn-xs button-horizontal"
-                                    title="Automatically update the layout of the actors and their links">
-                                    <span class="glyphicon glyphicon-move"></span> Auto-layout
-                                    </a>
-                                    </span>
-                                <span class="menu-line">
-                                    <a id="menu-button-straighten-links" class="btn btn-default btn-xs button-horizontal"
-                                    title="Straighten all links">
-                                    <span class="glyphicon glyphicon-minus"></span> Straighten all links
-                                    </a>
-                                </span>
-                            </div>
-
-                            <div class="menu-group">
-                                <span class="menu-line">
-                                    <a id="menu-button-toggle-fullscreen" class="btn btn-default btn-xs button-horizontal"
-                                    title="Fullscreen toggle">
-                                    <span class="glyphicon glyphicon-fullscreen"></span> Toggle fullscreen
-                                    </a>
-                                </span>
-                            </div>
-
-                            <!--<div class="menu-group">-->
-                                <!--<div class="title">View</div>-->
-                                <!--<span class="menu-line">-->
-                                    <!--<a id="menu-button-toggle-dependencies-display" class="btn btn-default btn-xs button-horizontal"-->
-                                    <!--title="Toggle between partially hiding, completely hiding, or displaying dependencies">-->
-                                    <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show dependencies-->
-                                    <!--</a>-->
-                                <!--</span>-->
-                                <!--<span class="menu-line">-->
-                                    <!--<a id="menu-button-toggle-contributions-display" class="btn btn-default btn-xs button-horizontal"-->
-                                    <!--title="Toggle between partially hiding, completely hiding, or displaying contribution links">-->
-                                    <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show contribution links-->
-                                    <!--</a>-->
-                                <!--</span>-->
-                            <!--</div>-->
-                        </div>
-                        <div id="menu-help" class="menu-body hidden">
-                            <div class="menu-group">
-                                <div class="menu-line">
-
-                                    <a id="menu-button-examples" class="btn btn-default" data-toggle="modal" data-target="#modal-examples">Examples</a>
-                                    <a id="menu-button-quickhelp" class="btn btn-default" data-toggle="modal" data-target="#modal-instructions">Quick Guide</a>
-                                    <a id="menu-button-language-guide" class="btn btn-default" href="https://sites.google.com/site/istarlanguage/" target="_blank">
-                                        iStar 2.0 Language Guide <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                                    </a>
-                                    <a id="menu-button-research" class="btn btn-default" href="https://github.com/jhcp/piStar/blob/master/RESEARCH.md#research" target="_blank">
-                                        Research <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                                    </a>
-
-                                </div>
-                            </div>
-                        </div>
-                        <div id="menu-plugin" class="menu-body hidden">
-                            <div id="appToolbar"></div> <!-- this div is DEPRECATED. Instead, add elements directly to #menu-plugin -->
-                        </div>
-
+                        <!--</div>-->
                     </div>
+                    <div id="menu-help" class="menu-body hidden">
+                        <div class="menu-group">
+                            <div class="menu-line">
+
+                                <a id="menu-button-examples" class="btn btn-default" data-toggle="modal" data-target="#modal-examples">Examples</a>
+                                <a id="menu-button-quickhelp" class="btn btn-default" data-toggle="modal" data-target="#modal-instructions">Quick Guide</a>
+                                <a id="menu-button-language-guide" class="btn btn-default" href="https://sites.google.com/site/istarlanguage/" target="_blank">
+                                    iStar 2.0 Language Guide <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                                </a>
+                                <a id="menu-button-research" class="btn btn-default" href="https://github.com/jhcp/piStar/blob/master/RESEARCH.md#research" target="_blank">
+                                    Research <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div id="menu-plugin" class="menu-body hidden">
+                        <div id="appToolbar"></div> <!-- this div is DEPRECATED. Instead, add elements directly to #menu-plugin -->
+                    </div>
+
+                </div>
 
                     <div id="workspace">
 

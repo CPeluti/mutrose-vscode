@@ -113,10 +113,7 @@ istar.fileManager = function() {
             var vertices = [];
 
             _.forEach(istar.graph.getElements(), function (element) {
-                console.log("aquiaaaaa", element)
-                console.log(element.isKindOfActor())
                 if (element.isKindOfActor()) {
-                    console.log("aqui")
                     var actorJSON = elementToJSON(element);
 
                     //it is necessary to expand collapsed actors in order
@@ -210,7 +207,6 @@ istar.fileManager = function() {
                 modelJSON.display[actor.id] = {collapsed: true};//add the collapsing information to the save file
                 actor.collapse();//collapses the actor, thus returning it to its original state
             });
-            console.log(modelJSON);
             return modelJSON;
 
             function childrenToJSON (element) {
