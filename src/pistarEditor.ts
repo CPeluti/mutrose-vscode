@@ -58,9 +58,14 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.type) {
 				case 'change':
-					this.updateDocument(document, e.text).then(()=>{
+					this.updateDocument(document, e.payload).then(()=>{
                         this.changeByWrite=true;
                     });
+					return;
+                case 'select':
+                    if(e.payload){
+                        vscode.commands.executeCommand("goalModel.focusElement", e.payload.target, e.payload.parent);
+                    }
 					return;
 			}
 		}, undefined,);

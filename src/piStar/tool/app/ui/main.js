@@ -21,7 +21,7 @@ $(document).ready(function () {
             // console.log("coisa nova");
             istar.vscode.postMessage({
                 type: 'change',
-                text: istar.fileManager.saveModel()
+                payload: istar.fileManager.saveModel()
             })
             // --> ['attrs', 'body', 'fill'] 'was changed'
         }
@@ -32,7 +32,7 @@ $(document).ready(function () {
             cell.promise.then(()=>{
                 istar.vscode.postMessage({
                     type: 'change',
-                    text: istar.fileManager.saveModel()
+                    payload: istar.fileManager.saveModel()
                 })
             })
         }
@@ -42,7 +42,7 @@ $(document).ready(function () {
         if(!istar.fileManager.loading){
             istar.vscode.postMessage({
                 type: 'change',
-                text: istar.fileManager.saveModel()
+                payload: istar.fileManager.saveModel()
             })
         }
     })

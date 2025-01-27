@@ -512,7 +512,7 @@ var istar = function () {
             if(!istar.fileManager.loading){
                 istar.vscode.postMessage({
                     type: 'change',
-                    text: istar.fileManager.saveModel()
+                    payload: istar.fileManager.saveModel()
                 })
             }
             return newNode;

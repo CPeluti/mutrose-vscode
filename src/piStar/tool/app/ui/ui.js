@@ -236,6 +236,12 @@ ui.defineInteractions = function () {
     istar.paper.on('change:selection', function(selection) {
         if (selection.selectedCell) {
             ui.table = new ui.components.PropertiesTableView({model: selection.selectedCell}).render();
+            if(!istar.fileManager.loading){
+                istar.vscode.postMessage({
+                    type: 'select',
+                    payload: {target: selection.selectedCell.attributes.id, parent: selection.selectedCell.attributes.parent}
+                })
+            }
             if (selection.selectedCellView) {
                 ui.showSelection(selection.selectedCell);
             }

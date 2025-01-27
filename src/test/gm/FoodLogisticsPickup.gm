@@ -2,50 +2,39 @@
   "actors": [
     {
       "id": "145d40fe-87a2-42c9-8d5a-d1561533e1bc",
-      "text": "Actor",
+      "text": "M1: Actor",
       "type": "istar.Actor",
-      "x": 177,
-      "y": 390,
+      "x": 182,
+      "y": 226,
       "customProperties": {
         "Description": ""
       },
       "nodes": [
         {
           "id": "f2e8994e-b6e3-49e2-893e-574f5d3b48d9",
-          "text": "teste",
+          "text": "G2: teste",
           "type": "istar.Goal",
-          "x": 183,
-          "y": 611
+          "x": 182,
+          "y": 518
         },
         {
           "id": "ec1d7346-42df-455a-98f1-6cd78176ab88",
-          "text": "Goal",
+          "text": "G1: Goal",
           "type": "istar.Goal",
-          "x": 248,
-          "y": 467,
+          "x": 287,
+          "y": 303,
           "customProperties": {
             "Description": ""
           }
         }
       ]
-    },
-    {
-      "id": "ee22af51-d8b6-4de5-a940-35a875f12bd0",
-      "text": "Actor",
-      "type": "istar.Actor",
-      "x": 812,
-      "y": 313,
-      "customProperties": {
-        "Description": ""
-      },
-      "nodes": []
     }
   ],
   "orphans": [],
   "dependencies": [],
   "links": [
     {
-      "id": "94cd2918-8bd3-4195-803a-572727e29b99",
+      "id": "7c625f4b-f5ab-441a-a94a-1e9029f51484",
       "type": "istar.AndRefinementLink",
       "source": "f2e8994e-b6e3-49e2-893e-574f5d3b48d9",
       "target": "ec1d7346-42df-455a-98f1-6cd78176ab88"
@@ -59,7 +48,7 @@
   },
   "tool": "pistar.2.1.0",
   "istar": "2.0",
-  "saveDate": "Sun, 26 Jan 2025 20:10:10 GMT",
+  "saveDate": "Mon, 27 Jan 2025 00:04:18 GMT",
   "diagram": {
     "width": 2000,
     "height": 1300,
