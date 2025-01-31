@@ -1,1 +1,67 @@
+<<<<<<< Updated upstream
 {"actors":[{"customProperties":{"Description":""},"id":"145d40fe-87a2-42c9-8d5a-d1561533e1bc","nodes":[{"id":"f2e8994e-b6e3-49e2-893e-574f5d3b48d9","text":"G2: teste","x":182,"y":518,"type":"istar.Goal","customProperties":{}},{"id":"ec1d7346-42df-455a-98f1-6cd78176ab88","text":"G1: Goal","x":287,"y":303,"type":"istar.Goal","customProperties":{"Description":""}}],"text":"M1: Actor","type":"istar.Actor","x":182,"y":226}],"orphans":[],"dependencies":[],"links":[{"source":"f2e8994e-b6e3-49e2-893e-574f5d3b48d9","target":"ec1d7346-42df-455a-98f1-6cd78176ab88","id":"7c625f4b-f5ab-441a-a94a-1e9029f51484","type":"istar.AndRefinementLink"}],"display":{"f2e8994e-b6e3-49e2-893e-574f5d3b48d9":{"width":112,"height":60.84375}},"tool":"pistar.2.1.0","istar":"2.0","saveDate":"Mon, 27 Jan 2025 00:04:18 GMT","diagram":{"width":2000,"height":1300,"customProperties":{"Description":""}}}
+=======
+{
+  "actors": [
+    {
+      "id": "145d40fe-87a2-42c9-8d5a-d1561533e1bc",
+      "text": "M1: Actor",
+      "type": "istar.Actor",
+      "x": 301,
+      "y": 234,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "f2e8994e-b6e3-49e2-893e-574f5d3b48d9",
+          "text": "G2: teste",
+          "type": "istar.Goal",
+          "x": 699,
+          "y": 490,
+          "customProperties": {}
+        },
+        {
+          "id": "ec1d7346-42df-455a-98f1-6cd78176ab88",
+          "text": "G1: Goal1",
+          "type": "istar.Goal",
+          "x": 618,
+          "y": 325,
+          "customProperties": {
+            "Description": ""
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "d4f4d33b-927c-4eb2-be16-2fabe2f497ee",
+      "type": "istar.AndRefinementLink",
+      "source": "f2e8994e-b6e3-49e2-893e-574f5d3b48d9",
+      "target": "ec1d7346-42df-455a-98f1-6cd78176ab88"
+    }
+  ],
+  "display": {
+    "f2e8994e-b6e3-49e2-893e-574f5d3b48d9": {
+      "width": 112,
+      "height": 60.84375
+    },
+    "145d40fe-87a2-42c9-8d5a-d1561533e1bc": {
+      "collapsed": true
+    }
+  },
+  "tool": "pistar.2.1.0",
+  "istar": "2.0",
+  "saveDate": "Tue, 28 Jan 2025 01:01:35 GMT",
+  "diagram": {
+    "width": 4084,
+    "height": 1300,
+    "customProperties": {
+      "Description": ""
+    }
+  }
+}
+>>>>>>> Stashed changes

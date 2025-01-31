@@ -17,7 +17,8 @@ $(document).ready(function () {
     istar.vscode = acquireVsCodeApi();
     ui.setupUi();
     istar.graph.on('change', (cell, opt) => {
-        if (('attrs' in cell.changed || Object.keys(opt).includes('translateBy')) && cell.finished && !istar.fileManager.loading) {
+        const changedButDidntMove = !Object.keys(opt).includes('translateBy') && Object.keys(opt).length && 'attrs' in cell.changed && cell.finished && !istar.fileManager.loading;
+        if (changedButDidntMove) {
             // console.log("coisa nova");
             istar.vscode.postMessage({
                 type: 'change',
@@ -25,6 +26,13 @@ $(document).ready(function () {
             })
             // --> ['attrs', 'body', 'fill'] 'was changed'
         }
+    })
+
+    istar.paper.on('cell:pointerup',(cell, opt)=>{
+        istar.vscode.postMessage({
+            type: 'change',
+            payload: istar.fileManager.saveModel()
+        }) 
     })
 
     istar.graph.on('add', (cell, opt) => {

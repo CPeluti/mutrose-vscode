@@ -243,7 +243,7 @@ export class Node extends vscode.TreeItem {
             return e;
         }
     }
-    removeAttribute(tag){
+    removeAttribute(tag: NodeAttr){
 		this.attributes = this.attributes.filter(attr => attr != tag);
         try{
             this.parent.parent.saveGoalModel();

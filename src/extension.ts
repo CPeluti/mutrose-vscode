@@ -151,7 +151,7 @@ export function activate(context: vscode.ExtensionContext) {
 			try{
 				const selected = await vscode.window.showQuickPick(items);
 				element.addAttribute(selected.label, "");
-				element.mission.goalModel.saveGoalModel();
+				element.parent.parent.saveGoalModel();
 			} catch (e){
 				console.log(e, "erro ao adicionar property");
 			}
@@ -168,7 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
 				value: element.attrValue
 			});
 			element.attrValue=newContent;
-			element.node.mission.goalModel.saveGoalModel();
+			element.parent.parent.parent.saveGoalModel();
 		})
 	);
 
@@ -176,7 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
 	commands.push(
 		vscode.commands.registerCommand('goalModel.deleteNode', async (element) => {
 			element.remove();
-			element.mission.goalModel.saveGoalModel();
+			element.parent.parent.saveGoalModel();
 		})
 	);
 
@@ -218,7 +218,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// delete property from node command
 	commands.push(
 		vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
-			const node = element.node;
+			const node = element.parent;
 			node.removeAttribute(element);
 		})
 	);
