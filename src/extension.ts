@@ -127,26 +127,26 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	commands.push(
-		vscode.commands.registerCommand('goalModel.editNode', async (element) => {
-			try {
-				const selected = await vscode.window.showQuickPick(getAllProperties().map(prop => {
-					return {
-						label: prop.name,
-						description: prop.name
-					};
-				}));
-				const input = await vscode.window.showInputBox({
-					placeHolder: "Type " + selected.label,
-					prompt: "Edit node content",
-					value: ''
-				});
-				// element.;
-			} catch (e) {
-				console.log(e, "erro ao editar node");
-			}
-		})
-	);
+	// commands.push(
+	// 	vscode.commands.registerCommand('goalModel.editNode', async (element) => {
+	// 		try {
+	// 			const selected = await vscode.window.showQuickPick(getAllProperties().map(prop => {
+	// 				return {
+	// 					label: prop.name,
+	// 					description: prop.name
+	// 				};
+	// 			}));
+	// 			const input = await vscode.window.showInputBox({
+	// 				placeHolder: "Type " + selected.label,
+	// 				prompt: "Edit node content",
+	// 				value: ''
+	// 			});
+	// 			// element.;
+	// 		} catch (e) {
+	// 			console.log(e, "erro ao editar node");
+	// 		}
+	// 	})
+	// );
 
 	// add property to node command
 	commands.push(
