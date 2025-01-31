@@ -183,7 +183,7 @@ export function activate(context: vscode.ExtensionContext) {
 	commands.push(
 		vscode.commands.registerCommand('goalModel.focusElement', async (targetId: string, parentId:string) => {
 			const element = gmProvider.findChildren(parentId,targetId);
-			treeView.reveal(element);
+			treeView.reveal(element, {expand: true});
 		})
 	);
 	// add refinements to a node command

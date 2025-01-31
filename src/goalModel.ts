@@ -41,14 +41,15 @@ export class GoalModelProvider implements vscode.TreeDataProvider<void | GoalMod
     }
 
     findChildren(actorId: string, nodeId: string): Node | undefined{
-        return this.goalModels.map(el=>{
+        const element = this.goalModels.map(el=>{
             const actor = el.missions.find(a => a.customId == actorId);
             if(actor){
                 const node = actor.nodes.find(n=>n.customId==nodeId);
                 return node;
             }
             return undefined;
-        }, nodeId)[0];
+        }, nodeId).filter(el => el != undefined)[0];
+        return element;
     }
 
     // GetChildren should be triggered by the click on the mission to get the goals;
