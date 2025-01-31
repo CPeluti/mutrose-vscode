@@ -1,3 +1,4 @@
+/* eslint-disable*/
 /*!
  * This is open-source. Which means that you can contribute to it, and help
  * make it better! Also, feel free to use, modify, redistribute, and so on.

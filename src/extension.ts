@@ -29,8 +29,9 @@ export function activate(context: vscode.ExtensionContext) {
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
 	const gmProvider = new GoalModelProvider(rootPath);
+	const treeView = vscode.window.createTreeView('goalModel',{treeDataProvider: gmProvider});
 
-	vscode.window.registerTreeDataProvider('goalModel', gmProvider);
+	// vscode.window.registerTreeDataProvider('goalModel', gmProvider);
 
 	context.subscriptions.push(PistarEditorProvider.register(context));
 
@@ -201,6 +202,12 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	commands.push(
+		vscode.commands.registerCommand('goalModel.focusElement', async (targetId: string, parentId:string) => {
+			const element = gmProvider.findChildren(parentId,targetId);
+			treeView.reveal(element, {expand: true});
+		})
+	);
 	// add refinements to a node command
 
 	commands.push(
@@ -239,9 +246,9 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	commands.push(
 		vscode.commands.registerCommand('goalModel.addRefinement', async (element: NodeRefinement) => {
-			const targetNode = element.node;
-			const gm = targetNode.mission.goalModel;
-			const items: vscode.QuickPickItem[] = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
+			const targetNode = element.parent;
+			const gm = targetNode.parent.parent;
+			const items: vscode.QuickPickItem[] = targetNode.parent.nodes.filter(e=> e!=targetNode).map(node=>{
 				return {
 					label: node.name,
 					description: node.customId
@@ -254,8 +261,8 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	commands.push(
 		vscode.commands.registerCommand('goalModel.deleteRefinement', async (element: Refinement)=> {
-			element.refinements.removeRefinement(element);
-			element.refinements.node.mission.goalModel.saveGoalModel();
+			element.parent.removeRefinement(element);
+			element.parent.parent.parent.parent.saveGoalModel();
 		})
 	);
 
