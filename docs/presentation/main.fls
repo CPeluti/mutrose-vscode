@@ -1,6 +1,6 @@
-PWD c:\Users\pelut\Downloads\FSC - Seminário 2 (Copy)
+PWD c:\Users\pelut\projetos\mutrose-vscode\docs\presentation
 INPUT C:\Users\pelut\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\Users\pelut\Downloads\FSC - Seminário 2 (Copy)\main.tex
+INPUT c:\Users\pelut\projetos\mutrose-vscode\docs\presentation\main.tex
 OUTPUT main.log
 INPUT C:\Users\pelut\AppData\Local\Programs\MiKTeX\tex\latex\beamer\beamer.cls
 INPUT C:\Users\pelut\AppData\Local\Programs\MiKTeX\tex\latex\beamer\beamer.cls

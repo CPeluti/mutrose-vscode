@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2025.2.6)  6 FEB 2025 13:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2025.2.6)  6 FEB 2025 21:38
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**"c:/Users/pelut/Downloads/FSC - Seminário 2 (Copy)/main.tex"
-(c:/Users/pelut/Downloads/FSC - Seminário 2 (Copy)/main.tex
+**c:/Users/pelut/projetos/mutrose-vscode/docs/presentation/main.tex
+(c:/Users/pelut/projetos/mutrose-vscode/docs/presentation/main.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (C:\Users\pelut\AppData\Local\Programs\MiKTeX\tex/latex/beamer\beamer.cls
@@ -839,7 +839,7 @@ Package caption Info: End \AtBeginDocument code.
 <tipograma_CIC_4_alta.png, id=26, 503.7219pt x 51.3117pt>
 File: tipograma_CIC_4_alta.png Graphic file (type png)
 <use tipograma_CIC_4_alta.png>
-Package pdftex.def Info: tipograma_CIC_4_alta.png  used on input line 91.
+Package pdftex.def Info: tipograma_CIC_4_alta.png  used on input line 90.
 (pdftex.def)             Requested size: 342.2953pt x 34.868pt.
 
 
@@ -862,11 +862,11 @@ Package pdftex.def Info: tipograma_CIC_4_alta.png  used on input line 91.
 [5
 
 ]
-<erro_mutrose.png, id=204, 806.01125pt x 271.0125pt>
+<erro_mutrose.png, id=204, 823.075pt x 236.885pt>
 File: erro_mutrose.png Graphic file (type png)
 <use erro_mutrose.png>
-Package pdftex.def Info: erro_mutrose.png  used on input line 141.
-(pdftex.def)             Requested size: 342.2953pt x 115.09401pt.
+Package pdftex.def Info: erro_mutrose.png  used on input line 140.
+(pdftex.def)             Requested size: 342.2953pt x 98.51508pt.
 
 
 [6
@@ -879,7 +879,7 @@ Package pdftex.def Info: erro_mutrose.png  used on input line 141.
 <VSCode extension flows.png, id=266, 1659.19875pt x 515.9275pt>
 File: VSCode extension flows.png Graphic file (type png)
 <use VSCode extension flows.png>
-Package pdftex.def Info: VSCode extension flows.png  used on input line 150.
+Package pdftex.def Info: VSCode extension flows.png  used on input line 149.
 (pdftex.def)             Requested size: 342.2953pt x 106.43497pt.
 
 
@@ -889,7 +889,7 @@ Package pdftex.def Info: VSCode extension flows.png  used on input line 150.
 <vscode print.png, id=296, 1924.94156pt x 1045.65656pt>
 File: vscode print.png Graphic file (type png)
 <use vscode print.png>
-Package pdftex.def Info: vscode print.png  used on input line 157.
+Package pdftex.def Info: vscode print.png  used on input line 156.
 (pdftex.def)             Requested size: 342.2953pt x 185.92844pt.
 
 
@@ -899,7 +899,7 @@ Package pdftex.def Info: vscode print.png  used on input line 157.
 <custom_texteditor.png, id=326, 1928.70563pt x 1045.65656pt>
 File: custom_texteditor.png Graphic file (type png)
 <use custom_texteditor.png>
-Package pdftex.def Info: custom_texteditor.png  used on input line 165.
+Package pdftex.def Info: custom_texteditor.png  used on input line 164.
 (pdftex.def)             Requested size: 342.2953pt x 185.57741pt.
 
 
@@ -909,7 +909,7 @@ Package pdftex.def Info: custom_texteditor.png  used on input line 165.
 <treeview.png, id=356, 1924.94156pt x 1045.65656pt>
 File: treeview.png Graphic file (type png)
 <use treeview.png>
-Package pdftex.def Info: treeview.png  used on input line 172.
+Package pdftex.def Info: treeview.png  used on input line 171.
 (pdftex.def)             Requested size: 342.2953pt x 185.92844pt.
 
 
@@ -919,7 +919,7 @@ Package pdftex.def Info: treeview.png  used on input line 172.
 <Mission in treeview.png, id=386, 1924.18875pt x 1048.66782pt>
 File: Mission in treeview.png Graphic file (type png)
 <use Mission in treeview.png>
-Package pdftex.def Info: Mission in treeview.png  used on input line 179.
+Package pdftex.def Info: Mission in treeview.png  used on input line 178.
 (pdftex.def)             Requested size: 342.2953pt x 186.54387pt.
 
 
@@ -929,7 +929,7 @@ Package pdftex.def Info: Mission in treeview.png  used on input line 179.
 <missionfocus.png, id=416, 1924.94156pt x 1047.915pt>
 File: missionfocus.png Graphic file (type png)
 <use missionfocus.png>
-Package pdftex.def Info: missionfocus.png  used on input line 186.
+Package pdftex.def Info: missionfocus.png  used on input line 185.
 (pdftex.def)             Requested size: 342.2953pt x 186.33pt.
 
 
@@ -939,7 +939,7 @@ Package pdftex.def Info: missionfocus.png  used on input line 186.
 <node properties.png, id=447, 1924.94156pt x 1049.42062pt>
 File: node properties.png Graphic file (type png)
 <use node properties.png>
-Package pdftex.def Info: node properties.png  used on input line 193.
+Package pdftex.def Info: node properties.png  used on input line 192.
 (pdftex.def)             Requested size: 342.2953pt x 186.59772pt.
 
 
@@ -949,7 +949,7 @@ Package pdftex.def Info: node properties.png  used on input line 193.
 <refinements.png, id=477, 1924.94156pt x 1049.42062pt>
 File: refinements.png Graphic file (type png)
 <use refinements.png>
-Package pdftex.def Info: refinements.png  used on input line 200.
+Package pdftex.def Info: refinements.png  used on input line 199.
 (pdftex.def)             Requested size: 342.2953pt x 186.59772pt.
 
 
@@ -959,7 +959,7 @@ Package pdftex.def Info: refinements.png  used on input line 200.
 <submenu_on_right_click.png, id=507, 1924.94156pt x 1049.42062pt>
 File: submenu_on_right_click.png Graphic file (type png)
 <use submenu_on_right_click.png>
-Package pdftex.def Info: submenu_on_right_click.png  used on input line 207.
+Package pdftex.def Info: submenu_on_right_click.png  used on input line 206.
 (pdftex.def)             Requested size: 342.2953pt x 186.59772pt.
 
 
@@ -969,7 +969,7 @@ Package pdftex.def Info: submenu_on_right_click.png  used on input line 207.
 <rightclickonmission.png, id=537, 1916.66063pt x 1050.17343pt>
 File: rightclickonmission.png Graphic file (type png)
 <use rightclickonmission.png>
-Package pdftex.def Info: rightclickonmission.png  used on input line 214.
+Package pdftex.def Info: rightclickonmission.png  used on input line 213.
 (pdftex.def)             Requested size: 342.2953pt x 187.54881pt.
 
 
@@ -979,7 +979,7 @@ Package pdftex.def Info: rightclickonmission.png  used on input line 214.
 <flow1.png, id=567, 1917.41344pt x 1051.67906pt>
 File: flow1.png Graphic file (type png)
 <use flow1.png>
-Package pdftex.def Info: flow1.png  used on input line 221.
+Package pdftex.def Info: flow1.png  used on input line 220.
 (pdftex.def)             Requested size: 342.2953pt x 187.73747pt.
 
 
@@ -989,7 +989,7 @@ Package pdftex.def Info: flow1.png  used on input line 221.
 <flow2.png, id=597, 1925.69438pt x 1047.16219pt>
 File: flow2.png Graphic file (type png)
 <use flow2.png>
-Package pdftex.def Info: flow2.png  used on input line 228.
+Package pdftex.def Info: flow2.png  used on input line 227.
 (pdftex.def)             Requested size: 342.2953pt x 186.13223pt.
 
 
@@ -999,7 +999,7 @@ Package pdftex.def Info: flow2.png  used on input line 228.
 <decompose.png, id=627, 1925.69438pt x 1047.16219pt>
 File: decompose.png Graphic file (type png)
 <use decompose.png>
-Package pdftex.def Info: decompose.png  used on input line 235.
+Package pdftex.def Info: decompose.png  used on input line 234.
 (pdftex.def)             Requested size: 342.2953pt x 186.13223pt.
 
 
@@ -1010,15 +1010,15 @@ Package pdftex.def Info: decompose.png  used on input line 235.
 [21
 
 ]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 270.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 269.
  (C:\Users\pelut\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 270.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 269.
  (C:\Users\pelut\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on input line 270.
+LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on input line 269.
  (C:\Users\pelut\AppData\Local\Programs\MiKTeX\tex/latex/sansmathaccent\ot1mathkerncmss.fd
 File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/mathkerncmss.
 )
@@ -1029,7 +1029,7 @@ File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/mat
 <VSCode extension.png, id=715, 1929.2075pt x 685.56125pt>
 File: VSCode extension.png Graphic file (type png)
 <use VSCode extension.png>
-Package pdftex.def Info: VSCode extension.png  used on input line 277.
+Package pdftex.def Info: VSCode extension.png  used on input line 276.
 (pdftex.def)             Requested size: 342.2953pt x 121.63828pt.
 
 
@@ -1039,7 +1039,7 @@ Package pdftex.def Info: VSCode extension.png  used on input line 277.
 <multiple sections example.png, id=745, 1924.94156pt x 1047.16219pt>
 File: multiple sections example.png Graphic file (type png)
 <use multiple sections example.png>
-Package pdftex.def Info: multiple sections example.png  used on input line 284.
+Package pdftex.def Info: multiple sections example.png  used on input line 283.
 (pdftex.def)             Requested size: 342.2953pt x 186.19615pt.
 
 
@@ -1069,14 +1069,14 @@ Package rerunfilecheck Info: File `main.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  27073 strings out of 473530
- 531791 string characters out of 5714795
- 913302 words of memory out of 5000000
+ 531869 string characters out of 5714795
+ 914302 words of memory out of 5000000
  49714 multiletter control sequences out of 15000+600000
  567143 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 128i,15n,123p,459b,733s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 128i,15n,123p,463b,733s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/pelut/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Users/pelut/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss12.pfb><C:/Users/pelut/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss8.pfb><C:/Users/pelut/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx10.pfb><C:/Users/pelut/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmssi10.pfb>
-Output written on main.pdf (25 pages, 2713659 bytes).
+Output written on main.pdf (25 pages, 2714163 bytes).
 PDF statistics:
  837 PDF objects out of 1000 (max. 8388607)
  54 named destinations out of 1000 (max. 500000)
