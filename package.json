@@ -158,6 +158,10 @@
 				"title": "Edit Property"
 			},
 			{
+				"command": "goalModel.focusElement",
+				"title": "Focus Element"
+			},
+			{
 				"command": "gm-parser.execMutRose",
 				"title": "Decompose with MutRoSe"
 			},

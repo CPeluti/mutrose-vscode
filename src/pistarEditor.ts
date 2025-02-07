@@ -8,12 +8,12 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		return providerRegistration;
 	}
 
+    changeByWrite = false;
     private static readonly viewType = 'mutrose.pistar';
 
     constructor(
 		private readonly context: vscode.ExtensionContext
 	) { }
-
     public async resolveCustomTextEditor(
 		document: vscode.TextDocument,
 		webviewPanel: vscode.WebviewPanel,
@@ -28,7 +28,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		function updateWebview() {
 			webviewPanel.webview.postMessage({
 				type: 'update',
-				text: document.getText(),
+				data: document.getText(),
 			});
 		}
 
@@ -41,9 +41,12 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		// editors (this happens for example when you split a custom editor)
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-			if (e.document.uri.toString() === document.uri.toString()) {
+			if (e.document.uri.toString() === document.uri.toString() && !this.changeByWrite) {
 				updateWebview();
 			}
+            if(this.changeByWrite){
+                this.changeByWrite = false;
+            }
 		});
 
 		// Make sure we get rid of the listener when our editor is closed.
@@ -52,32 +55,73 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		});
 
 		// Receive message from the webview.
-		// webviewPanel.webview.onDidReceiveMessage(e => {
-		// 	switch (e.type) {
-		// 		case 'add':
-		// 			this.addNewScratch(document);
-		// 			return;
-
-		// 		case 'delete':
-		// 			this.deleteScratch(document, e.id);
-		// 			return;
-		// 	}
-		// });
+		webviewPanel.webview.onDidReceiveMessage(e => {
+			switch (e.type) {
+				case 'change':
+					this.updateDocument(document, e.payload).then(()=>{
+                        this.changeByWrite=true;
+                    });
+					return;
+                case 'select':
+                    if(e.payload){
+                        vscode.commands.executeCommand("goalModel.focusElement", e.payload.target, e.payload.parent);
+                    }
+					return;
+			}
+		}, undefined,);
 
 		updateWebview();
+	}
+
+    private updateDocument(document: vscode.TextDocument, newDocument: JSON) {
+		const json = this.getDocumentAsJson(document);
+
+		return this.updateTextDocument(document, newDocument);
+	}
+
+    private updateTextDocument(document: vscode.TextDocument, json: any) {
+		const edit = new vscode.WorkspaceEdit();
+
+		// Just replace the entire document every time for this example extension.
+		// A more complete extension should compute minimal edits instead.
+		edit.replace(
+			document.uri,
+			new vscode.Range(0, 0, document.lineCount, 0),
+			JSON.stringify(json, null, 2));
+        const apply = vscode.workspace.applyEdit(edit);
+        // this.changeByWrite=false;
+		return apply;
+	}
+
+    private getDocumentAsJson(document: vscode.TextDocument): any {
+		const text = document.getText();
+		if (text.trim().length === 0) {
+			return {};
+		}
+
+		try {
+			return JSON.parse(text);
+		} catch {
+			throw new Error('Could not get document as json. Content is not valid json');
+		}
 	}
 
     private getHtmlForWebview(webview: vscode.Webview): string {
 		const getUri = (path: string) => {
             return webview.asWebviewUri(vscode.Uri.joinPath(
-                this.context.extensionUri,"src","pistar","tool",path
+                this.context.extensionUri,"src","piStar","tool",path
             ));
         };
-
+        
 		return `
 			<!DOCTYPE html>
             <html lang="en">
                 <head>
+                    <style>
+                        body{
+                            padding: 0;
+                        }
+                    </style>
                     <meta charset="utf-8">
                     <meta http-equiv="X-UA-Compatible" content="IE=edge">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -100,282 +144,190 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 
                 <body>
                 <div id="tool">
-                    <div class="menu-bar">
-                        <div id="logo">
-                            <img src="${getUri('app/ui/images/logo-pie.svg')}" width="21" height="21" title="a pie" alt=""/>
-                            <img id="star" src="${getUri('app/ui/images/logo-star.svg')}" width="12" height="12" title="a star" alt=""/>
-                            <a id="logo-name" href="index.html" target="_blank" title="Open an instance of the tool in a new tab">piStar</a>
+                <div id="menu-bodies">
+                    <div id="menu-file" class="menu-body hidden">
+                        <div class="menu-group">
+                            <div class="menu-line">
+                                <a class="btn btn-default button-vertical" id="menu-button-new-model" title="Create a new model in the same window">
+                                    <!--data-toggle="modal" data-target="#modal-new-model"-->
+                                    <span class="glyphicon glyphicon-file" aria-hidden="true"></span><br>
+                                    New Model
+                                </a>
+
+                                <a class="btn btn-default button-vertical" id="menu-button-save-model"
+                                title="Save (download) the model to your computer">
+                                    <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span><br>
+                                    Save Model
+                                </a>
+
+                                <a class="btn btn-default button-vertical" id="menu-button-load-model" data-toggle="modal" data-target="#modal-load-model"
+                                title="Load a previously saved model">
+                                    <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span><br>
+                                    Load Model
+                                </a>
+
+                            </div>
                         </div>
-                        <nav class="menu-items">
-                            <a class="menu-item" href="#" id="menu-item-file" data-toggle="menu-file">File</a>
-                            <a class="menu-item active" href="#" id="menu-item-add" data-toggle="menu-add">Add</a>
-                            <a class="menu-item" href="#" id="menu-item-diagram" data-toggle="menu-diagram">Options</a>
-                            <a class="menu-item" href="#" id="menu-item-help" data-toggle="menu-help">Help</a>
-                            <a class="menu-item" href="#" id="menu-item-plugin" data-toggle="menu-plugin">Plugins</a>
-                        </nav>
-                        <button class="menu-item-quick-button inactive" href="#" id="menu-item-undo" title="Undo delete">
-                            <span class="glyphicon glyphicon-share-alt icon-flipped" aria-hidden="true"></span>
-                        </button>
+                        <div class="menu-group">
+                            <div class="menu-line">
+
+                                <a class="btn btn-default button-vertical" id="menu-button-save-image" title="Save (download) model as a SVG or PNG image file"
+                                data-toggle="modal" data-target="#modal-save-image">
+                                    <span class="glyphicon glyphicon-picture" aria-hidden="true"></span><br>
+                                    Save Image
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div id="menu-add" class="menu-body">
+                        <div class="menu-group">
+                            <div class="menu-line">
+
+                                <div class="add-dropdown-button dropdown">
+                                    <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actors"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add some kind of Actor">
+                                        <img src="${getUri('language/images/Actor.svg')}" height="25" alt=""/><br>
+                                        Actor...
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul id="add-actor-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actors"></ul>
+                                </div>
+
+                                <div class="add-dropdown-button dropdown">
+                                    <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actor-links"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
+                                            title="Add links between actors">
+                                        <img src="${getUri('language/images/IsALink.svg')}" height="25" alt=""/><br>
+                                        Actor links...
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul id="add-actor-link-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actor-links"></ul>
+                                </div>
+
+                                <div class="add-dropdown-button dropdown">
+                                    <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-dependency-links"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add dependency link">
+                                        <img src="${getUri('language/images/DependencyLink.svg')}" height="25" alt=""/><br>
+                                        Dependency...
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul id="add-dependency-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-dependency-links"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="menu-group">
+                            <div class="menu-line">
+                                <span id="add-internal-cells-palette" class="add-button"></span>
+                            </div>
+                        </div>
+
+                        <div class="line-break"></div>
+                        <div id="status-bar">
+                            <span id="status"></span>
+                        </div>
                     </div>
 
-                    <div id="menu-bodies">
-                        <div id="menu-file" class="menu-body hidden">
-                            <div class="menu-group">
-                                <div class="menu-line">
-                                    <a class="btn btn-default button-vertical" id="menu-button-new-model" title="Create a new model in the same window">
-                                        <!--data-toggle="modal" data-target="#modal-new-model"-->
-                                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span><br>
-                                        New Model
-                                    </a>
-
-                                    <a class="btn btn-default button-vertical" id="menu-button-save-model"
-                                    title="Save (download) the model to your computer">
-                                        <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span><br>
-                                        Save Model
-                                    </a>
-
-                                    <a class="btn btn-default button-vertical" id="menu-button-load-model" data-toggle="modal" data-target="#modal-load-model"
-                                    title="Load a previously saved model">
-                                        <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span><br>
-                                        Load Model
-                                    </a>
-
-                                </div>
+                    <div id="menu-diagram" class="menu-body hidden">
+                        <div class="menu-group">
+                            <div class="title">Diagram Size</div>
+                            <div class="menu-line">
+                                Width:&nbsp; <input id="input-diagram-width" type="text" name="width" value="500" size="4" maxlength="6"
+                                                    title="Set the diagram's width (in pixels)"> px
                             </div>
-                            <div class="menu-group">
-                                <div class="menu-line">
-
-                                    <a class="btn btn-default button-vertical" id="menu-button-save-image" title="Save (download) model as a SVG or PNG image file"
-                                    data-toggle="modal" data-target="#modal-save-image">
-                                        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span><br>
-                                        Save Image
-                                    </a>
-
-                                </div>
+                            <div class="menu-line">
+                                Height:&nbsp; <input id="input-diagram-height" type="text" name="height" value="1200" size="4" maxlength="6"
+                                                    title="Set the diagram's height (in pixels)"> px
                             </div>
+            <!--                <span class="menu-line"><a id="fit-to-content-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-resize-small"></i> Fit to content</a></span> TODO issue due to negative origins-->
                         </div>
-                        <div id="menu-add" class="menu-body">
-                            <div class="menu-group">
-                                <div class="menu-line">
-
-                                    <div class="add-dropdown-button dropdown">
-                                        <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actors"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add some kind of Actor">
-                                            <img src="${getUri('language/images/Actor.svg')}" height="25" alt=""/><br>
-                                            Actor...
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul id="add-actor-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actors"></ul>
-                                    </div>
-
-                                    <div class="add-dropdown-button dropdown">
-                                        <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actor-links"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
-                                                title="Add links between actors">
-                                            <img src="${getUri('language/images/IsALink.svg')}" height="25" alt=""/><br>
-                                            Actor links...
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul id="add-actor-link-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-actor-links"></ul>
-                                    </div>
-
-                                    <div class="add-dropdown-button dropdown">
-                                        <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-dependency-links"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add dependency link">
-                                            <img src="${getUri('language/images/DependencyLink.svg')}" height="25" alt=""/><br>
-                                            Dependency...
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul id="add-dependency-dropdown" class="dropdown-menu" aria-labelledby="menu-dropdown-dependency-links"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="menu-group">
-                                <div class="menu-line">
-                                    <span id="add-internal-cells-palette" class="add-button"></span>
-                                </div>
-                            </div>
-
-                            <div class="line-break"></div>
-                            <div id="status-bar">
-                                <span id="status"></span>
-                            </div>
+                        <!--<div class="menu-group">-->
+                        <!--<span class="title">colors</span>-->
+                        <!--<span class="menu-line">Actor boundary:-->
+                        <!--<input id="all-actor-boundary-color-picker" onchange="console.log('change event');" class="jscolor {hash:true}" value="e6e6e6" size="8">-->
+                        <!--</span>-->
+                        <!--<span class="menu-line">Elements:-->
+                        <!--<input id="all-elements-color-picker" class="jscolor {hash:true}" value="ccfacd" size="8">-->
+                        <!--</span>-->
+                        <!--<span class="menu-line">-->
+                        <!--<a id="reset-all-colors-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset colors</a>-->
+                        <!--</span>-->
+                        <!--</div>-->
+                        <!--<div class="menu-group">-->
+                        <!--<span class="title">text</span>-->
+                        <!--<span class="menu-line">Font size: <input type="number" name="fontsize" value="12" min="4" max="999"></span>-->
+                        <!--<span class="menu-line"><a class="btn btn-default btn-xs" data-toggle="button"><i class="glyphicon glyphicon-italic"></i></a></span>-->
+                        <!--</div>-->
+                        <div class="menu-group">
+                            <span class="menu-line">
+                                <a id="menu-button-precise-links" class="btn btn-default btn-xs button-horizontal"
+                                title="Remove gaps between links and elements; recommended to apply before saving an image. It may take some seconds">
+                                <span class="glyphicon glyphicon-screenshot"></span> Pixel-perfect links
+                                </a>
+                                </span>
+                            <span class="menu-line">
+                                <a id="menu-button-auto-layout" class="btn btn-default btn-xs button-horizontal"
+                                title="Automatically update the layout of the actors and their links">
+                                <span class="glyphicon glyphicon-move"></span> Auto-layout
+                                </a>
+                                </span>
+                            <span class="menu-line">
+                                <a id="menu-button-straighten-links" class="btn btn-default btn-xs button-horizontal"
+                                title="Straighten all links">
+                                <span class="glyphicon glyphicon-minus"></span> Straighten all links
+                                </a>
+                            </span>
                         </div>
 
-                        <div id="menu-diagram" class="menu-body hidden">
-                            <div class="menu-group">
-                                <div class="title">Diagram Size</div>
-                                <div class="menu-line">
-                                    Width:&nbsp; <input id="input-diagram-width" type="text" name="width" value="500" size="4" maxlength="6"
-                                                        title="Set the diagram's width (in pixels)"> px
-                                </div>
-                                <div class="menu-line">
-                                    Height:&nbsp; <input id="input-diagram-height" type="text" name="height" value="1200" size="4" maxlength="6"
-                                                        title="Set the diagram's height (in pixels)"> px
-                                </div>
-                <!--                <span class="menu-line"><a id="fit-to-content-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-resize-small"></i> Fit to content</a></span> TODO issue due to negative origins-->
-                            </div>
-                            <!--<div class="menu-group">-->
-                            <!--<span class="title">colors</span>-->
-                            <!--<span class="menu-line">Actor boundary:-->
-                            <!--<input id="all-actor-boundary-color-picker" onchange="console.log('change event');" class="jscolor {hash:true}" value="e6e6e6" size="8">-->
-                            <!--</span>-->
-                            <!--<span class="menu-line">Elements:-->
-                            <!--<input id="all-elements-color-picker" class="jscolor {hash:true}" value="ccfacd" size="8">-->
+                        <div class="menu-group">
+                            <span class="menu-line">
+                                <a id="menu-button-toggle-fullscreen" class="btn btn-default btn-xs button-horizontal"
+                                title="Fullscreen toggle">
+                                <span class="glyphicon glyphicon-fullscreen"></span> Toggle fullscreen
+                                </a>
+                            </span>
+                        </div>
+
+                        <!--<div class="menu-group">-->
+                            <!--<div class="title">View</div>-->
+                            <!--<span class="menu-line">-->
+                                <!--<a id="menu-button-toggle-dependencies-display" class="btn btn-default btn-xs button-horizontal"-->
+                                <!--title="Toggle between partially hiding, completely hiding, or displaying dependencies">-->
+                                <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show dependencies-->
+                                <!--</a>-->
                             <!--</span>-->
                             <!--<span class="menu-line">-->
-                            <!--<a id="reset-all-colors-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset colors</a>-->
+                                <!--<a id="menu-button-toggle-contributions-display" class="btn btn-default btn-xs button-horizontal"-->
+                                <!--title="Toggle between partially hiding, completely hiding, or displaying contribution links">-->
+                                <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show contribution links-->
+                                <!--</a>-->
                             <!--</span>-->
-                            <!--</div>-->
-                            <!--<div class="menu-group">-->
-                            <!--<span class="title">text</span>-->
-                            <!--<span class="menu-line">Font size: <input type="number" name="fontsize" value="12" min="4" max="999"></span>-->
-                            <!--<span class="menu-line"><a class="btn btn-default btn-xs" data-toggle="button"><i class="glyphicon glyphicon-italic"></i></a></span>-->
-                            <!--</div>-->
-                            <div class="menu-group">
-                                <span class="menu-line">
-                                    <a id="menu-button-precise-links" class="btn btn-default btn-xs button-horizontal"
-                                    title="Remove gaps between links and elements; recommended to apply before saving an image. It may take some seconds">
-                                    <span class="glyphicon glyphicon-screenshot"></span> Pixel-perfect links
-                                    </a>
-                                    </span>
-                                <span class="menu-line">
-                                    <a id="menu-button-auto-layout" class="btn btn-default btn-xs button-horizontal"
-                                    title="Automatically update the layout of the actors and their links">
-                                    <span class="glyphicon glyphicon-move"></span> Auto-layout
-                                    </a>
-                                    </span>
-                                <span class="menu-line">
-                                    <a id="menu-button-straighten-links" class="btn btn-default btn-xs button-horizontal"
-                                    title="Straighten all links">
-                                    <span class="glyphicon glyphicon-minus"></span> Straighten all links
-                                    </a>
-                                </span>
-                            </div>
+                        <!--</div>-->
+                    </div>
+                    <div id="menu-help" class="menu-body hidden">
+                        <div class="menu-group">
+                            <div class="menu-line">
 
-                            <div class="menu-group">
-                                <span class="menu-line">
-                                    <a id="menu-button-toggle-fullscreen" class="btn btn-default btn-xs button-horizontal"
-                                    title="Fullscreen toggle">
-                                    <span class="glyphicon glyphicon-fullscreen"></span> Toggle fullscreen
-                                    </a>
-                                </span>
-                            </div>
+                                <a id="menu-button-examples" class="btn btn-default" data-toggle="modal" data-target="#modal-examples">Examples</a>
+                                <a id="menu-button-quickhelp" class="btn btn-default" data-toggle="modal" data-target="#modal-instructions">Quick Guide</a>
+                                <a id="menu-button-language-guide" class="btn btn-default" href="https://sites.google.com/site/istarlanguage/" target="_blank">
+                                    iStar 2.0 Language Guide <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                                </a>
+                                <a id="menu-button-research" class="btn btn-default" href="https://github.com/jhcp/piStar/blob/master/RESEARCH.md#research" target="_blank">
+                                    Research <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                                </a>
 
-                            <!--<div class="menu-group">-->
-                                <!--<div class="title">View</div>-->
-                                <!--<span class="menu-line">-->
-                                    <!--<a id="menu-button-toggle-dependencies-display" class="btn btn-default btn-xs button-horizontal"-->
-                                    <!--title="Toggle between partially hiding, completely hiding, or displaying dependencies">-->
-                                    <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show dependencies-->
-                                    <!--</a>-->
-                                <!--</span>-->
-                                <!--<span class="menu-line">-->
-                                    <!--<a id="menu-button-toggle-contributions-display" class="btn btn-default btn-xs button-horizontal"-->
-                                    <!--title="Toggle between partially hiding, completely hiding, or displaying contribution links">-->
-                                    <!--<span class="glyphicon glyphicon-eye-close"></span> Hide/show contribution links-->
-                                    <!--</a>-->
-                                <!--</span>-->
-                            <!--</div>-->
-                        </div>
-                        <div id="menu-help" class="menu-body hidden">
-                            <div class="menu-group">
-                                <div class="menu-line">
-
-                                    <a id="menu-button-examples" class="btn btn-default" data-toggle="modal" data-target="#modal-examples">Examples</a>
-                                    <a id="menu-button-quickhelp" class="btn btn-default" data-toggle="modal" data-target="#modal-instructions">Quick Guide</a>
-                                    <a id="menu-button-language-guide" class="btn btn-default" href="https://sites.google.com/site/istarlanguage/" target="_blank">
-                                        iStar 2.0 Language Guide <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                                    </a>
-                                    <a id="menu-button-research" class="btn btn-default" href="https://github.com/jhcp/piStar/blob/master/RESEARCH.md#research" target="_blank">
-                                        Research <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                                    </a>
-
-                                </div>
                             </div>
                         </div>
-                        <div id="menu-plugin" class="menu-body hidden">
-                            <div id="appToolbar"></div> <!-- this div is DEPRECATED. Instead, add elements directly to #menu-plugin -->
-                        </div>
-
+                    </div>
+                    <div id="menu-plugin" class="menu-body hidden">
+                        <div id="appToolbar"></div> <!-- this div is DEPRECATED. Instead, add elements directly to #menu-plugin -->
                     </div>
 
+                </div>
+
                     <div id="workspace">
-                        <div id="sidepanel" class="size2">
-                            <div id="regular-size-options">
-                                <a href="#" class="collapse-sidepanel-button" title="Collapse panel">-</a>
-                                <a href="#" id="uncollapsed-expand-sidepanel-button" class="expand-sidepanel-button" title="Expand panel">+</a>
-                            </div>
-                            <div id="collapsed-size-options" class="expand-sidepanel-button" title="click to expand this sidepanel">
-                                <div id="collapsed-size-options-button">
-                                    <a href="#">+</a>
-                                </div>
-                                <a href="#" class="collapsed-size-options-area"></a>
-                            </div>
-
-
-                            <ul class="nav nav-tabs" role="tablist">
-                                <li role="presentation" class="active" id="sidepanel-tab-properties"><a href="#subpanel-properties" aria-controls="subpanel-properties" role="tab" data-toggle="tab">Properties</a></li>
-                                <li role="presentation" id="sidepanel-tab-style" style="display: none;"><a href="#subpanel-style" aria-controls="subpanel-style" role="tab" data-toggle="tab">Style</a></li>
-                            </ul>
-
-                            <div class="sidepanel-content tab-content">
-
-                                <div id="subpanel-properties" role="tabpanel" class="tab-pane active">
-                                    <table class="table table-hover" id="properties-table">
-                                        <tbody>
-                                        </tbody>
-                                    </table>
-
-                                    <div id="add-property-button-area">
-                                    </div>
-
-                                    <div id="sidepanel-title-actions" class="sidepanel-title">Actions:</div>
-                                    <div id="cell-actions">
-                                    </div>
-
-                                </div>
-
-                                <div id="subpanel-style" role="tabpanel" class="tab-pane">
-
-                                    <div class="sidepanel-title">Element:</div>
-                                    <div class="group">
-                                        Color:&nbsp;
-                                        <input id="single-element-color-picker" class="jscolor {hash:true}" value="ccfacd" size="8">
-                                        <a id="reset-element-color-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset color</a>
-                                        <!-- <br>Line style:&nbsp;
-                                        <select>
-                                        <option value="volvo">solid</option>
-                                        <option value="saab">dashed</option>
-                                        <option value="mercedes">dotted</option>
-                                        </select>
-                                        <br>Line thickness:&nbsp;
-                                        <input type="number" name="quantity" min="1" max="25" value ="2">
-                                        <br><input type="checkbox" name="" value=""> shadow
-                                        <br><input type="checkbox" name="" value=""> hand-drawn
-                                        <br><input type="checkbox" name="" value=""> auto-break lines -->
-                                    </div>
-
-
-                                    <!-- <div class="sidepanel-title">Text:</div>
-                                    <div class="group">
-                                    Color: <input id="single-element-color-picker" class="jscolor {hash:true}" value="000" size="8">
-                                    <a id="reset-element-color-button" class="btn btn-default btn-xs button-horizontal"><i class="glyphicon glyphicon-erase"></i> Reset color</a>
-                                    <br><button style="font-weight:1000;">B</button><button style="font-style: italic;">I</button><button style="text-decoration: underline;">U</button><button style="text-decoration: line-through;">S</button>
-                                    <br>Size: <input type="number" name="quantity" min="1" max="25" value ="12">
-                                    <br>Top padding: <input type="number" name="quantity" min="1" max="25" value ="2">
-                                    <br>Letter spacing: <input type="number" name="quantity" min="-10" max="25" value ="0">
-                                    <br>Word spacing: <input type="number" name="quantity" min="-10" max="25" value ="0">
-                                    <br>Line height: <input type="number" name="quantity" min="0.1" max="10" value ="1.1" step="0.1">
-                                    <br><input type="checkbox" name="" value=""> shadow
-                                    <br><input type="checkbox" name="" value=""> uppercase
-                                    </div> -->
-
-                                </div>
-                            </div>
-
-                        </div>
 
                         <div id="out">
                             <div class="cell-selection" style="display: none;"></div>
@@ -395,7 +347,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                 <script type="text/template" id="add-button-template">
                     <button type="button" class="btn btn-default add-button" id="add-<%- label %>" title="<%- tooltip %>">
                         <img
-                                src="${getUri('language/images/<%- name %>.svg')}" height="25" alt="" onError="this.onerror=null;this.src=${getUri('language/images/<%- defaultButtonImage %>')};"/>
+                                src="${getUri('language/images/')}<%- name %>.svg" height="25" alt="" onError="this.onerror=null;this.src=${getUri('language/images/')}<%- defaultButtonImage %>;"/>
                         <br><%- label %>
                     </button>
                 </script>
@@ -405,7 +357,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                         <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-<%- name %>"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
                                 title="<%- tooltip %>">
-                            <img src="${getUri('language/images/<%- name %>.svg')}" height="25" alt="" onError="this.onerror=null;this.src=${getUri('language/images/<%- defaultButtonImage %>')};"/><br>
+                            <img src="${getUri('language/images/')}<%- name %>.svg')}" height="25" alt="" onError="this.onerror=null;this.src=${getUri('language/images/')}<%- defaultButtonImage %>;"/><br>
                             <%- label %>...
                             <span class="caret"></span>
                         </button>
@@ -415,8 +367,8 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 
                 <script type="text/template" id="add-dropdown-item-template">
                     <a id="d-add-<%- name %>" title="<%- tooltip %>" href="#">
-                        <img id="d-add-<%- name %>-img" src="${getUri('language/images/<%- buttonImage %>.svg')}" height="35" alt=""
-                            onError="this.onerror=null;this.src=${getUri('language/images/<%- defaultButtonImage %>')};"/>
+                        <img id="d-add-<%- name %>-img" src="${getUri('language/images/')}<%- buttonImage %>.svg" height="35" alt=""
+                            onError="this.onerror=null;this.src=${getUri('language/images/')}<%- defaultButtonImage %>;"/>
                         <%- label %>
                     </a>
                 </script>
@@ -666,7 +618,16 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                 <!-- end of plugin(s) area -->
 
                 <script src="${getUri('app/ui/main.js')}"></script>
-
+                <script>
+                    window.addEventListener('message', event => {
+                        const message = event.data; // The JSON data our extension sent
+                        switch (message.type) {
+                            case 'update':
+                                istar.fileManager.loadModel(message.data)
+                                break;
+                        }
+                    });
+                </script>
                 </body>
             </html>
             `;
