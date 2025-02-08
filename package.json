@@ -14,7 +14,7 @@
 		"multi-root ready"
 	],
 	"engines": {
-		"vscode": "^1.96.0"
+		"vscode": "1.96.4"
 	},
 	"activationEvents": [
 		"onLanguage:plaintext"
@@ -120,6 +120,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.editNode",
+					"when": "viewItem == node",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.editProperty",
 					"when": "viewItem == attribute",
 					"group": "navigation"
@@ -147,6 +152,10 @@
 			{
 				"command": "goalModel.deleteNode",
 				"title": "Remove Node"
+			},
+			{
+				"command": "goalModel.editNode",
+				"title": "Edit Node"
 			},
 			{
 				"command": "goalModel.rename",

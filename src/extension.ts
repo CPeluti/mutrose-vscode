@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as child_process from 'child_process';
 import { GoalModelProvider, Mission, NodeRefinement, Refinement } from './goalModel';
 import { PistarEditorProvider } from './pistarEditor';
-import { getAllProperties } from './utilities/getAllProperties';
+import { getAllProperties, parseFlux } from './utilities/getAllProperties';
 
 
 // This method is called when your extension is activated
@@ -127,26 +127,27 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	// commands.push(
-	// 	vscode.commands.registerCommand('goalModel.editNode', async (element) => {
-	// 		try {
-	// 			const selected = await vscode.window.showQuickPick(getAllProperties().map(prop => {
-	// 				return {
-	// 					label: prop.name,
-	// 					description: prop.name
-	// 				};
-	// 			}));
-	// 			const input = await vscode.window.showInputBox({
-	// 				placeHolder: "Type " + selected.label,
-	// 				prompt: "Edit node content",
-	// 				value: ''
-	// 			});
-	// 			// element.;
-	// 		} catch (e) {
-	// 			console.log(e, "erro ao editar node");
-	// 		}
-	// 	})
-	// );
+	commands.push(
+		vscode.commands.registerCommand('goalModel.editNode', async (element) => {
+			try {
+				const selected = await vscode.window.showQuickPick(getAllProperties().map(prop => {
+					return {
+						label: prop.name,
+						description: prop.name
+					};
+				}));
+				const input = await vscode.window.showInputBox({
+					placeHolder: "Type " + selected.label,
+					prompt: "Edit node content",
+					value: ''
+				});
+				element.parent.parent.saveGoalModel();
+				parseFlux();
+			} catch (e) {
+				console.log(e, "erro ao editar node");
+			}
+		})
+	);
 
 	// add property to node command
 	commands.push(
