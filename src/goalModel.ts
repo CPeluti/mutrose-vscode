@@ -13,7 +13,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<void | GoalMod
         const gmFolderPath = path.join(this.workspaceRoot, 'gm');
         if(this.pathExists(gmFolderPath) && workspaceRoot){
             let gmList = fs.readdirSync(gmFolderPath);
-            gmList = gmList.filter(gm => gm.includes('.drawio'));
+            gmList = gmList.filter(gm => gm.includes('.gm'));
             gmList.forEach(gm=>{
                 const fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(gmFolderPath, gm));
                 fileWatcher.onDidChange(()=>{

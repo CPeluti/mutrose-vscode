@@ -150,7 +150,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const attr = element.attributes.find(el=>el.attrName==selected.label);
 				const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
 				let input: string;
-				if(selectedProperty.options.length){
+				if(selectedProperty.options?.length){
 					const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
 						return {label: el, description: ''};
 					});
