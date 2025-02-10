@@ -126,7 +126,20 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
-
+	commands.push(
+		vscode.commands.registerCommand('goalModel.changeRefinementType', async (element: NodeRefinement) => {
+			try{
+				const selected = await vscode.window.showQuickPick([
+					{label:"And", description:'And Refinement'},
+					{label:"Or", description:'Or Refinement'}
+				]);
+				element.changeRefinementType(selected.label == "And"?"istar.AndRefinementLink" : "istar.OrRefinementLink");
+				element.parent.parent.parent.saveGoalModel();
+			} catch (e){
+				console.error("failed to change node refinement", e);
+			}
+		})
+	);
 	commands.push(
 		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
 			const properties = getAllProperties().map(prop => {
@@ -139,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 			properties.push({label: "Custom Property", description: "Custom"});
 			try {
 				const selected = await vscode.window.showQuickPick(properties);
-				if(selected.label == " Custom Property"){
+				if(selected.label == "Custom Property"){
 					const propertyName = await vscode.window.showInputBox({
 						placeHolder: "Type the custom property name",
 						prompt: "Edit node content",
@@ -150,7 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const attr = element.attributes.find(el=>el.attrName==selected.label);
 				const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
 				let input: string;
-				if(selectedProperty.options?.length){
+				if(selectedProperty?.options?.length){
 					const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
 						return {label: el, description: ''};
 					});

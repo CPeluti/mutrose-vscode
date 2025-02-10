@@ -153,7 +153,7 @@ export class NodeRefinement extends vscode.TreeItem {
     contextValue = 'refinements';
     public refinements: Refinement[] = [];
     constructor(
-        public readonly type: "istar.AndRefinementLink" | "istar.OrRefinementLink",
+        public type: "istar.AndRefinementLink" | "istar.OrRefinementLink",
         public refinementsToInstantiate: Array<{tag: string, customId: string, linkId: string}>,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly parent: Node,
@@ -176,6 +176,11 @@ export class NodeRefinement extends vscode.TreeItem {
     }
     removeRefinement(refinement: Refinement){
         this.refinements = this.refinements.filter(e=> e != refinement);
+    }
+    changeRefinementType(newRefinementType: "istar.AndRefinementLink" | "istar.OrRefinementLink"){
+        if(this.type != newRefinementType) {
+            this.type = newRefinementType;
+        }
     }
 }
 

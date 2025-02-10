@@ -115,18 +115,13 @@
 					"group": "navigation"
 				},
 				{
-					"command": "goalModel.addProperty",
-					"when": "viewItem == node",
+					"command": "goalModel.changeRefinementType",
+					"when": "viewItem == refinements",
 					"group": "navigation"
 				},
 				{
 					"command": "goalModel.editNode",
 					"when": "viewItem == node",
-					"group": "navigation"
-				},
-				{
-					"command": "goalModel.editProperty",
-					"when": "viewItem == attribute",
 					"group": "navigation"
 				},
 				{
@@ -194,8 +189,8 @@
 				"title": "Remove refinement"
 			},
 			{
-				"command": "goalModel.addRefinement",
-				"title": "Add refinement"
+				"command": "goalModel.changeRefinementType",
+				"title": "Change refinements' type"
 			},
 			{
 				"command": "goalModel.deleteProperty",
