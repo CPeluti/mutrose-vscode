@@ -133,7 +133,7 @@ export function activate(context: vscode.ExtensionContext) {
 					const attr = element.attributes.find(el=>el.attrName==prop.name);
 					return {
 						label: prop.name,
-						description: attr.attrValue
+						description: attr? attr.attrValue : ''
 					};
 			});
 			properties.push({label: "Custom Property", description: "Custom"});
