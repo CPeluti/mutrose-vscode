@@ -5,9 +5,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import * as child_process from 'child_process';
-import { GoalModelProvider, Mission, NodeRefinement, Refinement } from './goalModel';
+import { GoalModelProvider, Mission, Node, NodeRefinement, Refinement } from './goalModel';
 import { PistarEditorProvider } from './pistarEditor';
-import { getAllProperties, parseFlux } from './utilities/getAllProperties';
+import { getAllProperties } from './utilities/getAllProperties';
 
 
 // This method is called when your extension is activated
@@ -128,21 +128,34 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	commands.push(
-		vscode.commands.registerCommand('goalModel.editNode', async (element) => {
-			try {
-				const selected = await vscode.window.showQuickPick(getAllProperties().map(prop => {
+		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
+			const properties = getAllProperties().map(prop => {
+					const attr = element.attributes.find(el=>el.attrName==prop.name);
 					return {
 						label: prop.name,
-						description: prop.name
+						description: attr.attrValue
 					};
-				}));
+			});
+			properties.push({label: "Custom Property", description: "Custom"});
+			try {
+				const selected = await vscode.window.showQuickPick(properties);
+				if(selected.label == " Custom Property"){
+					const propertyName = await vscode.window.showInputBox({
+						placeHolder: "Type the custom property name",
+						prompt: "Edit node content",
+						value: ''
+					});
+					selected.label = propertyName;
+				}
+				const attr = element.attributes.find(el=>el.attrName==selected.label);
 				const input = await vscode.window.showInputBox({
 					placeHolder: "Type " + selected.label,
 					prompt: "Edit node content",
-					value: ''
+					value: attr?attr.attrValue : ''
 				});
+				element.removeAttribute(selected.label);
+				element.addAttribute(selected.label, input);
 				element.parent.parent.saveGoalModel();
-				parseFlux();
 			} catch (e) {
 				console.log(e, "erro ao editar node");
 			}
