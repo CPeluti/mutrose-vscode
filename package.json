@@ -110,6 +110,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.setRuntimeAnnotation",
+					"when": "viewItem == node",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.addRefinementToNode",
 					"when": "viewItem == node",
 					"group": "navigation"
@@ -137,8 +142,16 @@
 				"title": "Open Vue"
 			},
 			{
+				"command": "goalModel.setRuntimeAnnotation",
+				"title": "Set Runtime Annotation"
+			},
+			{
 				"command": "goalModel.addRefinementToNode",
-				"title": "Add refinments to the node"
+				"title": "Add refinements to the node"
+			},
+			{
+				"command": "goalModel.addRefinement",
+				"title": "Add refinements to the refinementList"
 			},
 			{
 				"command": "goalModel.addNode",

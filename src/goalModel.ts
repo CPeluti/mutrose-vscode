@@ -218,8 +218,8 @@ export class Node extends vscode.TreeItem {
         super(name, collapsibleState);
         this.tooltip = `${this.tag}-${this.name}`;
         this.parent.parent.usedIds.add(this.customId);
-        this.description = tag;
-        this.tag += ` [${this.runtimeAnnotation}]`;
+        this.setRuntimeAnnotation(runtimeAnnotation);
+        // this.tag += `[${this.runtimeAnnotation}]`;
     }
     parseNode(): gmTypes.Node {
         const customProperties: Record<string,string> = this.attributes.filter(el => el.custom == true).reduce((acc, el)=>{
@@ -289,9 +289,16 @@ export class Node extends vscode.TreeItem {
             // this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
         // }
     }
+    setRuntimeAnnotation(annotation: string){
+        this.runtimeAnnotation = annotation;
+        this.description = this.tag.trim() + (this.runtimeAnnotation!=''?` [${this.runtimeAnnotation}]`:'');
+        return;
+    }
     addRefinement(type, targetId, tag, newId){
         type = type == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
-        this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
+        if(!this.refinements){
+            this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
+        }
         this.refinements.addRefinement(targetId, tag, newId);
     }
     remove(){

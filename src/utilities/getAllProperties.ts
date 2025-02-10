@@ -8,9 +8,9 @@ const properties: Property[] = [
 	{ name: "Monitors" },
 	{ name: "QueriedProperty" },
 	{ name: "AchieveCondition" },
-	{ 	name: "Runtime Annotation",
-		options: ["sequencial","parallel", "fallback"] 
-	},
+	// { 	name: "Runtime Annotation",
+	// 	options: ["sequencial","parallel", "fallback"] 
+	// },
 	{ name: "Monitors" },
 	{
 		name: "Goal type",	

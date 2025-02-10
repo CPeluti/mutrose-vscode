@@ -148,7 +148,8 @@ export function activate(context: vscode.ExtensionContext) {
 					prompt: "Set the runtime annotation",
 					value: element.runtimeAnnotation? element.runtimeAnnotation : ''
 				});
-				element.parent.parent.parent.saveGoalModel();
+				element.setRuntimeAnnotation(input);
+				element.parent.parent.saveGoalModel();
 			} catch (e){
 				console.error("failed to change node refinement", e);
 			}
@@ -163,9 +164,16 @@ export function activate(context: vscode.ExtensionContext) {
 						description: attr? attr.attrValue : ''
 					};
 			});
+			element.attributes.forEach(el=>{
+				properties.push({
+					label: el.attrName, 
+					description: el.attrValue
+				});
+			});
 			properties.push({label: "Custom Property", description: "Custom"});
+			const propertiesSet = new Set(properties);
 			try {
-				const selected = await vscode.window.showQuickPick(properties);
+				const selected = await vscode.window.showQuickPick([...propertiesSet]);
 				if(selected.label == "Custom Property"){
 					const propertyName = await vscode.window.showInputBox({
 						placeHolder: "Type the custom property name",
@@ -261,7 +269,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// add refinements to a node command
 
 	commands.push(
-		vscode.commands.registerCommand('goalModel.addRefinementToNode', async (element)=>{
+		vscode.commands.registerCommand('goalModel.addRefinementToNode', async (element: Node)=>{
 			const types: vscode.QuickPickItem[] = [
 				{
 					label: "and",
@@ -272,10 +280,14 @@ export function activate(context: vscode.ExtensionContext) {
 					description: "or"
 				}
 			];
-			const targetNode = element;
-			const gm = targetNode.mission.goalModel;
-			const type = await vscode.window.showQuickPick(types);
-			const items: vscode.QuickPickItem[] = targetNode.mission.nodes.filter(e=> e!=targetNode).map(node=>{
+			const gm = element.parent.parent;
+			let type;
+			if(element.refinements?.type == "istar.AndRefinementLink" || element.refinements?.type == "istar.OrRefinementLink"){
+				type = element.refinements.type == "istar.AndRefinementLink"?"and": "or";
+			}else {
+				type = await vscode.window.showQuickPick(types);
+			}
+			const items: vscode.QuickPickItem[] = element.parent.nodes.filter(e=> e!=element).map(node=>{
 				return {
 					label: node.name,
 					description: node.customId
@@ -290,8 +302,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// delete property from node command
 	commands.push(
 		vscode.commands.registerCommand('goalModel.deleteProperty', async (element) => {
-			const node = element.node;
-			node.removeAttribute(element);
+			element.parent.removeAttribute(element);
 		})
 	);
 	commands.push(
