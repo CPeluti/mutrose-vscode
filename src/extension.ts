@@ -141,6 +141,20 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 	commands.push(
+		vscode.commands.registerCommand('goalModel.setRuntimeAnnotation', async (element: Node) => {
+			try{
+				const input = await vscode.window.showInputBox({
+					placeHolder: "Type the runtime annotation",
+					prompt: "Set the runtime annotation",
+					value: element.runtimeAnnotation? element.runtimeAnnotation : ''
+				});
+				element.parent.parent.parent.saveGoalModel();
+			} catch (e){
+				console.error("failed to change node refinement", e);
+			}
+		})
+	);
+	commands.push(
 		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
 			const properties = getAllProperties().map(prop => {
 					const attr = element.attributes.find(el=>el.attrName==prop.name);

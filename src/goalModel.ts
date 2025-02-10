@@ -202,27 +202,24 @@ export class NodeAttr extends vscode.TreeItem {
 
 export class Node extends vscode.TreeItem {
     contextValue = 'node';
-    terminal = false;
     refinements: NodeRefinement;
     constructor(
         public readonly name: string,
         public attributes: NodeAttr[],
         public collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly tag: string,
+        public tag: string,
         public readonly nodeType: string,
         public readonly parent: Mission,
         public readonly customId: string,
         public pos: {x: number, y: number},
-        public readonly command?: vscode.Command
+        public runtimeAnnotation: string,
+        public readonly command?: vscode.Command,
     ){
         super(name, collapsibleState);
-        const runtimeAnnotation = tag?.match(/(?<=\[)[a-zA-Z\d,|#|;?]*(?=\])/g);
-        if(!runtimeAnnotation){
-            this.terminal = true;
-        }
         this.tooltip = `${this.tag}-${this.name}`;
         this.parent.parent.usedIds.add(this.customId);
         this.description = tag;
+        this.tag += ` [${this.runtimeAnnotation}]`;
     }
     parseNode(): gmTypes.Node {
         const customProperties: Record<string,string> = this.attributes.filter(el => el.custom == true).reduce((acc, el)=>{
@@ -336,7 +333,9 @@ export class Mission extends vscode.TreeItem {
             } else {
                 this.lastGoalNumber = Math.max(this.lastGoalNumber, number);
             }
-            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag,(name.startsWith("AT")? "Task" : "Goal"), this, node.id, {x: node.x, y:node.y});
+            const runtimeAnnotationCheck = tag?.match(/(?<=\[)[a-zA-Z\d,|#|;?]*(?=\])/g);
+            const newTag = tag.replace(/\[[a-zA-Z\d,|#|;?]*\]/g,"");
+            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, newTag,(name.startsWith("AT")? "Task" : "Goal"), this, node.id, {x: node.x, y:node.y}, runtimeAnnotationCheck?runtimeAnnotationCheck[0]:"");
             let customProperties = [];
             if(node.customProperties)
             customProperties = Object.keys(node.customProperties).map(key => {
@@ -376,7 +375,7 @@ export class Mission extends vscode.TreeItem {
     }
     addNewNode(type: "Task" | "Goal", title: string){
         const name = type === 'Task'? `AT${this.lastTaskNumber}` : `G${this.lastGoalNumber}`;
-        const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, title, type, this, this.parent.generateNewId().toString(), {x: 0, y:0});
+        const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, title, type, this, this.parent.generateNewId().toString(), {x: 0, y:0}, "");
         nodeInst.addAttribute('Description', '');
         this.addNode(nodeInst);
     }
