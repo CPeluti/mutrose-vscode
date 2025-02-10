@@ -148,11 +148,20 @@ export function activate(context: vscode.ExtensionContext) {
 					selected.label = propertyName;
 				}
 				const attr = element.attributes.find(el=>el.attrName==selected.label);
-				const input = await vscode.window.showInputBox({
-					placeHolder: "Type " + selected.label,
-					prompt: "Edit node content",
-					value: attr?attr.attrValue : ''
-				});
+				const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
+				let input: string;
+				if(selectedProperty.options.length){
+					const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
+						return {label: el, description: ''};
+					});
+					input = (await vscode.window.showQuickPick(options)).label;
+				}else {
+					input = await vscode.window.showInputBox({
+						placeHolder: "Type " + selected.label,
+						prompt: "Edit node content",
+						value: attr?attr.attrValue : ''
+					});
+				}
 				element.removeAttribute(selected.label);
 				element.addAttribute(selected.label, input);
 				element.parent.parent.saveGoalModel();
