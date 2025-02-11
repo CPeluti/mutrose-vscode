@@ -271,8 +271,5 @@
 		"eslint": "^8.35.0",
 		"mocha": "^9.2.1",
 		"typescript": "^5.0.2"
-	},
-	"dependencies": {
-		"gm-parser": "file:"
 	}
 }
