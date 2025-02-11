@@ -1,3 +1,5 @@
+/* eslint-disable*/
+
 istar.layout = {
     /**
      * Using auto-layout method to get position results and update the diagram

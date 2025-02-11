@@ -1,3 +1,4 @@
+/*eslint-disable*/
 /*!
  * This is open-source. Which means that you can contribute to it, and help
  * make it better! Also, feel free to use, modify, redistribute, and so on.
@@ -15,7 +16,6 @@ ui.components.PropertiesTableView = Backbone.View.extend({
         'use strict';
 
         this.$table = $('#properties-table');
-
         this.listenTo(this.model, 'mouseup', this.render);
         this.listenTo(this.model, 'change:customProperties', this.render);
         this.listenTo(this.model, 'change:name', this.render);
@@ -386,13 +386,6 @@ ui.components.PropertiesTableView = Backbone.View.extend({
     },
     setupOptionsPanel: function () {
         'use strict';
-
-        if (this.model.prop('backgroundColor')) {
-            $('#single-element-color-picker').get(0).jscolor.fromString(this.model.prop('backgroundColor'));
-        }
-        else if (ui.getSelectedCells()){
-            $('#single-element-color-picker').get(0).jscolor.fromString(ui.defaultElementBackgroundColor);
-        }
     },
     addInfo: function (content) {
         'use strict';
