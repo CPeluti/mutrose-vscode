@@ -13,7 +13,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<void | GoalMod
         const gmFolderPath = path.join(this.workspaceRoot, 'gm');
         if(this.pathExists(gmFolderPath) && workspaceRoot){
             let gmList = fs.readdirSync(gmFolderPath);
-            gmList = gmList.filter(gm => gm.includes('.drawio'));
+            gmList = gmList.filter(gm => gm.includes('.gm'));
             gmList.forEach(gm=>{
                 const fileWatcher = vscode.workspace.createFileSystemWatcher(path.join(gmFolderPath, gm));
                 fileWatcher.onDidChange(()=>{
@@ -153,7 +153,7 @@ export class NodeRefinement extends vscode.TreeItem {
     contextValue = 'refinements';
     public refinements: Refinement[] = [];
     constructor(
-        public readonly type: "istar.AndRefinementLink" | "istar.OrRefinementLink",
+        public type: "istar.AndRefinementLink" | "istar.OrRefinementLink",
         public refinementsToInstantiate: Array<{tag: string, customId: string, linkId: string}>,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly parent: Node,
@@ -177,6 +177,11 @@ export class NodeRefinement extends vscode.TreeItem {
     removeRefinement(refinement: Refinement){
         this.refinements = this.refinements.filter(e=> e != refinement);
     }
+    changeRefinementType(newRefinementType: "istar.AndRefinementLink" | "istar.OrRefinementLink"){
+        if(this.type != newRefinementType) {
+            this.type = newRefinementType;
+        }
+    }
 }
 
 export class NodeAttr extends vscode.TreeItem {
@@ -197,27 +202,24 @@ export class NodeAttr extends vscode.TreeItem {
 
 export class Node extends vscode.TreeItem {
     contextValue = 'node';
-    terminal = false;
     refinements: NodeRefinement;
     constructor(
         public readonly name: string,
         public attributes: NodeAttr[],
         public collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly tag: string,
+        public tag: string,
         public readonly nodeType: string,
         public readonly parent: Mission,
         public readonly customId: string,
         public pos: {x: number, y: number},
-        public readonly command?: vscode.Command
+        public runtimeAnnotation: string,
+        public readonly command?: vscode.Command,
     ){
         super(name, collapsibleState);
-        const runtimeAnnotation = tag?.match(/(?<=\[)[a-zA-Z\d,|#|;?]*(?=\])/g);
-        if(!runtimeAnnotation){
-            this.terminal = true;
-        }
         this.tooltip = `${this.tag}-${this.name}`;
         this.parent.parent.usedIds.add(this.customId);
-        this.description = tag;
+        this.setRuntimeAnnotation(runtimeAnnotation);
+        // this.tag += `[${this.runtimeAnnotation}]`;
     }
     parseNode(): gmTypes.Node {
         const customProperties: Record<string,string> = this.attributes.filter(el => el.custom == true).reduce((acc, el)=>{
@@ -287,9 +289,16 @@ export class Node extends vscode.TreeItem {
             // this.refinements = new NodeRefinement(type, aux, vscode.TreeItemCollapsibleState.Collapsed, this)
         // }
     }
+    setRuntimeAnnotation(annotation: string){
+        this.runtimeAnnotation = annotation;
+        this.description = this.tag.trim() + (this.runtimeAnnotation!=''?` [${this.runtimeAnnotation}]`:'');
+        return;
+    }
     addRefinement(type, targetId, tag, newId){
         type = type == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
-        this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
+        if(!this.refinements){
+            this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
+        }
         this.refinements.addRefinement(targetId, tag, newId);
     }
     remove(){
@@ -331,7 +340,9 @@ export class Mission extends vscode.TreeItem {
             } else {
                 this.lastGoalNumber = Math.max(this.lastGoalNumber, number);
             }
-            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, tag,(name.startsWith("AT")? "Task" : "Goal"), this, node.id, {x: node.x, y:node.y});
+            const runtimeAnnotationCheck = tag?.match(/(?<=\[)[a-zA-Z\d,|#|;?]*(?=\])/g);
+            const newTag = tag.replace(/\[[a-zA-Z\d,|#|;?]*\]/g,"");
+            const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, newTag,(name.startsWith("AT")? "Task" : "Goal"), this, node.id, {x: node.x, y:node.y}, runtimeAnnotationCheck?runtimeAnnotationCheck[0]:"");
             let customProperties = [];
             if(node.customProperties)
             customProperties = Object.keys(node.customProperties).map(key => {
@@ -371,7 +382,7 @@ export class Mission extends vscode.TreeItem {
     }
     addNewNode(type: "Task" | "Goal", title: string){
         const name = type === 'Task'? `AT${this.lastTaskNumber}` : `G${this.lastGoalNumber}`;
-        const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, title, type, this, this.parent.generateNewId().toString(), {x: 0, y:0});
+        const nodeInst = new Node(name, [], vscode.TreeItemCollapsibleState.Collapsed, title, type, this, this.parent.generateNewId().toString(), {x: 0, y:0}, "");
         nodeInst.addAttribute('Description', '');
         this.addNode(nodeInst);
     }

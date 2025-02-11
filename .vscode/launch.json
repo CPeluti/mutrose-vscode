@@ -8,6 +8,7 @@
 			"name": "Launch Client",
 			"runtimeExecutable": "${execPath}",
 			"args": ["--extensionDevelopmentPath=${workspaceRoot}"],
+			"timeout": 30000,
 			"preLaunchTask": {
 				"type": "npm",
 				"script": "watch"

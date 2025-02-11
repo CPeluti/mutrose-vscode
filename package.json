@@ -1,20 +1,20 @@
 {
-	"name": "gm-parser",
-	"description": "A language server example",
-	"author": "Microsoft Corporation",
+	"name": "mutrose-vscode",
+	"description": "GoalModel Editor for MutRoSe",
+	"author": "Caio Peluti & Ana Jordão",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
-	"publisher": "vscode-samples",
+	"publisher": "LES-UnB",
 	"categories": [],
 	"keywords": [
 		"multi-root ready"
 	],
 	"engines": {
-		"vscode": "^1.96.0"
+		"vscode": "^1.96.4"
 	},
 	"activationEvents": [
 		"onLanguage:plaintext"
@@ -23,37 +23,37 @@
 	"contributes": {
 		"customEditors": [
 			{
-			"viewType": "mutrose.pistar",
-			"displayName": "PiStar Editor",
-			"selector": [
-				{
-				"filenamePattern": "*.gm"
-				}
-			],
-			"priority": "default"
+				"viewType": "mutrose.pistar",
+				"displayName": "PiStar Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.gm"
+					}
+				],
+				"priority": "default"
 			}
 		],
 		"viewsContainers": {
 			"activitybar": [
-			  {
-				"id": "goal-model",
-				"title": "MutRoSe",
-				"icon": "media/icon.svg"
-			  },
-			  {
-				"id": "vueapp-teste",
-				"title": "vue app",
-				"icon": "$(remote-explorer)"
-			  }
+				{
+					"id": "goal-model",
+					"title": "MutRoSe",
+					"icon": "media/icon.svg"
+				},
+				{
+					"id": "vueapp-teste",
+					"title": "vue app",
+					"icon": "$(remote-explorer)"
+				}
 			]
 		},
 		"views": {
 			"goal-model": [
 				{
-				"id": "goalModel",
-				"name": "Goal Models",
-				"icon": "media/icon.svg",
-				"contextualTitle": "Goal Model"
+					"id": "goalModel",
+					"name": "Goal Models",
+					"icon": "media/icon.svg",
+					"contextualTitle": "Goal Model"
 				}
 			],
 			"vueapp-teste": [
@@ -80,7 +80,7 @@
 			],
 			"view/item/context": [
 				{
-					"command": "gm-parser.execMutRose",
+					"command": "goalModel.execMutRose",
 					"when": "viewItem == goalModel",
 					"group": "navigation"
 				},
@@ -110,18 +110,23 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.setRuntimeAnnotation",
+					"when": "viewItem == node",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.addRefinementToNode",
 					"when": "viewItem == node",
 					"group": "navigation"
 				},
 				{
-					"command": "goalModel.addProperty",
-					"when": "viewItem == node",
+					"command": "goalModel.changeRefinementType",
+					"when": "viewItem == refinements",
 					"group": "navigation"
 				},
 				{
-					"command": "goalModel.editProperty",
-					"when": "viewItem == attribute",
+					"command": "goalModel.editNode",
+					"when": "viewItem == node",
 					"group": "navigation"
 				},
 				{
@@ -130,16 +135,23 @@
 					"group": "navigation"
 				}
 			]
-			
 		},
 		"commands": [
 			{
 				"command": "goalModel.openVue",
-				"title" : "Open Vue"
+				"title": "Open Vue"
+			},
+			{
+				"command": "goalModel.setRuntimeAnnotation",
+				"title": "Set Runtime Annotation"
 			},
 			{
 				"command": "goalModel.addRefinementToNode",
-				"title": "Add refinments to the node"
+				"title": "Add refinements to the node"
+			},
+			{
+				"command": "goalModel.addRefinement",
+				"title": "Add refinements to the refinementList"
 			},
 			{
 				"command": "goalModel.addNode",
@@ -148,6 +160,10 @@
 			{
 				"command": "goalModel.deleteNode",
 				"title": "Remove Node"
+			},
+			{
+				"command": "goalModel.editNode",
+				"title": "Edit Node"
 			},
 			{
 				"command": "goalModel.rename",
@@ -162,8 +178,12 @@
 				"title": "Focus Element"
 			},
 			{
-				"command": "gm-parser.execMutRose",
+				"command": "goalModel.execMutRose",
 				"title": "Decompose with MutRoSe"
+			},
+			{
+				"command": "goalModel.generateIhtn",
+				"title": "Generate the iHTN with MutRoSe"
 			},
 			{
 				"command": "goalModel.createNewMission",
@@ -176,9 +196,9 @@
 			{
 				"command": "goalModel.refreshModels",
 				"title": "Refresh",
-				"icon":{
-				"light": "resources/light/refresh.svg",
-				"dark": "resources/dark/refresh.svg"
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
 				}
 			},
 			{
@@ -186,8 +206,8 @@
 				"title": "Remove refinement"
 			},
 			{
-				"command": "goalModel.addRefinement",
-				"title": "Add refinement"
+				"command": "goalModel.changeRefinementType",
+				"title": "Change refinements' type"
 			},
 			{
 				"command": "goalModel.deleteProperty",
@@ -242,14 +262,17 @@
 		"test": "sh ./scripts/e2e.sh"
 	},
 	"devDependencies": {
-    "@types/vscode": "^1.96.0",
 		"@types/mocha": "^9.1.0",
 		"@types/node": "^16.11.7",
+		"@types/vscode": "^1.96.0",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",
 		"@vscode/test-electron": "2.4.1",
 		"eslint": "^8.35.0",
 		"mocha": "^9.2.1",
 		"typescript": "^5.0.2"
+	},
+	"dependencies": {
+		"gm-parser": "file:"
 	}
 }
