@@ -1,0 +1,78 @@
+(define (domain hospital)
+	(:types patient location delivery arm - object)
+	(:predicates
+		(deliverynurse ?n - nurse ?d - delivery)
+		(deliverypickuplocation ?l - location ?d - delivery)
+		(locationarm ?a - arm ?l - location)
+	)
+
+	(:task ApproachArm :parameters (?r - robot ?a - arm ?p - location))
+	(:method arm-approach
+		:parameters (?r - robot ?a - arm ?p - location)
+		:task (ApproachArm ?r ?a ?p)
+		:ordered-subtasks (and
+			(navto ?r ?p)
+			(approach-arm ?r)
+		)
+	)
+	
+	(:task ApproachNurse :parameters (?r - robot ?n - nurse ?l - location))
+	(:method nurse-approach
+		:parameters (?r - robot ?n - nurse ?l - location)
+		:task (ApproachNurse ?r ?n ?l)
+		:ordered-subtasks (and
+			(navto ?r ?l)
+			(approach-nurse ?r)
+			(authenticate-nurse ?r)
+		)
+	)
+
+	(:task PickSample :parameters (?r - robot ?n - nurse))
+	(:method sample-pick
+		:parameters (?r - robot ?n - nurse)
+		:task (PickSample ?r ?n)
+		:ordered-subtasks (and
+			(open-drawer ?r)
+			(deposit ?n)
+			(close-drawer ?r)
+		)
+	)
+
+	(:task UnloadSample :parameters (?r - robot ?a - arm))
+	(:method sample-unload
+		:parameters (?r - robot ?a - arm)
+		:task (UnloadSample ?r ?a)
+		:precondition ()
+		:ordered-subtasks (and
+			(open-drawer ?r)
+			(pick-up-sample ?a)
+			(close-drawer ?r)
+		)
+	)
+
+
+	(:action navto 
+		:parameters (?r - robot ?loc - location)
+	)
+	(:action approach-nurse
+		:parameters (?r - robot)
+	)
+	(:action authenticate-nurse
+		:parameters (?r - robot)
+	)
+	(:action open-drawer
+		:parameters (?r - robot)
+	)
+	(:action close-drawer
+		:parameters (?r - robot)
+	)
+	(:action deposit
+		:parameters (?n - nurse)
+	)
+	(:action approach-arm
+		:parameters (?r - robot)
+	)
+	(:action pick-up-sample
+		:parameters (?a - arm)
+	)
+)

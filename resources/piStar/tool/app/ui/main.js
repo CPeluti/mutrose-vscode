@@ -29,6 +29,21 @@ $(document).ready(function () {
 
     istar.graph.on('add', (cell, opt) => {
         if(!istar.fileManager.loading){
+            
+            // console.log(cell)
+            // console.log(istar)
+
+            switch (cell.attributes.type[0]){
+                case 'G':
+                    cell.attributes.name = `G${istar.goalNumber++}: ${cell.attributes.name}`
+                    break;
+                case 'A':
+                    cell.attributes.name = `M${istar.missionNumber++}: ${cell.attributes.name}`
+                    break;
+                case 'T':
+                    cell.attributes.name = `AT${istar.taskNumber++}: ${cell.attributes.name}`
+                    break
+            }
             cell.promise.then(()=>{
                 istar.vscode.postMessage({
                     type: 'change',

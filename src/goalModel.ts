@@ -330,9 +330,11 @@ export class Mission extends vscode.TreeItem {
         this.description = this.customProperties.description;
 
         const nodes = nodesToInstatiate.map(node=>{
-            const [name,tag] = node.text.split(': ');
+            let [name,tag] = node.text.split(': ');
             if(!name || !tag){
-                throw new Error("invalid node name");
+                // throw new Error("invalid node name");
+                name = '';
+                tag = node.text;
             }
             const number = parseInt(name.replace(/[a-zA-Z]/g, ''));
             if (name.startsWith("AT")){
@@ -438,10 +440,11 @@ export class GoalModel extends vscode.TreeItem{
         const actors = gm.actors;
         const info = actors.map(actor=>{
             const parsedText = actor.text.split(': ');
-            if(parsedText.length<2){
-                throw new Error("invalid Mission name");
-            }
-            return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: {x: actor.x, y: actor.y}, customProperties: actor.customProperties};
+            let name = actor.text;
+            if(parsedText.length>=2){
+                name = parsedText[1];
+            } 
+            return {name: name, missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: {x: actor.x, y: actor.y}, customProperties: actor.customProperties};
         });
         this.missions = info.map(info => new Mission(info.name, info.missionNumber, vscode.TreeItemCollapsibleState.Collapsed, info.id, this,info.nodes, info.pos, info.customProperties));
     }
@@ -471,7 +474,7 @@ export class GoalModel extends vscode.TreeItem{
         fs.writeFileSync(this.filePath, json);
     }
     generateNewId(){
-        let id = 2;
+        let id = 1;
         this.usedIds.forEach(el=>{
             const parsedId = Number(el);
             if(!isNaN(parsedId) && parsedId >= id) {

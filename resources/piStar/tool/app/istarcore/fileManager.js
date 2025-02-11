@@ -287,6 +287,9 @@ istar.fileManager = function() {
         },
         loadModel: function (inputRaw) {
             istar.fileManager.loading = true;
+            istar.missionNumber = 1;
+            istar.taskNumber = 1;
+            istar.goalNumber = 1;
             if (inputRaw) {
                 invalidMessages = [];
                 istar.clearModel();
@@ -320,10 +323,16 @@ istar.fileManager = function() {
 
                 if (inputModel.actors) {
                     //create actors and inner elements
+                    istar.missionNumber += inputModel.actors.length;
                 for (var i = 0; i < inputModel.actors.length; i++) {
                         var actor = inputModel.actors[i];
                         var parent = addLoadedElement(actor, inputModel.display);
                         for (var j = 0; j < actor.nodes.length; j++) {
+                            if(actor.nodes[j].type == "istar.Goal"){
+                                istar.goalNumber++
+                            } else {
+                                istar.taskNumber++;
+                            }
                             var child = addLoadedElement(actor.nodes[j], inputModel.display);
                             if (child) {
                                 parent.embedNode(child);

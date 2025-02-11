@@ -347,7 +347,6 @@ var istar = function () {
                 newNode.finished = false;
                 newNode.promise = new Promise((resolve, reject)=>{
                     try{
-        
                         newNode.prop('name', content || nodeType.name);
                         newNode.prop('type', nodeType.name);
         

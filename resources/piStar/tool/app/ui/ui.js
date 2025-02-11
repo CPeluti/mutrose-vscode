@@ -670,7 +670,6 @@ ui.addElementOnContainer = function (cellView, options) {
             var bbox = (new istar.metamodel.nodes[currentAddingElement].shapeObject()).getBBox();
             options.position.x -= bbox.width/2;
             options.position.y -= bbox.height/2;
-
             var element = ui.addNodeInPlace(cellView.model, istar['add' + currentAddingElement], options);
 
             if (istar.metamodel.nodes[currentAddingElement].customProperties) {
@@ -762,6 +761,7 @@ ui.addNodeInPlace = function (clickedNode, callback, options) {
     var node;
     if (clickedNode.isKindOfActor()) {
         node = callback('', options);
+        console.log("actor")
         clickedNode.embedNode(node);
     }
     else {
