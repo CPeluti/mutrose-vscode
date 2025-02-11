@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import * as child_process from 'child_process';
-import { GoalModelProvider, Mission, Node, NodeRefinement, Refinement } from './goalModel';
+import { GoalModel, GoalModelProvider, Mission, Node, NodeRefinement, Refinement } from './goalModel';
 import { PistarEditorProvider } from './pistarEditor';
 import { getAllProperties } from './utilities/getAllProperties';
 
@@ -50,21 +50,22 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// execute mutrose command
 	commands.push(
-		vscode.commands.registerCommand('gm-parser.execMutRose', (element) => {
+		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
 			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 			const showInfo = vscode.window.showInformationMessage;
-			if (!fs.existsSync(cfg.hddlPath)) {
+			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path
+			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path
+			if (!fs.existsSync(hddlPath)) {
 				showInfo("hddl file doesn't exists!");
 				return;
-			} else if (!fs.existsSync(cfg.configPath)) {
+			} else if (!fs.existsSync(configPath)) {
 				showInfo("config file doesn't exists");
 				return;
 			}
-			const json: string = fs.readFileSync(element.filePath).toString();
-			fs.writeFileSync('./temp.txt',json);
-			child_process.exec(`mutrose ${cfg.hddlPath} ./temp.txt ${cfg.configPath} -p` , (error, stdout, stderr) => {
+			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -p` , (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
+					console.error(error)
 				} else {
 					showInfo(`GM decomposto com sucesso`);
 					const mutrose = vscode.window.createOutputChannel('Mutrose');
@@ -79,6 +80,37 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	commands.push(
+			vscode.commands.registerCommand('goalModel.generateIhtn', (element) => {
+				const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
+				const showInfo = vscode.window.showInformationMessage;
+				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path
+				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path
+				if (!fs.existsSync(hddlPath)) {
+					showInfo("hddl file doesn't exists!");
+					return;
+				} else if (!fs.existsSync(configPath)) {
+					showInfo("config file doesn't exists");
+					return;
+				}
+				const json: string = fs.readFileSync(element.filePath).toString();
+				fs.writeFileSync('./temp.txt',json);
+				child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -h` , (error, stdout, stderr) => {
+					if(error){
+						showInfo(`Error: ${error}`);
+					} else {
+						showInfo(`GM decomposto com sucesso`);
+						const mutrose = vscode.window.createOutputChannel('Mutrose');
+						mutrose.append(stdout);
+						mutrose.show();
+					}
+					// fs.unlinkSync('./temp.txt');
+				});
+				// const terminal = vscode.window.createTerminal(`Ext Terminal #1`);
+				// terminal.sendText("touch test.txt");
+				// terminal.dispose();
+			})
+	);
 	// create new mission command
 	commands.push(
 		vscode.commands.registerCommand('goalModel.createNewMission', () => {
