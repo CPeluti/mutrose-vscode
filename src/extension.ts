@@ -53,8 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
 			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 			const showInfo = vscode.window.showInformationMessage;
-			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path
-			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path
+			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path;
+			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path;
 			if (!fs.existsSync(hddlPath)) {
 				showInfo("hddl file doesn't exists!");
 				return;
@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -p` , (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
-					console.error(error)
+					console.error(error);
 				} else {
 					showInfo(`GM decomposto com sucesso`);
 					const mutrose = vscode.window.createOutputChannel('Mutrose');
@@ -84,8 +84,8 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.commands.registerCommand('goalModel.generateIhtn', (element) => {
 				const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 				const showInfo = vscode.window.showInformationMessage;
-				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path
-				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path
+				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path;
+				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path;
 				if (!fs.existsSync(hddlPath)) {
 					showInfo("hddl file doesn't exists!");
 					return;
