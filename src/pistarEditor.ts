@@ -110,7 +110,6 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 		const getUri = (path: string) => {
             return webview.asWebviewUri(vscode.Uri.joinPath(
                 this.context.extensionUri,"src","piStar","tool",path
-                this.context.extensionUri,"src","piStar","tool",path
             ));
         };
         
