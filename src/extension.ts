@@ -133,7 +133,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const selected = await vscode.window.showQuickPick(getAllProperties().map(prop => {
 					return {
 						label: prop.name,
-						description: prop.name
+						description: prop.type
 					};
 				}));
 				const input = await vscode.window.showInputBox({
