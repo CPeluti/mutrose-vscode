@@ -1,20 +1,20 @@
 {
-	"name": "gm-parser",
-	"description": "A language server example",
-	"author": "Microsoft Corporation",
+	"name": "mutrose-vscode",
+	"description": "GoalModel Editor for MutRoSe",
+	"author": "Caio Peluti & Ana Jordão",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
-	"publisher": "vscode-samples",
+	"publisher": "LES-UnB",
 	"categories": [],
 	"keywords": [
 		"multi-root ready"
 	],
 	"engines": {
-		"vscode": "1.96.4"
+		"vscode": "^1.96.4"
 	},
 	"activationEvents": [
 		"onLanguage:plaintext"
@@ -80,7 +80,7 @@
 			],
 			"view/item/context": [
 				{
-					"command": "gm-parser.execMutRose",
+					"command": "goalModel.execMutRose",
 					"when": "viewItem == goalModel",
 					"group": "navigation"
 				},
@@ -110,23 +110,23 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.setRuntimeAnnotation",
+					"when": "viewItem == node",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.addRefinementToNode",
 					"when": "viewItem == node",
 					"group": "navigation"
 				},
 				{
-					"command": "goalModel.addProperty",
-					"when": "viewItem == node",
+					"command": "goalModel.changeRefinementType",
+					"when": "viewItem == refinements",
 					"group": "navigation"
 				},
 				{
 					"command": "goalModel.editNode",
 					"when": "viewItem == node",
-					"group": "navigation"
-				},
-				{
-					"command": "goalModel.editProperty",
-					"when": "viewItem == attribute",
 					"group": "navigation"
 				},
 				{
@@ -142,8 +142,16 @@
 				"title": "Open Vue"
 			},
 			{
+				"command": "goalModel.setRuntimeAnnotation",
+				"title": "Set Runtime Annotation"
+			},
+			{
 				"command": "goalModel.addRefinementToNode",
-				"title": "Add refinments to the node"
+				"title": "Add refinements to the node"
+			},
+			{
+				"command": "goalModel.addRefinement",
+				"title": "Add refinements to the refinementList"
 			},
 			{
 				"command": "goalModel.addNode",
@@ -170,8 +178,12 @@
 				"title": "Focus Element"
 			},
 			{
-				"command": "gm-parser.execMutRose",
+				"command": "goalModel.execMutRose",
 				"title": "Decompose with MutRoSe"
+			},
+			{
+				"command": "goalModel.generateIhtn",
+				"title": "Generate the iHTN with MutRoSe"
 			},
 			{
 				"command": "goalModel.createNewMission",
@@ -194,8 +206,8 @@
 				"title": "Remove refinement"
 			},
 			{
-				"command": "goalModel.addRefinement",
-				"title": "Add refinement"
+				"command": "goalModel.changeRefinementType",
+				"title": "Change refinements' type"
 			},
 			{
 				"command": "goalModel.deleteProperty",
