@@ -185,8 +185,10 @@ export function activate(context: vscode.ExtensionContext) {
 					prompt: "Set the runtime annotation",
 					value: element.runtimeAnnotation? element.runtimeAnnotation : ''
 				});
-				element.setRuntimeAnnotation(input);
-				element.parent.parent.saveGoalModel();
+				if(input){
+					element.setRuntimeAnnotation(input);
+					element.parent.parent.saveGoalModel();
+				}
 			} catch (e){
 				console.error("failed to change node refinement", e);
 			}
@@ -217,12 +219,14 @@ export function activate(context: vscode.ExtensionContext) {
 				try {
 					console.dir(propertiesSet, {depth:-1});
 					const selected = await vscode.window.showQuickPick([...propertiesSet]);
+					if(selected == undefined) break;
 					if(selected.label == "Custom Property"){
 						const propertyName = await vscode.window.showInputBox({
 							placeHolder: "Type the custom property name",
 							prompt: "Edit node content",
 							value: ''
 						});
+						if(propertyName==undefined) continue;
 						selected.label = propertyName;
 					} else if ( selected.label == "Confirm Edition"){
 						confirmed = true;
@@ -236,12 +240,14 @@ export function activate(context: vscode.ExtensionContext) {
 							return {label: el, description: ''};
 						});
 						input = (await vscode.window.showQuickPick(options)).label;
+						if(input == undefined) break;
 					}else {
 						input = await vscode.window.showInputBox({
 							placeHolder: "Type " + selected.label,
 							prompt: "Edit node content",
 							value: attr?attr.attrValue : ''
 						});
+						if(input == undefined) break;	
 					}
 					element.removeAttribute(selected.label);
 					element.addAttribute(selected.label, input);
