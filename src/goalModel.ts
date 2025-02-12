@@ -204,7 +204,7 @@ export class Node extends vscode.TreeItem {
     contextValue = 'node';
     refinements: NodeRefinement;
     constructor(
-        public readonly name: string,
+        public name: string,
         public attributes: NodeAttr[],
         public collapsibleState: vscode.TreeItemCollapsibleState,
         public tag: string,
@@ -226,6 +226,7 @@ export class Node extends vscode.TreeItem {
             acc[el.attrName] = el.attrValue;
             return acc;
         },{});
+        this.setRuntimeAnnotation(this.runtimeAnnotation);
         return {
             id: this.customId,
             text: `${this.name}: ${this.description}`,
@@ -315,7 +316,7 @@ export class Mission extends vscode.TreeItem {
     lastGoalNumber = 0;
     lastTaskNumber = 0;
     constructor(
-        public readonly name: string,
+        public name: string,
         private readonly missionNumber: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly customId: string,

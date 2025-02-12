@@ -105,6 +105,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.rename",
+					"when": "viewItem == node",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.deleteNode",
 					"when": "viewItem == node",
 					"group": "navigation"

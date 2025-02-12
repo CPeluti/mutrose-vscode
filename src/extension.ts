@@ -120,14 +120,19 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// rename mission command
 	commands.push(
-		vscode.commands.registerCommand('goalModel.rename', async (element) => {
+		vscode.commands.registerCommand('goalModel.rename', async (element: Mission | Node) => {
 			const newName = await vscode.window.showInputBox({
 				placeHolder: "Type new name",
-				prompt: "Rename selected mission",
-				value: ""
+				prompt: `Rename selected ${element instanceof Mission? "Mission" : "Node"}`,
+				value: `${element instanceof Mission? element.name : element.tag}`
 			});
-			element.name = newName;
-			element.parent.saveGoalModel();
+			if(element instanceof Mission) {
+				element.name = newName;
+				element.parent.saveGoalModel();
+			} else {
+				element.tag = newName;
+				element.parent.parent.saveGoalModel();
+			}
 		})
 	);
 
