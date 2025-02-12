@@ -296,7 +296,7 @@ export class Node extends vscode.TreeItem {
         return;
     }
     addRefinement(type, targetId, tag, newId){
-        type = type == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
+        type = type.label == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
         if(!this.refinements){
             this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
         }
