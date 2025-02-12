@@ -189,52 +189,59 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	commands.push(
 		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
-			const properties = getAllProperties().map(prop => {
-					const attr = element.attributes.find(el=>el.attrName==prop.name);
-					return {
-						label: prop.name,
-						description: attr? attr.attrValue : ''
-					};
-			});
-			element.attributes.forEach(el=>{
-				properties.push({
-					label: el.attrName, 
-					description: el.attrValue
+			let confirmed = false;
+			while(!confirmed){
+				const properties = getAllProperties().map(prop => {
+						const attr = element.attributes.find(el=>el.attrName==prop.name);
+						return {
+							label: prop.name,
+							description: attr? attr.attrValue : ''
+						};
 				});
-			});
-			properties.push({label: "Custom Property", description: "Custom"});
-			const propertiesSet = new Set(properties);
-			try {
-				const selected = await vscode.window.showQuickPick([...propertiesSet]);
-				if(selected.label == "Custom Property"){
-					const propertyName = await vscode.window.showInputBox({
-						placeHolder: "Type the custom property name",
-						prompt: "Edit node content",
-						value: ''
+				element.attributes.forEach(el=>{
+					properties.push({
+						label: el.attrName, 
+						description: el.attrValue
 					});
-					selected.label = propertyName;
+				});
+				properties.push({label: "Custom Property", description: "Custom"});
+				properties.push({label: "Confirm Edition", description: ""});
+				const propertiesSet = new Set(properties);
+				try {
+					const selected = await vscode.window.showQuickPick([...propertiesSet]);
+					if(selected.label == "Custom Property"){
+						const propertyName = await vscode.window.showInputBox({
+							placeHolder: "Type the custom property name",
+							prompt: "Edit node content",
+							value: ''
+						});
+						selected.label = propertyName;
+					} else if ( selected.label == "Confirm Edition"){
+						confirmed = true;
+						break;
+					}
+					const attr = element.attributes.find(el=>el.attrName==selected.label);
+					const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
+					let input: string;
+					if(selectedProperty?.options?.length){
+						const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
+							return {label: el, description: ''};
+						});
+						input = (await vscode.window.showQuickPick(options)).label;
+					}else {
+						input = await vscode.window.showInputBox({
+							placeHolder: "Type " + selected.label,
+							prompt: "Edit node content",
+							value: attr?attr.attrValue : ''
+						});
+					}
+					element.removeAttribute(selected.label);
+					element.addAttribute(selected.label, input);
+				} catch (e) {
+					console.log(e, "erro ao editar node");
 				}
-				const attr = element.attributes.find(el=>el.attrName==selected.label);
-				const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
-				let input: string;
-				if(selectedProperty?.options?.length){
-					const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
-						return {label: el, description: ''};
-					});
-					input = (await vscode.window.showQuickPick(options)).label;
-				}else {
-					input = await vscode.window.showInputBox({
-						placeHolder: "Type " + selected.label,
-						prompt: "Edit node content",
-						value: attr?attr.attrValue : ''
-					});
-				}
-				element.removeAttribute(selected.label);
-				element.addAttribute(selected.label, input);
-				element.parent.parent.saveGoalModel();
-			} catch (e) {
-				console.log(e, "erro ao editar node");
 			}
+			element.parent.parent.saveGoalModel();
 		})
 	);
 
