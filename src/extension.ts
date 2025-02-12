@@ -199,15 +199,18 @@ export function activate(context: vscode.ExtensionContext) {
 						};
 				});
 				element.attributes.forEach(el=>{
-					properties.push({
-						label: el.attrName, 
-						description: el.attrValue
-					});
+					if(!properties.find(att => att.label == el.attrName)){
+						properties.push({
+							label: el.attrName, 
+							description: el.attrValue
+						});
+					}
 				});
 				properties.push({label: "Custom Property", description: "Custom"});
 				properties.push({label: "Confirm Edition", description: ""});
 				const propertiesSet = new Set(properties);
 				try {
+					console.dir(propertiesSet, {depth:-1});
 					const selected = await vscode.window.showQuickPick([...propertiesSet]);
 					if(selected.label == "Custom Property"){
 						const propertyName = await vscode.window.showInputBox({
