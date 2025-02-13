@@ -40,12 +40,12 @@ The extension expects the variables to contain the relative path for both files 
 #### Example for the variables
 ```
 {
-	"gmParser.hddlPath": "../hddl/FoodLogistics.hddl",
-	"gmParser.configPath": "../configuration/configurationDelivery.json"
+	"gmParser.hddlPath": "hddl/FoodLogistics.hddl",
+	"gmParser.configPath": "configuration/configurationDelivery.json"
 }
 ```
 
-Besides that, the extension expects the path inside the configuration file to be absolute, so it can be found independently of where the MutRoSe is executed from.
+Besides that, the extension also expects the path inside the configuration file to be relative since MutRoSe is executed from the workspace's root.
 
 Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install the matplotlib with pip, that's usually done by running the following commands:
 ```
