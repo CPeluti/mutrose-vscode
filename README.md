@@ -11,7 +11,8 @@ This extension ships all the needed tooling for modelling and decomposing missio
 ### MutRoSe
 - Ubuntu
 - Python3
-- matplotlib==3.10.0
+- ete4
+- PyQt6
 
 ## How to use
 Since the extension expects the same project pattern as the MutRoSe, your workspace needs to have the following structure:
@@ -50,7 +51,8 @@ Besides that, the extension also expects the path inside the configuration file 
 Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install the matplotlib with pip, that's usually done by running the following commands:
 ```
 $ chmod +x <path_to_vscode_extensions_folder>/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose
-$ pip3 install matplotlib==3.10.0
+$ pip3 install PyQt6
+$ pip3 install https://github.com/etetoolkit/ete/archive/ete4.zip
 ```
 The path to vscode's extesions folder usually is `~/.vscode-server/extensions/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose`
 
