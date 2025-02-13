@@ -100,11 +100,6 @@
 					"group": "navigation"
 				},
 				{
-					"command": "goalModel.addNode",
-					"when": "viewItem == mission",
-					"group": "navigation"
-				},
-				{
 					"command": "goalModel.rename",
 					"when": "viewItem == mission",
 					"group": "navigation"

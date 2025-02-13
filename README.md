@@ -62,6 +62,8 @@ For the piStar, almost everything continues the same as the one hosted by the UF
 - To save the file you just need to press CTRL-S or save the file like you normally would do with VSCode.
 
 ### Known Bugs & workarounds
+#### Auto Save bugs the movement of elements inside pistar
+Sadly, the only solution as of now is to disable the auto save.
 #### PiStar is empty on opening a file
 Sometimes when you open a .gm file, the pistar can be entirely empty. To solve that you just need to save the file with CTRL-S or something equivalent and it should correct it self.
 #### Can't delete a element
