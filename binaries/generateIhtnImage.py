@@ -16,17 +16,15 @@ class TreePlotter:
         children = self.ihtn[node]["children"]
         name = self.ihtn[node]["name"]
         list_of_agents = self.ihtn[node]["agents"]
-        if len(children) == 0:
-            self.task_sequence.append(self.ihtn[node]["name"])
+
+        my_node = Tree({"name": name})
+        agents[name] = list_of_agents
+        if(parent is not None):
+            parent.add_child(my_node)
         else:
-            for child in children:
-                my_node = Tree({"name": name})
-                agents[name] = list_of_agents
-                self.task_sequencing(child, my_node)
-                if(parent is not None):
-                    parent.add_child(my_node)
-                else:
-                    self.tree.add_child(my_node)
+            self.tree.add_child(my_node)
+        for child in children:
+            self.task_sequencing(child, my_node)
 
 def my_layout(node):
     agent_face = TextFace(agents[node.name], fsize=5)
