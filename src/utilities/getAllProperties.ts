@@ -11,7 +11,6 @@ const properties: Property[] = [
 	// { 	name: "Runtime Annotation",
 	// 	options: ["sequencial","parallel", "fallback"] 
 	// },
-	{ name: "Monitors" },
 	{
 		name: "Goal type",	
 		options: ["Achieve", "Query","Perform"]
