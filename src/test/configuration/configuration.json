@@ -1,0 +1,126 @@
+{
+    "world_db": {
+        "type": "file",
+        "file_type": "xml",
+        "path": "knowledge/world_db.xml",
+        "xml_root": "world_db"
+    },
+
+    "output": {
+        "output_type": "file",
+        "file_path": "output/task_output.json",
+        "file_type": "json"
+    },
+
+    "location_types": ["Location"],
+
+    "type_mapping": [
+        {
+            "hddl_type": "delivery",
+            "ocl_type": "Delivery"
+        },
+        {
+            "hddl_type": "nurse",
+            "ocl_type": "Nurse"
+        },
+        {
+            "hddl_type": "location",
+            "ocl_type": "Location"
+        },
+        {
+            "hddl_type": "arm",
+            "ocl_type": "Arm"
+        }
+    ],
+
+    "var_mapping": [
+        {
+            "task_id": "AT1",
+            "map": [
+                {
+                    "gm_var": "pickup_location",
+                    "hddl_var": "?l"
+                },
+                {
+                    "gm_var": "current_nurse",
+                    "hddl_var": "?n"
+                }
+            ]
+        },
+        {
+            "task_id": "AT2",
+            "map": [
+                {
+                    "gm_var": "current_nurse",
+                    "hddl_var": "?n"
+                }
+            ]
+        },
+        {
+            "task_id": "AT3",
+            "map": [
+                {
+                    "gm_var": "pharmacy_loc",
+                    "hddl_var": "?p"
+                },
+                {
+                    "gm_var": "pharmacy_arm",
+                    "hddl_var": "?a"
+                }
+            ]
+        },
+        {
+            "task_id": "AT4",
+            "map": [
+                {
+                    "gm_var": "pharmacy_arm",
+                    "hddl_var": "?a"
+                }
+            ]
+        }
+    ],
+
+
+
+    "semantic_mapping": [
+        {
+            "type": "relationship",
+            "main_entity": "Delivery",
+            "related_entity": "Nurse",
+            "relationship_type": "attribute",
+            "attribute_name": "patient",
+            "belongs_to": "world_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "deliverynurse",
+                "arg_sorts": ["nurse", "delivery"]
+            }
+        },
+        {
+            "type": "relationship",
+            "main_entity": "Delivery",
+            "related_entity": "Location",
+            "relationship_type": "attribute",
+            "attribute_name": "pickup_location",
+            "belongs_to": "world_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "deliverypickuplocation",
+                "arg_sorts": ["location", "delivery"]
+            }
+        },
+        {
+            "type": "relationship",
+            "main_entity": "Location",
+            "related_entity": "Arm",
+            "relationship_type": "attribute",
+            "attribute_name": "arm",
+            "belongs_to": "world_db",
+            "mapped_type": "predicate",
+            "map": {
+                "pred": "locationarm",
+                "arg_sorts": ["arm", "location"]
+            }
+        }
+    ]
+}

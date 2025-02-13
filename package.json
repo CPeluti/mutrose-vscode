@@ -85,6 +85,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.generateIhtn",
+					"when": "viewItem == goalModel",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.deleteRefinement",
 					"when": "viewItem == refinement",
 					"group": "navigation"

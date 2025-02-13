@@ -1,1 +1,360 @@
-{"actors":[{"customProperties":{"Description":""},"id":"5a6a72a8-fa69-4b36-bd60-fdc1679ae80b","nodes":[{"id":"1c7df969-95cf-42cb-8493-50528ac49f9c","text":"G1: Pickup and deliver the samples [G2;G3;G4]","x":371,"y":129,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"6dc0d96d-f59f-4461-a441-26301d861b6d","text":"G2: Fetch deliveries","x":225,"y":236,"type":"istar.Goal","customProperties":{"Goal type":"Query","QueriedProperty":"world_db->select(d:Delivery| )","Controls":"deliveries_requested : Sequence(Delivery)"}},{"id":"3370a599-951c-4973-8f9f-d8ca89f577ba","text":"teste 2: pickup samples and deliver them to me","x":486,"y":221,"type":"istar.Goal","customProperties":{"Description":"","Goal type":"Achieve","AchieveCondition":"deliveries_requested->forAll(current_delivery |)","Monitors":"deliveries_requested","Controls":"current_delivery : Delivery","Group":"False"}},{"id":"b77fad2a-27d7-4687-b837-24acabe20d70","text":"G4: Approach Nurse and pick sample","x":348,"y":350,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"877b1de3-6dd5-42a7-a989-7ff3ee696355","text":"G5: Goal","x":221,"y":470,"type":"istar.Goal","customProperties":{"Description":"","Params":"teste","Controls":"arst","QueriedProperty":"arstarst"}},{"id":"e5be54bf-8371-44ef-8d61-97c66078d81b","text":"G6: Goal","x":340,"y":469,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"01658231-1b1f-4ff5-8839-0dbd2cba63c7","text":"G7: Goal","x":481,"y":464,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"56d08891-0745-4806-8d53-54d3710c164d","text":"G8: Goal","x":604,"y":461,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"4a463ca1-0826-4685-99dc-f10b4adb6dad","text":"G9: Goal","x":803,"y":366,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"203f8faa-75fb-42d0-833c-6ce642a8edb4","text":"G10: Goal","x":732,"y":472,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"289729c1-c3ea-4e54-9009-2103dfcb86b2","text":"G11: Goal","x":839,"y":471,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"51a4b91a-7659-4a78-b039-65b3f596867f","text":"G12: Goal","x":954,"y":470,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"7061c598-ec8c-4b00-9b71-9c560491c4d5","text":"G13: Goal","x":1069,"y":471,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"4b516a2a-b20a-4250-a7c6-1e03d53d04a5","text":"AT1: Task","x":489,"y":569,"type":"istar.Task","customProperties":{"Description":""}},{"id":"1ed8905f-711c-4071-b03d-227dc51861f9","text":"AT2: Task","x":604,"y":567,"type":"istar.Task","customProperties":{"Description":""}},{"id":"5ba8187b-1cfd-40ef-8182-098d3d16b80f","text":"AT3: Task","x":941.5,"y":572,"type":"istar.Task","customProperties":{"Description":""}},{"id":"4eae417f-c2a6-4caa-b847-9848d38c11e2","text":"AT4: Task","x":1089,"y":576,"type":"istar.Task","customProperties":{}},{"id":"b8fd7457-5da2-42af-af9e-72f60cbbdb02","text":"G14: Goal","x":806,"y":242,"type":"istar.Goal","customProperties":{"Description":""}},{"id":"3b66fece-aad0-4710-a60d-48eae46a13ec","text":"G15: Goal","x":590,"y":395.5,"type":"istar.Goal","customProperties":{"Description":""}}],"text":"M1: teste 2","type":"istar.Actor","x":205,"y":111}],"orphans":[],"dependencies":[],"links":[{"source":"6dc0d96d-f59f-4461-a441-26301d861b6d","target":"1c7df969-95cf-42cb-8493-50528ac49f9c","id":"9a77073b-2fbc-4f07-bc15-5bae299f61e9","type":"istar.AndRefinementLink"},{"source":"3370a599-951c-4973-8f9f-d8ca89f577ba","target":"1c7df969-95cf-42cb-8493-50528ac49f9c","id":"e71f9979-60fb-437f-8cf7-6e1efcf36189","type":"istar.AndRefinementLink"},{"source":"b77fad2a-27d7-4687-b837-24acabe20d70","target":"3370a599-951c-4973-8f9f-d8ca89f577ba","id":"82fa6f9e-ed46-4899-b916-cb36d44fb5d2","type":"istar.OrRefinementLink"},{"source":"4b516a2a-b20a-4250-a7c6-1e03d53d04a5","target":"3370a599-951c-4973-8f9f-d8ca89f577ba","id":"53681c99-9c05-441a-a0be-19550fcb8887","type":"istar.OrRefinementLink"},{"source":"01658231-1b1f-4ff5-8839-0dbd2cba63c7","target":"3370a599-951c-4973-8f9f-d8ca89f577ba","id":1,"type":"istar.OrRefinementLink"},{"source":"1c7df969-95cf-42cb-8493-50528ac49f9c","target":"b8fd7457-5da2-42af-af9e-72f60cbbdb02","id":"f403aa12-dc38-44a1-9fdd-41cc9e0fb248","type":"istar.AndRefinementLink"}],"display":{"6dc0d96d-f59f-4461-a441-26301d861b6d":{"width":96,"height":46.364593505859375},"3370a599-951c-4973-8f9f-d8ca89f577ba":{"width":171,"height":66.36459350585938}},"tool":"pistar.2.1.0","istar":"2.0","saveDate":"Wed, 12 Feb 2025 22:08:18 GMT","diagram":{"width":2000,"height":1300,"customProperties":{"Description":""}}}
+{
+  "actors": [
+    {
+      "id": "34dadeac-cc9c-466c-9752-5bd519d8e53c",
+      "text": "M1: Lab Samples Logistics",
+      "type": "istar.Actor",
+      "x": 426,
+      "y": 56,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "bc3a4861-faec-4277-867a-c414d14bdd7f",
+          "text": "G1: Pickup and Deliver Samples [G2;G3]",
+          "type": "istar.Goal",
+          "x": 635,
+          "y": 83,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "d9c013de-1883-4045-a937-72b5cdcc601c",
+          "text": "G2: Fetch Deliveries to Be Made",
+          "type": "istar.Goal",
+          "x": 426,
+          "y": 168,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(d:Delivery| )",
+            "Controls": "deliveries_requested : Sequence(Delivery)"
+          }
+        },
+        {
+          "id": "06b39e44-0480-4c5f-95b7-b93d2e3aba44",
+          "text": "G3: Pickup Samples for All Requested Deliveries and Deliver Them [G4;G9]",
+          "type": "istar.Goal",
+          "x": 907,
+          "y": 191,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve",
+            "AchieveCondition": "deliveries_requested->forAll(current_delivery |)",
+            "Monitors": "deliveries_requested",
+            "Controls": "current_delivery : Delivery",
+            "Group": "False"
+          }
+        },
+        {
+          "id": "c348a0e5-756e-405b-b192-1943e9112a08",
+          "text": "G5: Fetch Delivery's Nurse",
+          "type": "istar.Goal",
+          "x": 493,
+          "y": 433,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(n:Nurse | n.name in current_delivery.nurse)",
+            "Controls": "current_nurse : Nurse",
+            "Monitors": "current_delivery"
+          }
+        },
+        {
+          "id": "0d55086a-ecf9-4084-a0d8-ac6bc2803b9a",
+          "text": "G6: Fetch Delivery Pickup Location",
+          "type": "istar.Goal",
+          "x": 612,
+          "y": 435,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(l:Location | l.name in current_delivery.pickup_location)",
+            "Controls": "pickup_location : Location",
+            "Monitors": "current_delivery"
+          }
+        },
+        {
+          "id": "a8146353-70b6-4bd8-9765-45ff003dc3a8",
+          "text": "G10: Fetch Pharmacy Location",
+          "type": "istar.Goal",
+          "x": 1020,
+          "y": 418,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(l:Location | l.name = \"Pharmacy\")",
+            "Controls": "pharmacy_loc : Location"
+          }
+        },
+        {
+          "id": "87dda884-9f97-4a20-b932-e0192784b025",
+          "text": "G11: Fetch Pharmacy Arm",
+          "type": "istar.Goal",
+          "x": 1147,
+          "y": 419,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query",
+            "QueriedProperty": "world_db->select(a:Arm | a.name in pharmacy_loc.arm)",
+            "Controls": "pharmacy_arm : Arm",
+            "Monitors": "pharmacy_loc"
+          }
+        },
+        {
+          "id": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc",
+          "text": "G4: Approach Nurse and Pick Sample [G5;G6;G7;G8]",
+          "type": "istar.Goal",
+          "x": 676,
+          "y": 322,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "936171bf-cc5c-4d10-8156-c3d7c8d40d26",
+          "text": "G7: Approach the Nurse",
+          "type": "istar.Goal",
+          "x": 735,
+          "y": 441,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_nurse, pickup_location"
+          }
+        },
+        {
+          "id": "f63b2d92-fb31-4617-84a4-c30982dfd797",
+          "text": "AT1: ApproachNurse",
+          "type": "istar.Task",
+          "x": 735,
+          "y": 531,
+          "customProperties": {
+            "Description": "",
+            "Location": "pickup_location",
+            "Params": "current_nurse"
+          }
+        },
+        {
+          "id": "ad9b096a-2527-4cd9-a013-1476f05e4a8a",
+          "text": "G9: Approach Arm and Unload Sample [G10;G11;G12;G13]",
+          "type": "istar.Goal",
+          "x": 1188,
+          "y": 329,
+          "customProperties": {
+            "Description": ""
+          }
+        },
+        {
+          "id": "39b9184c-1763-4b32-be0e-c6351e339adf",
+          "text": "G12: Approach the Arm",
+          "type": "istar.Goal",
+          "x": 1283,
+          "y": 424,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "pharmacy_loc, pharmacy_arm"
+          }
+        },
+        {
+          "id": "0d101739-284b-4948-995e-04369e535aec",
+          "text": "AT3: ApproachArm",
+          "type": "istar.Task",
+          "x": 1284,
+          "y": 528,
+          "customProperties": {
+            "Description": "",
+            "Location": "pharmacy_loc",
+            "Params": "pharmacy_arm"
+          }
+        },
+        {
+          "id": "9a952783-d786-409b-a5e7-039ab220442b",
+          "text": "G8: Pick the Sample With the Nurse",
+          "type": "istar.Goal",
+          "x": 849,
+          "y": 443,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "current_nurse"
+          }
+        },
+        {
+          "id": "db0a4731-d462-411a-9318-298798b229df",
+          "text": "AT2: PickSample",
+          "type": "istar.Task",
+          "x": 849,
+          "y": 531,
+          "customProperties": {
+            "Description": "",
+            "Params": "current_nurse"
+          }
+        },
+        {
+          "id": "d059ac56-e28b-4cf2-beba-45bedb46fef3",
+          "text": "G13: Unload the Sample",
+          "type": "istar.Goal",
+          "x": 1404,
+          "y": 419,
+          "customProperties": {
+            "Description": "",
+            "Monitors": "pharmacy_arm"
+          }
+        },
+        {
+          "id": "0e36655e-0760-49c8-a202-cee7c5cdadb7",
+          "text": "AT4: UnloadSample",
+          "type": "istar.Task",
+          "x": 1404,
+          "y": 528,
+          "customProperties": {
+            "Description": "",
+            "Params": "pharmacy_arm"
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "5fde7927-a506-4a6a-a19a-2019d2b5ab1e",
+      "type": "istar.AndRefinementLink",
+      "source": "d9c013de-1883-4045-a937-72b5cdcc601c",
+      "target": "bc3a4861-faec-4277-867a-c414d14bdd7f"
+    },
+    {
+      "id": "b793fe31-0043-4770-b79b-94c73411ac14",
+      "type": "istar.AndRefinementLink",
+      "source": "06b39e44-0480-4c5f-95b7-b93d2e3aba44",
+      "target": "bc3a4861-faec-4277-867a-c414d14bdd7f"
+    },
+    {
+      "id": "564308e8-95b5-4397-83e4-c76654587e44",
+      "type": "istar.AndRefinementLink",
+      "source": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc",
+      "target": "06b39e44-0480-4c5f-95b7-b93d2e3aba44"
+    },
+    {
+      "id": "2f60f447-660c-47f7-be5e-3089ddf9d5a7",
+      "type": "istar.AndRefinementLink",
+      "source": "c348a0e5-756e-405b-b192-1943e9112a08",
+      "target": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc"
+    },
+    {
+      "id": "1f1a7bc7-ac5c-461f-91d5-577eeac847c6",
+      "type": "istar.AndRefinementLink",
+      "source": "0d55086a-ecf9-4084-a0d8-ac6bc2803b9a",
+      "target": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc"
+    },
+    {
+      "id": "58a97069-2333-4c77-87a1-0cfa57117336",
+      "type": "istar.AndRefinementLink",
+      "source": "936171bf-cc5c-4d10-8156-c3d7c8d40d26",
+      "target": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc"
+    },
+    {
+      "id": "42905a8f-c38e-461d-b6dd-e4feb7bfb4eb",
+      "type": "istar.AndRefinementLink",
+      "source": "f63b2d92-fb31-4617-84a4-c30982dfd797",
+      "target": "936171bf-cc5c-4d10-8156-c3d7c8d40d26"
+    },
+    {
+      "id": "4403feae-811a-47df-873b-c931c0ab2c63",
+      "type": "istar.AndRefinementLink",
+      "source": "ad9b096a-2527-4cd9-a013-1476f05e4a8a",
+      "target": "06b39e44-0480-4c5f-95b7-b93d2e3aba44"
+    },
+    {
+      "id": "9089e375-6516-4313-b897-d966c61d1687",
+      "type": "istar.AndRefinementLink",
+      "source": "87dda884-9f97-4a20-b932-e0192784b025",
+      "target": "ad9b096a-2527-4cd9-a013-1476f05e4a8a"
+    },
+    {
+      "id": "460aa085-1175-4e88-8a73-5bdc401904ff",
+      "type": "istar.AndRefinementLink",
+      "source": "a8146353-70b6-4bd8-9765-45ff003dc3a8",
+      "target": "ad9b096a-2527-4cd9-a013-1476f05e4a8a"
+    },
+    {
+      "id": "d6b7aedf-9abc-4af7-96d4-d7e17b10e5e4",
+      "type": "istar.AndRefinementLink",
+      "source": "39b9184c-1763-4b32-be0e-c6351e339adf",
+      "target": "ad9b096a-2527-4cd9-a013-1476f05e4a8a"
+    },
+    {
+      "id": "ed2f0901-2a92-4f80-b6ad-12dddb01caed",
+      "type": "istar.AndRefinementLink",
+      "source": "0d101739-284b-4948-995e-04369e535aec",
+      "target": "39b9184c-1763-4b32-be0e-c6351e339adf"
+    },
+    {
+      "id": "8ab325dd-50a7-4268-aa48-327691aea606",
+      "type": "istar.AndRefinementLink",
+      "source": "9a952783-d786-409b-a5e7-039ab220442b",
+      "target": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc"
+    },
+    {
+      "id": "64e4be76-1638-42c0-8244-b26369f9c18f",
+      "type": "istar.AndRefinementLink",
+      "source": "db0a4731-d462-411a-9318-298798b229df",
+      "target": "9a952783-d786-409b-a5e7-039ab220442b"
+    },
+    {
+      "id": "12758182-e946-4a93-9ee2-c0e9f9874f6e",
+      "type": "istar.AndRefinementLink",
+      "source": "d059ac56-e28b-4cf2-beba-45bedb46fef3",
+      "target": "ad9b096a-2527-4cd9-a013-1476f05e4a8a"
+    },
+    {
+      "id": "efa3f607-c786-4650-8ce7-f84ad3d594d1",
+      "type": "istar.AndRefinementLink",
+      "source": "0e36655e-0760-49c8-a202-cee7c5cdadb7",
+      "target": "d059ac56-e28b-4cf2-beba-45bedb46fef3"
+    }
+  ],
+  "display": {
+    "bc3a4861-faec-4277-867a-c414d14bdd7f": {
+      "width": 119.609375,
+      "height": 51
+    },
+    "d9c013de-1883-4045-a937-72b5cdcc601c": {
+      "width": 126.609375,
+      "height": 61
+    },
+    "06b39e44-0480-4c5f-95b7-b93d2e3aba44": {
+      "width": 156.609375,
+      "height": 72
+    },
+    "c348a0e5-756e-405b-b192-1943e9112a08": {
+      "width": 110.609375,
+      "height": 46
+    },
+    "0d55086a-ecf9-4084-a0d8-ac6bc2803b9a": {
+      "width": 110.609375,
+      "height": 47
+    },
+    "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc": {
+      "width": 109.609375,
+      "height": 49.306243896484375
+    },
+    "ad9b096a-2527-4cd9-a013-1476f05e4a8a": {
+      "width": 126.609375,
+      "height": 53
+    }
+  },
+  "tool": "pistar.2.0.0",
+  "istar": "2.0",
+  "saveDate": "Fri, 24 Sep 2021 20:50:32 GMT",
+  "diagram": {
+    "width": 2000,
+    "height": 1300,
+    "name": "Welcome Model",
+    "customProperties": {
+      "Description": "Welcome to the piStar tool! This model describe some of the recent improvements in the tool.\n\nFor help using this tool, please check the Help menu above"
+    }
+  }
+}

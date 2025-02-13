@@ -8,6 +8,7 @@ import * as child_process from 'child_process';
 import { GoalModel, GoalModelProvider, Mission, Node, NodeRefinement, Refinement } from './goalModel';
 import { PistarEditorProvider } from './pistarEditor';
 import { getAllProperties } from './utilities/getAllProperties';
+import { cwd } from 'process';
 
 
 // This method is called when your extension is activated
@@ -53,21 +54,22 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
 			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 			const showInfo = vscode.window.showInformationMessage;
-			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path;
-			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path;
+			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
+			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
 			if (!fs.existsSync(hddlPath)) {
 				showInfo("hddl file doesn't exists!");
 				return;
 			} else if (!fs.existsSync(configPath)) {
 				showInfo("config file doesn't exists");
 				return;
+			
 			}
-			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -p` , (error, stdout, stderr) => {
+			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
 					console.error(error);
 				} else {
-					showInfo(`GM decomposto com sucesso`);
+					showInfo(`Goal Model Decomposition generated with success!`);
 					const mutrose = vscode.window.createOutputChannel('Mutrose');
 					mutrose.append(stdout);
 					mutrose.show();
@@ -84,8 +86,8 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.commands.registerCommand('goalModel.generateIhtn', (element) => {
 				const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 				const showInfo = vscode.window.showInformationMessage;
-				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path;
-				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path;
+				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
+				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
 				if (!fs.existsSync(hddlPath)) {
 					showInfo("hddl file doesn't exists!");
 					return;
@@ -93,16 +95,28 @@ export function activate(context: vscode.ExtensionContext) {
 					showInfo("config file doesn't exists");
 					return;
 				}
-				const json: string = fs.readFileSync(element.filePath).toString();
-				fs.writeFileSync('./temp.txt',json);
-				child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -h` , (error, stdout, stderr) => {
+				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`
+				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
 					if(error){
 						showInfo(`Error: ${error}`);
+						console.log(error, stdout)
 					} else {
-						showInfo(`GM decomposto com sucesso`);
+						showInfo(`iHTNs generated with success!`);
 						const mutrose = vscode.window.createOutputChannel('Mutrose');
 						mutrose.append(stdout);
 						mutrose.show();
+						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'ihtn').path;
+						const ihtns = fs.readdirSync(ihtnPath)
+						ihtns.forEach(el=>{
+							child_process.exec(`python3 ${vscode.Uri.joinPath(context.extensionUri,"binaries", "generateIhtnImage.py").path} ${el}`, {cwd: ihtnPath}, (error, stdout, stderr)=>{
+								if(error){
+									showInfo(`Error: ${error}`);
+									console.error(error);
+								} else {
+									showInfo(`iHtn image generated with success!`);
+								}
+							})
+						})
 					}
 					// fs.unlinkSync('./temp.txt');
 				});

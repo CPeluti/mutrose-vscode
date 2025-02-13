@@ -6,8 +6,12 @@ This extension ships all the needed tooling for modelling and decomposing missio
 - A new Tree View for all .gm in the workspace
 
 ## System Requirements
-For the modelling part, any system should work as long as they can run the vscode.
-But, for executing the MutRoSe, it's required a linux system. Ubuntu is recommended since that's the target distro for the MutRoSe binary, but it should work with other distributions.
+### Modelling
+	For the modelling part, any system should work as long as they can run the vscode.
+### MutRoSe
+- Ubuntu
+- Python3
+- matplotlib==3.10.0
 
 ## How to use
 Since the extension expects the same project pattern as the MutRoSe, your workspace needs to have the following structure:
@@ -43,11 +47,12 @@ The extension expects the variables to contain the relative path for both files 
 
 Besides that, the extension expects the path inside the configuration file to be absolute, so it can be found independently of where the MutRoSe is executed from.
 
-Lastly, it's also needed to give permission for the MutRoSe binary to be executable, that's usually done by running the following command:
+Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install the matplotlib with pip, that's usually done by running the following commands:
 ```
-$ chmod +x <path_to_vscode_extensions_folder>/les-unb.mutrose-vscode-0.0.1/binaries/mutrose
+$ chmod +x <path_to_vscode_extensions_folder>/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose
+$ pip3 install matplotlib==3.10.0
 ```
-The path to vscode's extesions folder usually is `~/.vscode-server/extensions/les-unb.mutrose-vscode-0.0.1/binaries/mutrose`
+The path to vscode's extesions folder usually is `~/.vscode-server/extensions/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose`
 
 ### How to model
 For using the Tree View it should mostly be intuitive, but the main idea is to right click every type of element to interact with them. For example, if you right click a Goal, all available options related to the goal will appear in a menu.
