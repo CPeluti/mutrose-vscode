@@ -3,7 +3,7 @@
 	"description": "GoalModel Editor for MutRoSe",
 	"author": "Caio Peluti & Ana Jordão",
 	"license": "MIT",
-	"version": "0.2.4",
+	"version": "0.2.9",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CPeluti/mutrose-vscode"
@@ -85,6 +85,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "goalModel.generateIhtn",
+					"when": "viewItem == goalModel",
+					"group": "navigation"
+				},
+				{
 					"command": "goalModel.deleteRefinement",
 					"when": "viewItem == refinement",
 					"group": "navigation"
@@ -92,11 +97,6 @@
 				{
 					"command": "goalModel.addRefinement",
 					"when": "viewItem == refinements",
-					"group": "navigation"
-				},
-				{
-					"command": "goalModel.addNode",
-					"when": "viewItem == mission",
 					"group": "navigation"
 				},
 				{

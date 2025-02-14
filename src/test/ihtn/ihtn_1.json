@@ -1,0 +1,244 @@
+{
+    "0": {
+        "name": "ROOT",
+        "type": "task",
+        "parent": "-1",
+        "agents": [
+            "r1"
+        ],
+        "children": [
+            "1"
+        ]
+    },
+    "1": {
+        "name": "ROOT_M",
+        "type": "method",
+        "parent": "0",
+        "agents": [
+            "r1"
+        ],
+        "children": [
+            "2",
+            "7",
+            "12",
+            "16"
+        ]
+    },
+    "2": {
+        "name": "ApproachNurse",
+        "type": "task",
+        "parent": "1",
+        "agents": [
+            "r1"
+        ],
+        "children": [
+            "3"
+        ]
+    },
+    "3": {
+        "name": "nurse-approach",
+        "type": "method",
+        "parent": "2",
+        "agents": [
+            "r1",
+            "Nurse1",
+            "Room3"
+        ],
+        "children": [
+            "4",
+            "5",
+            "6"
+        ]
+    },
+    "4": {
+        "name": "navto",
+        "type": "action",
+        "parent": "3",
+        "locations": [
+            "Room3"
+        ],
+        "agents": [
+            "r1",
+            "Room3"
+        ],
+        "children": ""
+    },
+    "5": {
+        "name": "approach-nurse",
+        "type": "action",
+        "parent": "3",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    },
+    "6": {
+        "name": "authenticate-nurse",
+        "type": "action",
+        "parent": "3",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    },
+    "7": {
+        "name": "PickSample",
+        "type": "task",
+        "parent": "1",
+        "agents": [
+            "r1"
+        ],
+        "children": [
+            "8"
+        ]
+    },
+    "8": {
+        "name": "sample-pick",
+        "type": "method",
+        "parent": "7",
+        "agents": [
+            "r1",
+            "Nurse1"
+        ],
+        "children": [
+            "9",
+            "10",
+            "11"
+        ]
+    },
+    "9": {
+        "name": "open-drawer",
+        "type": "action",
+        "parent": "8",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    },
+    "10": {
+        "name": "deposit",
+        "type": "action",
+        "parent": "8",
+        "locations": "",
+        "agents": [
+            "Nurse1"
+        ],
+        "children": ""
+    },
+    "11": {
+        "name": "close-drawer",
+        "type": "action",
+        "parent": "8",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    },
+    "12": {
+        "name": "ApproachArm",
+        "type": "task",
+        "parent": "1",
+        "agents": [
+            "r1"
+        ],
+        "children": [
+            "13"
+        ]
+    },
+    "13": {
+        "name": "arm-approach",
+        "type": "method",
+        "parent": "12",
+        "agents": [
+            "r1",
+            "Arm1",
+            "Pharmacy"
+        ],
+        "children": [
+            "14",
+            "15"
+        ]
+    },
+    "14": {
+        "name": "navto",
+        "type": "action",
+        "parent": "13",
+        "locations": [
+            "Pharmacy"
+        ],
+        "agents": [
+            "r1",
+            "Pharmacy"
+        ],
+        "children": ""
+    },
+    "15": {
+        "name": "approach-arm",
+        "type": "action",
+        "parent": "13",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    },
+    "16": {
+        "name": "UnloadSample",
+        "type": "task",
+        "parent": "1",
+        "agents": [
+            "r1"
+        ],
+        "children": [
+            "17"
+        ]
+    },
+    "17": {
+        "name": "sample-unload",
+        "type": "method",
+        "parent": "16",
+        "agents": [
+            "r1",
+            "Arm1"
+        ],
+        "children": [
+            "18",
+            "19",
+            "20"
+        ]
+    },
+    "18": {
+        "name": "open-drawer",
+        "type": "action",
+        "parent": "17",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    },
+    "19": {
+        "name": "pick-up-sample",
+        "type": "action",
+        "parent": "17",
+        "locations": "",
+        "agents": [
+            "Arm1"
+        ],
+        "children": ""
+    },
+    "20": {
+        "name": "close-drawer",
+        "type": "action",
+        "parent": "17",
+        "locations": "",
+        "agents": [
+            "r1"
+        ],
+        "children": ""
+    }
+}
