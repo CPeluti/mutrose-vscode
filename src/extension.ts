@@ -5,9 +5,10 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import * as child_process from 'child_process';
-import { GoalModel, GoalModelProvider, Node, NodeRefinement, Refinement } from './goalModel';
+import { GoalModel, GoalModelProvider, Node, NodeRefinement, Refinement, Mission } from './goalModel';
 import { PistarEditorProvider } from './pistarEditor';
-import { getAllProperties } from './utilities/getAllProperties';
+import { flow } from './utilities/getAllProperties';
+import { cwd } from 'process';
 
 
 // This method is called when your extension is activated
@@ -53,21 +54,22 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
 			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 			const showInfo = vscode.window.showInformationMessage;
-			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path
-			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path
+			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
+			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
 			if (!fs.existsSync(hddlPath)) {
 				showInfo("hddl file doesn't exists!");
 				return;
 			} else if (!fs.existsSync(configPath)) {
 				showInfo("config file doesn't exists");
 				return;
+			
 			}
-			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -p` , (error, stdout, stderr) => {
+			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
-					console.error(error)
+					console.error(error);
 				} else {
-					showInfo(`GM decomposto com sucesso`);
+					showInfo(`Goal Model Decomposition generated with success!`);
 					const mutrose = vscode.window.createOutputChannel('Mutrose');
 					mutrose.append(stdout);
 					mutrose.show();
@@ -84,8 +86,8 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.commands.registerCommand('goalModel.generateIhtn', (element) => {
 				const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 				const showInfo = vscode.window.showInformationMessage;
-				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.hddlPath).path
-				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, ".vscode", cfg.configPath).path
+				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
+				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
 				if (!fs.existsSync(hddlPath)) {
 					showInfo("hddl file doesn't exists!");
 					return;
@@ -93,16 +95,28 @@ export function activate(context: vscode.ExtensionContext) {
 					showInfo("config file doesn't exists");
 					return;
 				}
-				const json: string = fs.readFileSync(element.filePath).toString();
-				fs.writeFileSync('./temp.txt',json);
-				child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${hddlPath} ${element.filePath} ${configPath} -h` , (error, stdout, stderr) => {
+				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
+				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
 					if(error){
 						showInfo(`Error: ${error}`);
+						console.log(error, stdout);
 					} else {
-						showInfo(`GM decomposto com sucesso`);
+						showInfo(`iHTNs generated with success!`);
 						const mutrose = vscode.window.createOutputChannel('Mutrose');
 						mutrose.append(stdout);
 						mutrose.show();
+						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'ihtn').path;
+						const ihtns = fs.readdirSync(ihtnPath);
+						ihtns.forEach(el=>{
+							child_process.exec(`python3 ${vscode.Uri.joinPath(context.extensionUri,"binaries", "generateIhtnImage.py").path} ${el}`, {cwd: ihtnPath}, (error, stdout, stderr)=>{
+								if(error){
+									showInfo(`Error: ${error}`);
+									console.error(error);
+								} else {
+									showInfo(`iHtn image generated with success!`);
+								}
+							});
+						});
 					}
 					// fs.unlinkSync('./temp.txt');
 				});
@@ -120,14 +134,19 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// rename mission command
 	commands.push(
-		vscode.commands.registerCommand('goalModel.rename', async (element) => {
+		vscode.commands.registerCommand('goalModel.rename', async (element: Mission | Node) => {
 			const newName = await vscode.window.showInputBox({
 				placeHolder: "Type new name",
-				prompt: "Rename selected mission",
-				value: ""
+				prompt: `Rename selected ${element instanceof Mission? "Mission" : "Node"}`,
+				value: `${element instanceof Mission? element.name : element.tag}`
 			});
-			element.name = newName;
-			element.parent.saveGoalModel();
+			if(element instanceof Mission) {
+				element.name = newName;
+				element.parent.saveGoalModel();
+			} else {
+				element.tag = newName;
+				element.parent.parent.saveGoalModel();
+			}
 		})
 	);
 
@@ -180,8 +199,10 @@ export function activate(context: vscode.ExtensionContext) {
 					prompt: "Set the runtime annotation",
 					value: element.runtimeAnnotation? element.runtimeAnnotation : ''
 				});
-				element.setRuntimeAnnotation(input);
-				element.parent.parent.saveGoalModel();
+				if(input){
+					element.setRuntimeAnnotation(input);
+					element.parent.parent.saveGoalModel();
+				}
 			} catch (e){
 				console.error("failed to change node refinement", e);
 			}
@@ -189,52 +210,106 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	commands.push(
 		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
-			const properties = getAllProperties().map(prop => {
-					const attr = element.attributes.find(el=>el.attrName==prop.name);
-					return {
-						label: prop.name,
-						description: attr? attr.attrValue : ''
-					};
-			});
-			element.attributes.forEach(el=>{
-				properties.push({
-					label: el.attrName, 
-					description: el.attrValue
-				});
-			});
-			properties.push({label: "Custom Property", description: "Custom"});
-			const propertiesSet = new Set(properties);
-			try {
-				const selected = await vscode.window.showQuickPick([...propertiesSet]);
-				if(selected.label == "Custom Property"){
-					const propertyName = await vscode.window.showInputBox({
-						placeHolder: "Type the custom property name",
-						prompt: "Edit node content",
-						value: ''
-					});
-					selected.label = propertyName;
+			let currentStep = Object.entries(flow).find(element => element[1].metadata.initial === true)[0]; // inicial
+			while (element){
+				const step = flow[currentStep];
+				if (!step) break;
+
+				console.log(step.message);
+				console.log(step.metadata);
+
+				try {
+					if (step.metadata.type === "option") {
+						const properties: {label: string, description: string}[] = [];
+						step.options.forEach(elem => {
+							properties.push({
+								label: elem.label,
+								description: elem.label
+							});
+						});
+						const selection = await vscode.window.showQuickPick([...properties]);
+						if(selection == undefined) break;
+
+						if (selection) {
+							if (step.onChange) {
+								await step.onChange(selection.label);
+							}
+						} else {
+							break;
+						}
+						currentStep = step.options.find((elem) => elem.label === selection.label)?.next ?? "";
+					} else if (step.metadata.type === "input") {
+						const propertyName = await vscode.window.showInputBox({
+							placeHolder: step.message,
+							prompt: step.message,
+							value: ''
+						});
+						currentStep = step.options.find((elem) => elem.label === step.metadata.goBackTo)?.next ?? "";
+					}
+				} catch (error) {
+					console.log("Erro ao editar o nó");
 				}
-				const attr = element.attributes.find(el=>el.attrName==selected.label);
-				const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
-				let input: string;
-				if(selectedProperty?.options?.length){
-					const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
-						return {label: el, description: ''};
-					});
-					input = (await vscode.window.showQuickPick(options)).label;
-				}else {
-					input = await vscode.window.showInputBox({
-						placeHolder: "Type " + selected.label,
-						prompt: "Edit node content",
-						value: attr?attr.attrValue : ''
-					});
-				}
-				element.removeAttribute(selected.label);
-				element.addAttribute(selected.label, input);
-				element.parent.parent.saveGoalModel();
-			} catch (e) {
-				console.log(e, "erro ao editar node");
 			}
+			// let confirmed = false;
+			// while(!confirmed){
+			// 	const properties = getAllProperties().map(prop => {
+			// 			const attr = element.attributes.find(el=>el.attrName==prop.name);
+			// 			return {
+			// 				label: prop.name,
+			// 				description: attr? attr.attrValue : ''
+			// 			};
+			// 	});
+			// 	element.attributes.forEach(el=>{
+			// 		if(!properties.find(att => att.label == el.attrName)){
+			// 			properties.push({
+			// 				label: el.attrName, 
+			// 				description: el.attrValue
+			// 			});
+			// 		}
+			// 	});
+			// 	properties.push({label: "Custom Property", description: "Custom"});
+			// 	properties.push({label: "Confirm Edition", description: ""});
+			// 	const propertiesSet = new Set(properties);
+				// try {
+					// console.dir(propertiesSet, {depth:-1});
+					// const selected = await vscode.window.showQuickPick([...propertiesSet]);
+					// if(selected == undefined) break;
+					// if(selected.label == "Custom Property"){
+					// 	const propertyName = await vscode.window.showInputBox({
+					// 		placeHolder: "Type the custom property name",
+					// 		prompt: "Edit node content",
+					// 		value: ''
+					// 	});
+					// 	if(propertyName==undefined) continue;
+					// 	selected.label = propertyName;
+					// } else if ( selected.label == "Confirm Edition"){
+					// 	confirmed = true;
+					// 	break;
+					// }
+					// const attr = element.attributes.find(el=>el.attrName==selected.label);
+					// const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
+					// let input: string;
+					// if(selectedProperty?.options?.length){
+					// 	const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
+					// 		return {label: el, description: ''};
+					// 	});
+					// 	input = (await vscode.window.showQuickPick(options)).label;
+					// 	if(input == undefined) break;
+					// }else {
+					// 	input = await vscode.window.showInputBox({
+					// 		placeHolder: "Type " + selected.label,
+					// 		prompt: "Edit node content",
+					// 		value: attr?attr.attrValue : ''
+					// 	});
+					// 	if(input == undefined) break;	
+					// }
+					// element.removeAttribute(selected.label);
+					// element.addAttribute(selected.label, input);
+				// } catch (e) {
+				// 	console.log(e, "erro ao editar node");
+				// }
+			// }
+			element.parent.parent.saveGoalModel();
 		})
 	);
 

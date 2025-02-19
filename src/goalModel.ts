@@ -204,7 +204,7 @@ export class Node extends vscode.TreeItem {
     contextValue = 'node';
     refinements: NodeRefinement;
     constructor(
-        public readonly name: string,
+        public name: string,
         public attributes: NodeAttr[],
         public collapsibleState: vscode.TreeItemCollapsibleState,
         public tag: string,
@@ -226,6 +226,7 @@ export class Node extends vscode.TreeItem {
             acc[el.attrName] = el.attrValue;
             return acc;
         },{});
+        this.setRuntimeAnnotation(this.runtimeAnnotation);
         return {
             id: this.customId,
             text: `${this.name}: ${this.description}`,
@@ -295,7 +296,7 @@ export class Node extends vscode.TreeItem {
         return;
     }
     addRefinement(type, targetId, tag, newId){
-        type = type == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
+        type = type.label == 'and'? 'istar.AndRefinementLink' : 'istar.OrRefinementLink';
         if(!this.refinements){
             this.refinements = new NodeRefinement(type, [], vscode.TreeItemCollapsibleState.Collapsed, this);
         }
@@ -315,7 +316,7 @@ export class Mission extends vscode.TreeItem {
     lastGoalNumber = 0;
     lastTaskNumber = 0;
     constructor(
-        public readonly name: string,
+        public name: string,
         private readonly missionNumber: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly customId: string,
@@ -330,9 +331,11 @@ export class Mission extends vscode.TreeItem {
         this.description = this.customProperties.description;
 
         const nodes = nodesToInstatiate.map(node=>{
-            const [name,tag] = node.text.split(': ');
+            let [name,tag] = node.text.split(': ');
             if(!name || !tag){
-                throw new Error("invalid node name");
+                // throw new Error("invalid node name");
+                name = '';
+                tag = node.text;
             }
             const number = parseInt(name.replace(/[a-zA-Z]/g, ''));
             if (name.startsWith("AT")){
@@ -438,10 +441,11 @@ export class GoalModel extends vscode.TreeItem{
         const actors = gm.actors;
         const info = actors.map(actor=>{
             const parsedText = actor.text.split(': ');
-            if(parsedText.length<2){
-                throw new Error("invalid Mission name");
-            }
-            return {name: parsedText[1], missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: {x: actor.x, y: actor.y}, customProperties: actor.customProperties};
+            let name = actor.text;
+            if(parsedText.length>=2){
+                name = parsedText[1];
+            } 
+            return {name: name, missionNumber: parsedText[0], id: actor.id, nodes: actor.nodes, pos: {x: actor.x, y: actor.y}, customProperties: actor.customProperties};
         });
         this.missions = info.map(info => new Mission(info.name, info.missionNumber, vscode.TreeItemCollapsibleState.Collapsed, info.id, this,info.nodes, info.pos, info.customProperties));
     }
@@ -471,7 +475,7 @@ export class GoalModel extends vscode.TreeItem{
         fs.writeFileSync(this.filePath, json);
     }
     generateNewId(){
-        let id = 2;
+        let id = 1;
         this.usedIds.forEach(el=>{
             const parsedId = Number(el);
             if(!isNaN(parsedId) && parsedId >= id) {

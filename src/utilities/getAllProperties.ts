@@ -3,7 +3,12 @@ type Property = {
 	options?: string[];
 };
 
-// type Flux = Record<string, string[]>;
+interface Flow {
+  message: string;
+  options: { label: string; next?: string }[];
+  metadata?: Record<string, any>;
+  onChange?: (input: string) => Promise<void> | void;
+}
 
 const properties: Property[] = [
 	{ name: "Name" },
@@ -14,7 +19,6 @@ const properties: Property[] = [
 	// { 	name: "Runtime Annotation",
 	// 	options: ["sequencial","parallel", "fallback"] 
 	// },
-	{ name: "Monitors" },
 	{
 		name: "Goal type",	
 		options: ["Achieve", "Query","Perform"]
@@ -51,35 +55,138 @@ const properties: Property[] = [
 	// "Create Node" : {flows: ["Define Type"]},
 // };
 
-const flux = {
-	"Define Type": {
-		"childs": [
-			{
-				"Goal": {
-					"goalType":{
-						"childs":[
-							{
-								"achieve": {
-									"achieveCondition": "textInput",
-									"controls": "textInput",
-									"monitors": "select(controlledVariables)"
-								},
-								"query":{
-									
-								},
-								"perform": "null"
-							}
-						]
-					},
-					"name": "textInput"
-				}
-			}, 
-			{
-				"Task": {},
-			}
-		]
+export const flow: Record<string, Flow> = {
+	name: {
+		message: "Define Name",
+		options: [],
+		metadata: {type: "input", goBackTo: "defineType"}
 	},
+	defineType: {
+		message: "Define Type",
+		options: [
+			{ label: "Goal", next: "goalType" },
+      { label: "Task", next: "taskAttributes" },
+		],
+		metadata: { initial: true, type: "option", requiresConfirmation: false },
+	},
+	goalType: {
+		message: "Define Goal Type",
+		options: [
+			{ label: "Achieve", next: "achieve" },
+      { label: "Query", next: "query" },
+      { label: "Perform", next: "defineType" },
+		],
+		metadata: {type: "option"},
+		// precisa desse onChange??
+		onChange: async (input) => {
+			if (input === "Perform") {
+				// value === null
+			}
+		},
+	},
+	achieve: {
+		message: "Define the attributes",
+		options: [
+			{ label: "Achieve Condition", next: "achieveCondition" },
+      { label: "Controls", next: "controls" },
+      { label: "Monitors", next: "monitors" },
+		],
+		metadata: {type: "option"}
+	},
+	achieveCondition: {
+		message: "Define the achieve condition",
+		options: [],
+		metadata: {type: "input", goBackTo: "goalType"}
+	},
+	controls: {
+		message: "Define the controls",
+		options: [],
+		metadata: {type: "input", goBackTo: "goalType"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	monitors: {
+		message: "Define the monitors",
+		options: [],
+		metadata: {type: "input", goBackTo: "goalType"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	query: {
+		message: "Define the attributes",
+		options: [
+			{ label: "Achieve Condition", next: "achieveCondition" },
+		],
+		metadata: {type: "option", goBackTo: "goalType"}
+	},
+	taskAttributes: {
+		message: "Define the task attributes",
+		options: [
+			{ label: "Location", next: "location" },
+      { label: "Params", next: "params" },
+      { label: "Robot Numbers", next: "robotNumbers" },
+		],
+		metadata: {type: "option"}
+	},
+	location: {
+		message: "Define the location",
+		// definir opções de escolher variaveis, nome, tipo ou collection??
+		options: [],
+		metadata: {type: "input", goBackTo: "taskAttributes"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	params: {
+		message: "Define the params",
+		options: [],
+		metadata: {type: "input", goBackTo: "taskAttributes"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	robotNumbers: {
+		message: "Define the number of robots",
+		// definir opções de escolher um número ou range??
+		options: [],
+		metadata: {type: "input", goBackTo: "taskAttributes"},
+		onChange: async (input) => {
+			// verify
+		},
+	}
 };
+
+// const flux = {
+// 	"Define Type": {
+// 		"childs": [
+// 			{
+// 				"Goal": {
+// 					"goalType":{
+// 						"childs":[
+// 							{
+// 								"achieve": {
+// 									"achieveCondition": "textInput",
+// 									"controls": "textInput",
+// 									"monitors": "select(controlledVariables)"
+// 								},
+// 								"query":{
+									
+// 								},
+// 								"perform": "null"
+// 							}
+// 						]
+// 					},
+// 					"name": "textInput"
+// 				}
+// 			}, 
+// 			{
+// 				"Task": {},
+// 			}
+// 		]
+// 	},
+// };
 
 export function getAllProperties (){
 	return properties;
@@ -90,34 +197,34 @@ export function getAllProperties (){
 // 	return property?.type;
 // }
 
-export function getFlux() {
-	return flux;
-}
+// export function getFlow(): Record<string, Flow> {
+// 	return flow;
+// }
 
-function expand(key: string, symbolTable: {}) : string[] {
-	if (symbolTable[key]) return symbolTable[key];
+// function expand(key: string, symbolTable: {}) : string[] {
+// 	if (symbolTable[key]) return symbolTable[key];
 
-	const expanded: string[] = [];
-	if (flux[key]) {
-		for (const elem of flux[key]) {
-			if (flux[elem]) {
-				expanded.push(...expand(elem, symbolTable));
-			} else {
-				expanded.push(elem);
-			}
-		}
-	}
-	symbolTable[key] = expanded;
-	return expanded;
-}
+// 	const expanded: string[] = [];
+// 	if (flux[key]) {
+// 		for (const elem of flux[key]) {
+// 			if (flux[elem]) {
+// 				expanded.push(...expand(elem, symbolTable));
+// 			} else {
+// 				expanded.push(elem);
+// 			}
+// 		}
+// 	}
+// 	symbolTable[key] = expanded;
+// 	return expanded;
+// }
 
-export function parseFlux(){
-	const symbolTable = {};
+// export function parseFlux(){
+// 	const symbolTable = {};
 
-	for (const key in flux) {
-		expand(key, symbolTable);
-	}
+// 	for (const key in flux) {
+// 		expand(key, symbolTable);
+// 	}
 
-	console.log(symbolTable);
-	return symbolTable;
-}
+// 	console.log(symbolTable);
+// 	return symbolTable;
+// }
