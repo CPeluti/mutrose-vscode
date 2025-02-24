@@ -216,11 +216,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const step = flow[currentStep];
 				if (!step) break;
 
-				console.log(step.message);
-				console.log(step.metadata);
-
 				try {
-					let input: string;
 					if (step.metadata.type === "option") {
 						const properties: {label: string, description: string}[] = [];
 						step.options.forEach(elem => {
@@ -241,17 +237,14 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 						currentStep = step.options.find((elem) => elem.label === selection.label)?.next ?? "";
 					} else if (step.metadata.type === "input") {
+						const attr = element.attributes.find(el=> el.attrName == step.metadata.propertyName);
 						const propertyName = await vscode.window.showInputBox({
 							placeHolder: step.message,
 							prompt: step.message,
-							value: ''
+							value: attr.attrValue ?? ''
 						});
-						console.log('selection', selection);
-						const attr = element.attributes.find(el=>el.attrName == step.metadata.propertyName);
-						console.log('attr', attr);
-						console.log('propertyName', propertyName);
 						if(propertyName == undefined) break;	
-						element.addAttribute(selection.label, input);
+						element.addAttribute(step.metadata.propertyName, propertyName);
 						currentStep = step.metadata.goTo ?? "";
 					}
 				} catch (error) {
