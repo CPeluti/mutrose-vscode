@@ -211,6 +211,7 @@ export function activate(context: vscode.ExtensionContext) {
 	commands.push(
 		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
 			let currentStep = Object.entries(flow).find(element => element[1].metadata.initial === true)[0]; // inicial
+			let selection;
 			while (element){
 				const step = flow[currentStep];
 				if (!step) break;
@@ -219,6 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
 				console.log(step.metadata);
 
 				try {
+					let input: string;
 					if (step.metadata.type === "option") {
 						const properties: {label: string, description: string}[] = [];
 						step.options.forEach(elem => {
@@ -227,7 +229,7 @@ export function activate(context: vscode.ExtensionContext) {
 								description: elem.label
 							});
 						});
-						const selection = await vscode.window.showQuickPick([...properties]);
+						selection = await vscode.window.showQuickPick([...properties]);
 						if(selection == undefined) break;
 
 						if (selection) {
@@ -244,10 +246,16 @@ export function activate(context: vscode.ExtensionContext) {
 							prompt: step.message,
 							value: ''
 						});
-						currentStep = step.options.find((elem) => elem.label === step.metadata.goBackTo)?.next ?? "";
+						console.log('selection', selection);
+						const attr = element.attributes.find(el=>el.attrName == step.metadata.propertyName);
+						console.log('attr', attr);
+						console.log('propertyName', propertyName);
+						if(propertyName == undefined) break;	
+						element.addAttribute(selection.label, input);
+						currentStep = step.metadata.goTo ?? "";
 					}
 				} catch (error) {
-					console.log("Erro ao editar o nó");
+					console.log("Erro ao editar o nó", error);
 				}
 			}
 			// let confirmed = false;

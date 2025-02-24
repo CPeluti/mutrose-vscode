@@ -10,35 +10,35 @@ interface Flow {
   onChange?: (input: string) => Promise<void> | void;
 }
 
-const properties: Property[] = [
-	{ name: "Name" },
-	{ name: "Controls" },
-	{ name: "Monitors" },
-	{ name: "QueriedProperty" },
-	{ name: "AchieveCondition" },
-	// { 	name: "Runtime Annotation",
-	// 	options: ["sequencial","parallel", "fallback"] 
-	// },
-	{
-		name: "Goal type",	
-		options: ["Achieve", "Query","Perform"]
-	},
-	{
-		name: "Group",
-	},
-	{
-		name: "Divisible",
-	},
-	{
-		name: "Location",
-	},
-	{
-		name: "Params",
-	},
-	{ 
-		name: "RobotNumber",
-	},
-];
+// const properties: Property[] = [
+// 	{ name: "Name" },
+// 	{ name: "Controls" },
+// 	{ name: "Monitors" },
+// 	{ name: "QueriedProperty" },
+// 	{ name: "AchieveCondition" },
+// 	// { 	name: "Runtime Annotation",
+// 	// 	options: ["sequencial","parallel", "fallback"] 
+// 	// },
+// 	{
+// 		name: "Goal type",	
+// 		options: ["Achieve", "Query","Perform"]
+// 	},
+// 	{
+// 		name: "Group",
+// 	},
+// 	{
+// 		name: "Divisible",
+// 	},
+// 	{
+// 		name: "Location",
+// 	},
+// 	{
+// 		name: "Params",
+// 	},
+// 	{ 
+// 		name: "RobotNumber",
+// 	},
+// ];
 
 // const flux = {
 	// "Goal Types" : ["Achieve", "Query", "Perform"],
@@ -56,10 +56,11 @@ const properties: Property[] = [
 // };
 
 export const flow: Record<string, Flow> = {
+	// propertyName no metadata de TODOS que precisam
 	name: {
 		message: "Define Name",
 		options: [],
-		metadata: {type: "input", goBackTo: "defineType"}
+		metadata: {type: "input", goTo: "defineType" },
 	},
 	defineType: {
 		message: "Define Type",
@@ -76,7 +77,7 @@ export const flow: Record<string, Flow> = {
       { label: "Query", next: "query" },
       { label: "Perform", next: "defineType" },
 		],
-		metadata: {type: "option"},
+		metadata: {type: "option", propertyName: "GoalType" },
 		// precisa desse onChange??
 		onChange: async (input) => {
 			if (input === "Perform") {
@@ -90,18 +91,19 @@ export const flow: Record<string, Flow> = {
 			{ label: "Achieve Condition", next: "achieveCondition" },
       { label: "Controls", next: "controls" },
       { label: "Monitors", next: "monitors" },
+			{ label: "Group", next: "group" },
 		],
 		metadata: {type: "option"}
 	},
 	achieveCondition: {
 		message: "Define the achieve condition",
 		options: [],
-		metadata: {type: "input", goBackTo: "goalType"}
+		metadata: {type: "input", goTo: "achieve", propertyName: "AchieveCondition"},
 	},
 	controls: {
 		message: "Define the controls",
 		options: [],
-		metadata: {type: "input", goBackTo: "goalType"},
+		metadata: {type: "input", goTo: "achieve", propertyName: "Controls"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -109,17 +111,38 @@ export const flow: Record<string, Flow> = {
 	monitors: {
 		message: "Define the monitors",
 		options: [],
-		metadata: {type: "input", goBackTo: "goalType"},
+		metadata: {type: "input", goTo: "achieve", propertyName: "Monitors"},
 		onChange: async (input) => {
 			// verify
 		},
 	},
+	group: {
+		message: "Define the group",
+		options: [
+			{ label: "True", next: "divisible" },
+			{ label: "False", next: "achieve" },
+		],
+		metadata: {type: "option", propertyName: "Group"},
+	},
+	divisible: {
+		message: "Define the divisible",
+		options: [
+			{ label: "True", next: "achieve" },
+			{ label: "False", next: "achieve" },
+		],
+		metadata: {type: "option", propertyName: "Divisible"},
+	},
 	query: {
 		message: "Define the attributes",
 		options: [
-			{ label: "Achieve Condition", next: "achieveCondition" },
+			{ label: "Queried Property", next: "queriedProperty" },
 		],
-		metadata: {type: "option", goBackTo: "goalType"}
+		metadata: {type: "option", goTo: "goalType"}
+	},
+	queriedProperty: {
+		message: "Define the queried property",
+		options: [],
+		metadata: {type: "input", goTo: "goalType", propertyName: "QueriedProperty"},
 	},
 	taskAttributes: {
 		message: "Define the task attributes",
@@ -131,10 +154,46 @@ export const flow: Record<string, Flow> = {
 		metadata: {type: "option"}
 	},
 	location: {
-		message: "Define the location",
-		// definir opções de escolher variaveis, nome, tipo ou collection??
+		message: "Choose an option to define the location",
+		options: [
+			{ label: "Variables", next: "locationVariables" },
+      { label: "Name", next: "locationName" },
+      { label: "Type", next: "locationType" },
+      { label: "Collection", next: "locationCollection" },
+		],
+		metadata: {type: "option"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	locationVariables: {
+		message: "Choose the variables to define the location",
 		options: [],
-		metadata: {type: "input", goBackTo: "taskAttributes"},
+		metadata: {type: "input", goTo: "taskAttributes", propertyName: "Location"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	locationName: {
+		message: "Choose the name to define the location",
+		options: [],
+		metadata: {type: "input", goTo: "taskAttributes", propertyName: "Location"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	locationType: {
+		message: "Choose the type to define the location",
+		options: [],
+		metadata: {type: "input", goTo: "taskAttributes", propertyName: "Location"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	locationCollection: {
+		message: "Choose the collection to define the location",
+		options: [],
+		metadata: {type: "input", goTo: "taskAttributes", propertyName: "Location"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -142,7 +201,7 @@ export const flow: Record<string, Flow> = {
 	params: {
 		message: "Define the params",
 		options: [],
-		metadata: {type: "input", goBackTo: "taskAttributes"},
+		metadata: {type: "input", goTo: "taskAttributes"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -150,12 +209,31 @@ export const flow: Record<string, Flow> = {
 	robotNumbers: {
 		message: "Define the number of robots",
 		// definir opções de escolher um número ou range??
-		options: [],
-		metadata: {type: "input", goBackTo: "taskAttributes"},
+		options: [
+			{ label: "Number", next: "robotSingleNumber" },
+			{ label: "Range", next: "robotNumRange" },
+		],
+		metadata: {type: "option"},
 		onChange: async (input) => {
 			// verify
 		},
-	}
+	},
+	robotSingleNumber: {
+		message: "Choose the range of number",
+		options: [],
+		metadata: {type: "input", goTo: "taskAttributes"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
+	robotNumRange: {
+		message: "Choose the range of number",
+		options: [],
+		metadata: {type: "input", goTo: "taskAttributes"},
+		onChange: async (input) => {
+			// verify
+		},
+	},
 };
 
 // const flux = {
@@ -188,9 +266,9 @@ export const flow: Record<string, Flow> = {
 // 	},
 // };
 
-export function getAllProperties (){
-	return properties;
-}
+// export function getAllProperties (){
+// 	return properties;
+// }
 
 // export function getPropertyType(name: string){
 // 	const property = properties.find(prop => prop.name === name);
