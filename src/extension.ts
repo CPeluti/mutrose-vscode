@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as child_process from 'child_process';
 import { GoalModel, GoalModelProvider, Node, NodeRefinement, Refinement, Mission } from './goalModel';
 import { PistarEditorProvider } from './pistarEditor';
-import { flow } from './utilities/getAllProperties';
+import { flow, subFlowToDeleteFunction } from './utilities/getAllProperties';
 import { cwd } from 'process';
 
 
@@ -214,15 +214,37 @@ export function activate(context: vscode.ExtensionContext) {
 			let selection;
 			while (element){
 				const step = flow[currentStep];
+				console.log("step: ", step);
+				const currentStepKey = Object.keys(flow).find(key => flow[key] === step);
+				console.log("currentStepKey: ", currentStepKey);
 				if (!step) break;
 
 				try {
-					if (step.metadata.type === "option") {
+					const attr = element.attributes.find(el=> el.attrName == step.metadata.propertyName);
+					const attributeValue = element.attributes.find(el=> el.attrName == step.metadata.propertyName)?.attrValue;
+					console.log("attributeValue: ", attributeValue);
+					if (step.metadata.requiresConfirmation && !attributeValue) {
+						const confirmed = await vscode.window.showQuickPick([
+							{ label: "Yes", description: "Yes" },
+							{ label: "No", description: "No" },
+						], {title: "Are you sure you want to change?"});
+						if (confirmed?.label === "No") {
+							break;
+						} 
+						const subFlowToDelete = subFlowToDeleteFunction(currentStepKey);
+						console.log("subFlowToDelete: ", subFlowToDelete);
+						
+						subFlowToDelete.forEach((el) => {
+							element.removeAttribute(el);
+						});
+					}
+
+					if (step.metadata.type === "option" || step.metadata.type === "boolean") {
 						const properties: {label: string, description: string}[] = [];
 						step.options.forEach(elem => {
 							properties.push({
 								label: elem.label,
-								description: elem.label
+								description: elem.label,
 							});
 						});
 						selection = await vscode.window.showQuickPick([...properties]);
@@ -235,13 +257,32 @@ export function activate(context: vscode.ExtensionContext) {
 						} else {
 							break;
 						}
+
+						if (step.metadata.type === "boolean") {
+							element.addAttribute(step.metadata.propertyName, selection.label);
+						}
+
+						// console.log("attr: ", attr);
+						// if (step.metadata.requiresConfirmation && !attr) {
+						// 	const confirmed = await vscode.window.showQuickPick([
+						// 		{ label: "Yes", description: "Yes" },
+						// 		{ label: "No", description: "No" },
+						// 	], {title: "Are you sure you want to change this attribute?"});
+						// 	if (confirmed?.label === "No") {
+						// 		break;
+						// 	} 
+							// const subFlowToDelete = subFlowToDeleteFunction(currentStepKey);
+							// console.log("subFlowToDelete: ", subFlowToDelete);
+							
+							// element.addAttribute("type", step.metadata.propertyName + selection.label);
+						// }
 						currentStep = step.options.find((elem) => elem.label === selection.label)?.next ?? "";
 					} else if (step.metadata.type === "input") {
-						const attr = element.attributes.find(el=> el.attrName == step.metadata.propertyName);
+						console.log("attr: ", attr);
 						const propertyName = await vscode.window.showInputBox({
 							placeHolder: step.message,
 							prompt: step.message,
-							value: attr.attrValue ?? ''
+							value: attr ? attr.attrValue : ''
 						});
 						if(propertyName == undefined) break;	
 						element.addAttribute(step.metadata.propertyName, propertyName);
