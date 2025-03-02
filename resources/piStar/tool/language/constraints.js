@@ -260,7 +260,7 @@ istar.metamodel.nodeLinks.OrRefinementLink.isValid = function (source, target) {
     //   contributed to (page 14)
     //- The refinement relationship should not lead to refinement cycles
     //  (e.g., G OR-refined to G1 and G1 OR-refined to G, G OR-refined to G, etc.) (page 14) (ignored)
-
+    console.log(source, target)
     var result = {};
     var isValid = true;
     if ( !(source.isTask() || source.isGoal()) ) {

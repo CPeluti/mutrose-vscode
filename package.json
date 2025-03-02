@@ -147,6 +147,10 @@
 				"title": "Open Vue"
 			},
 			{
+				"command": "ihtn.parse",
+				"title": "Parse iHtn"
+			},
+			{
 				"command": "goalModel.setRuntimeAnnotation",
 				"title": "Set Runtime Annotation"
 			},
@@ -276,5 +280,8 @@
 		"eslint": "^8.35.0",
 		"mocha": "^9.2.1",
 		"typescript": "^5.0.2"
+	},
+	"dependencies": {
+		"zod": "^3.24.2"
 	}
 }

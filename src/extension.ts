@@ -9,6 +9,7 @@ import { GoalModel, GoalModelProvider, Mission, Node, NodeRefinement, Refinement
 import { PistarEditorProvider } from './pistarEditor';
 import { getAllProperties } from './utilities/getAllProperties';
 import { cwd } from 'process';
+import { Ihtn } from './ihtn';
 
 
 // This method is called when your extension is activated
@@ -50,6 +51,18 @@ export function activate(context: vscode.ExtensionContext) {
 	// );
 
 	// execute mutrose command
+	commands.push(
+		vscode.commands.registerCommand('ihtn.parse', ()=>{
+			console.log(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.json').fsPath)
+			const file = fs.readFileSync(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.json').fsPath);
+			try{
+				const ihtn = new Ihtn(JSON.parse(file.toString()));
+				ihtn.convert(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.gm').fsPath);
+			} catch (e) {
+				console.log(e)
+			}
+		})
+	) 
 	commands.push(
 		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
 			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');

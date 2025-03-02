@@ -472,6 +472,7 @@ istar.fileManager = function() {
                         var sourceObject = istar.graph.getCell(linkJSON.source);
                         var targetObject = istar.graph.getCell(linkJSON.target);
                         if (_.includes(istar.metamodel.getNodeLinksNames(), typeNameWithoutPrefix)) {
+                            console.log(linkJSON)
                             var isValid = istar.metamodel.nodeLinks[typeNameWithoutPrefix].isValid(sourceObject, targetObject);
                             if (!isValid.isValid) {
                                 processInvalidLink(typeNameWithoutPrefix, sourceObject, targetObject, isValid);
@@ -511,6 +512,7 @@ istar.fileManager = function() {
             function processInvalidLink (typeName, source, target, isValid) {
                 var parent = source.parent();
                 var parentText = '';
+                console.log(typeName, source, target, isValid)
                 if (parent) {
                     parentText = 'In ' + istar.graph.getCell(parent).prop('name') + ', ';
                 }

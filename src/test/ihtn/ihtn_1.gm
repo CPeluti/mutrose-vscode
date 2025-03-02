@@ -1,0 +1,825 @@
+{
+    "actors": [
+        {
+            "id": "34dadeac-cc9c-466c-9752-5bd519d8e53c",
+            "text": "ihtn",
+            "type": "istar.Actor",
+            "x": 1,
+            "y": 1,
+            "customProperties": {
+                "Description": ""
+            },
+            "nodes": [
+                {
+                    "id": 1,
+                    "text": "ROOT",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 24,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 2,
+                    "text": "ROOT_M",
+                    "type": "istar.Goal",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 30,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 3,
+                    "text": "ApproachNurse",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 33,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 4,
+                    "text": "nurse-approach",
+                    "type": "istar.Goal",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 38,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 40,
+                    "text": "Nurse1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 42,
+                    "text": "Room3",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 5,
+                    "text": "navto",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 44,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 46,
+                    "text": "Room3",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 6,
+                    "text": "approach-nurse",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 48,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 7,
+                    "text": "authenticate-nurse",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 50,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 8,
+                    "text": "PickSample",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 53,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 9,
+                    "text": "sample-pick",
+                    "type": "istar.Goal",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 58,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 60,
+                    "text": "Nurse1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 10,
+                    "text": "open-drawer",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 62,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 11,
+                    "text": "deposit",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 64,
+                    "text": "Nurse1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 12,
+                    "text": "close-drawer",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 66,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 13,
+                    "text": "ApproachArm",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 69,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 14,
+                    "text": "arm-approach",
+                    "type": "istar.Goal",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 73,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 75,
+                    "text": "Arm1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 77,
+                    "text": "Pharmacy",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 15,
+                    "text": "navto",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 79,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 81,
+                    "text": "Pharmacy",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 16,
+                    "text": "approach-arm",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 83,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 17,
+                    "text": "UnloadSample",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 86,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 18,
+                    "text": "sample-unload",
+                    "type": "istar.Goal",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 91,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 93,
+                    "text": "Arm1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 19,
+                    "text": "open-drawer",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 95,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 20,
+                    "text": "pick-up-sample",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 97,
+                    "text": "Arm1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 21,
+                    "text": "close-drawer",
+                    "type": "istar.Task",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                },
+                {
+                    "id": 99,
+                    "text": "r1",
+                    "type": "istar.Quality",
+                    "x": 1,
+                    "y": 1,
+                    "customProperties": {
+                        "Description": ""
+                    }
+                }
+            ]
+        }
+    ],
+    "orphans": [],
+    "dependencies": [],
+    "links": [
+        {
+            "id": 23,
+            "type": "istar.OrRefinementLink",
+            "source": 1,
+            "target": 2
+        },
+        {
+            "id": 25,
+            "type": "istar.QualificationLink",
+            "source": 24,
+            "target": 1
+        },
+        {
+            "id": 26,
+            "type": "istar.OrRefinementLink",
+            "source": 2,
+            "target": 3
+        },
+        {
+            "id": 27,
+            "type": "istar.OrRefinementLink",
+            "source": 2,
+            "target": 8
+        },
+        {
+            "id": 28,
+            "type": "istar.OrRefinementLink",
+            "source": 2,
+            "target": 13
+        },
+        {
+            "id": 29,
+            "type": "istar.OrRefinementLink",
+            "source": 2,
+            "target": 17
+        },
+        {
+            "id": 31,
+            "type": "istar.QualificationLink",
+            "source": 30,
+            "target": 2
+        },
+        {
+            "id": 32,
+            "type": "istar.OrRefinementLink",
+            "source": 3,
+            "target": 4
+        },
+        {
+            "id": 34,
+            "type": "istar.QualificationLink",
+            "source": 33,
+            "target": 3
+        },
+        {
+            "id": 35,
+            "type": "istar.OrRefinementLink",
+            "source": 4,
+            "target": 5
+        },
+        {
+            "id": 36,
+            "type": "istar.OrRefinementLink",
+            "source": 4,
+            "target": 6
+        },
+        {
+            "id": 37,
+            "type": "istar.OrRefinementLink",
+            "source": 4,
+            "target": 7
+        },
+        {
+            "id": 39,
+            "type": "istar.QualificationLink",
+            "source": 38,
+            "target": 4
+        },
+        {
+            "id": 41,
+            "type": "istar.QualificationLink",
+            "source": 40,
+            "target": 4
+        },
+        {
+            "id": 43,
+            "type": "istar.QualificationLink",
+            "source": 42,
+            "target": 4
+        },
+        {
+            "id": 45,
+            "type": "istar.QualificationLink",
+            "source": 44,
+            "target": 5
+        },
+        {
+            "id": 47,
+            "type": "istar.QualificationLink",
+            "source": 46,
+            "target": 5
+        },
+        {
+            "id": 49,
+            "type": "istar.QualificationLink",
+            "source": 48,
+            "target": 6
+        },
+        {
+            "id": 51,
+            "type": "istar.QualificationLink",
+            "source": 50,
+            "target": 7
+        },
+        {
+            "id": 52,
+            "type": "istar.OrRefinementLink",
+            "source": 8,
+            "target": 9
+        },
+        {
+            "id": 54,
+            "type": "istar.QualificationLink",
+            "source": 53,
+            "target": 8
+        },
+        {
+            "id": 55,
+            "type": "istar.OrRefinementLink",
+            "source": 9,
+            "target": 10
+        },
+        {
+            "id": 56,
+            "type": "istar.OrRefinementLink",
+            "source": 9,
+            "target": 11
+        },
+        {
+            "id": 57,
+            "type": "istar.OrRefinementLink",
+            "source": 9,
+            "target": 12
+        },
+        {
+            "id": 59,
+            "type": "istar.QualificationLink",
+            "source": 58,
+            "target": 9
+        },
+        {
+            "id": 61,
+            "type": "istar.QualificationLink",
+            "source": 60,
+            "target": 9
+        },
+        {
+            "id": 63,
+            "type": "istar.QualificationLink",
+            "source": 62,
+            "target": 10
+        },
+        {
+            "id": 65,
+            "type": "istar.QualificationLink",
+            "source": 64,
+            "target": 11
+        },
+        {
+            "id": 67,
+            "type": "istar.QualificationLink",
+            "source": 66,
+            "target": 12
+        },
+        {
+            "id": 68,
+            "type": "istar.OrRefinementLink",
+            "source": 13,
+            "target": 14
+        },
+        {
+            "id": 70,
+            "type": "istar.QualificationLink",
+            "source": 69,
+            "target": 13
+        },
+        {
+            "id": 71,
+            "type": "istar.OrRefinementLink",
+            "source": 14,
+            "target": 15
+        },
+        {
+            "id": 72,
+            "type": "istar.OrRefinementLink",
+            "source": 14,
+            "target": 16
+        },
+        {
+            "id": 74,
+            "type": "istar.QualificationLink",
+            "source": 73,
+            "target": 14
+        },
+        {
+            "id": 76,
+            "type": "istar.QualificationLink",
+            "source": 75,
+            "target": 14
+        },
+        {
+            "id": 78,
+            "type": "istar.QualificationLink",
+            "source": 77,
+            "target": 14
+        },
+        {
+            "id": 80,
+            "type": "istar.QualificationLink",
+            "source": 79,
+            "target": 15
+        },
+        {
+            "id": 82,
+            "type": "istar.QualificationLink",
+            "source": 81,
+            "target": 15
+        },
+        {
+            "id": 84,
+            "type": "istar.QualificationLink",
+            "source": 83,
+            "target": 16
+        },
+        {
+            "id": 85,
+            "type": "istar.OrRefinementLink",
+            "source": 17,
+            "target": 18
+        },
+        {
+            "id": 87,
+            "type": "istar.QualificationLink",
+            "source": 86,
+            "target": 17
+        },
+        {
+            "id": 88,
+            "type": "istar.OrRefinementLink",
+            "source": 18,
+            "target": 19
+        },
+        {
+            "id": 89,
+            "type": "istar.OrRefinementLink",
+            "source": 18,
+            "target": 20
+        },
+        {
+            "id": 90,
+            "type": "istar.OrRefinementLink",
+            "source": 18,
+            "target": 21
+        },
+        {
+            "id": 92,
+            "type": "istar.QualificationLink",
+            "source": 91,
+            "target": 18
+        },
+        {
+            "id": 94,
+            "type": "istar.QualificationLink",
+            "source": 93,
+            "target": 18
+        },
+        {
+            "id": 96,
+            "type": "istar.QualificationLink",
+            "source": 95,
+            "target": 19
+        },
+        {
+            "id": 98,
+            "type": "istar.QualificationLink",
+            "source": 97,
+            "target": 20
+        },
+        {
+            "id": 100,
+            "type": "istar.QualificationLink",
+            "source": 99,
+            "target": 21
+        }
+    ],
+    "tool": "pistar.2.1.0",
+    "istar": "2.0",
+    "saveDate": "Thu, 13 Feb 2025 16:31:31 GMT",
+    "diagram": {
+        "width": 2000,
+        "height": 1300,
+        "name": "Welcome Model",
+        "customProperties": {
+            "Description": "Welcome to the piStar tool! This model describe some of the recent improvements in the tool.\n\nFor help using this tool, please check the Help menu above"
+        }
+    }
+}
