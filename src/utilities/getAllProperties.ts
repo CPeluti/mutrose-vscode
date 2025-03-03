@@ -1,8 +1,3 @@
-// type Property = {
-// 	name: string;
-// 	options?: string[];
-// };
-
 interface Flow {
   message: string;
   options: { label: string; next?: string }[];
@@ -10,68 +5,22 @@ interface Flow {
   onChange?: (input: string) => Promise<void> | void;
 }
 
-// const properties: Property[] = [
-// 	{ name: "Name" },
-// 	{ name: "Controls" },
-// 	{ name: "Monitors" },
-// 	{ name: "QueriedProperty" },
-// 	{ name: "AchieveCondition" },
-// 	// { 	name: "Runtime Annotation",
-// 	// 	options: ["sequencial","parallel", "fallback"] 
-// 	// },
-// 	{
-// 		name: "Goal type",	
-// 		options: ["Achieve", "Query","Perform"]
-// 	},
-// 	{
-// 		name: "Group",
-// 	},
-// 	{
-// 		name: "Divisible",
-// 	},
-// 	{
-// 		name: "Location",
-// 	},
-// 	{
-// 		name: "Params",
-// 	},
-// 	{ 
-// 		name: "RobotNumber",
-// 	},
-// ];
-
-// const flux = {
-	// "Goal Types" : ["Achieve", "Query", "Perform"],
-	// "Constraints" : ["Group", "Divisible"],
-	// "Task Attributes": ["Location", "Params", "RobotNumber"],
-	// "Teste": ["Goal Types", "Constraints"],
-	// "Teste2": ["Teste", "Task Attributes"],
-
-	// "Define Name" : [type: "input"],
-	// "Define Goal Type" : [flows: [{targetFlow: "Define Achieve", value: "Achieve"}, {targetFlow: "Define Querry", value: "Query"}, {targetFlow: "Define Perform", value: "Perform"}]],
-	// "Define Goal" : [flows: [{targetFlow: "Define Name"}, {targetFlow: "Define Goal Type"}]],
-	// "Define Task" : ["Name"],
-	// "Define Type" : {flows: [{targetFlow: "Define Goal", value: "Goal"}, {targetFlow: "Define Task", value: "Task"}]},
-	// "Create Node" : {flows: ["Define Type"]},
-// };
-
 export const flow: Record<string, Flow> = {
-	// propertyName no metadata de TODOS que precisam
-	defineType: {
-		message: "Define Type",
-		options: [
-			{ label: "Goal", next: "goal" },
-      { label: "Task", next: "task" },
-		],
-		metadata: { initial: true, type: "option" },
-	},
+	// defineType: {
+	// 	message: "Define Type",
+	// 	options: [
+	// 		{ label: "Goal", next: "goal" },
+  //     { label: "Task", next: "task" },
+	// 	],
+	// 	metadata: { initial: true, type: "option", propertyName: "type", requiresConfirmation: true },
+	// },
 	goal: {
 		message: "Define Goal",
 		options: [
 			{ label: "Name", next: "goalName" },
 			{ label: "Goal Type", next: "goalType" },
 		],
-		metadata: {type: "option", propertyName: "istar.Goal", requiresConfirmation: true}
+		metadata: {type: "option", propertyName: "istar.Goal"}
 	},
 	goalName: {
 		message: "Define Goal Name",
@@ -85,13 +34,7 @@ export const flow: Record<string, Flow> = {
       { label: "Query", next: "query" },
       { label: "Perform", next: "goalType" },
 		],
-		metadata: {type: "option", propertyName: "GoalType" },
-		// precisa desse onChange??
-		onChange: async (input) => {
-			if (input === "Perform") {
-				// value === null
-			}
-		},
+		metadata: {type: "option", propertyName: "GoalType", requiresConfirmation: true },
 	},
 	achieve: {
 		message: "Define the attributes",
@@ -101,7 +44,7 @@ export const flow: Record<string, Flow> = {
       { label: "Monitors", next: "monitors" },
 			{ label: "Group", next: "group" },
 		],
-		metadata: {type: "option", requiresConfirmation: true}
+		metadata: {type: "option"}
 	},
 	achieveCondition: {
 		message: "Define the achieve condition",
@@ -145,7 +88,7 @@ export const flow: Record<string, Flow> = {
 		options: [
 			{ label: "Queried Property", next: "queriedProperty" },
 		],
-		metadata: {type: "option", goTo: "goalType", requiresConfirmation: true}
+		metadata: {type: "option", goTo: "goalType"}
 	},
 	queriedProperty: {
 		message: "Define the queried property",
@@ -158,7 +101,7 @@ export const flow: Record<string, Flow> = {
 			{ label: "Name", next: "taskName" },
 			{ label: "Task Attributes", next: "taskAttributes" },
 		],
-		metadata: {type: "option", propertyName: "istar.Task", requiresConfirmation: true}
+		metadata: {type: "option", propertyName: "istar.Task"}
 	},
 	taskName: {
 		message: "Define Task Name",
@@ -182,7 +125,7 @@ export const flow: Record<string, Flow> = {
       { label: "Type", next: "locationType" },
       { label: "Collection", next: "locationCollection" },
 		],
-		metadata: {type: "option", propertyName: "Location"},
+		metadata: {type: "option" },
 		onChange: async (input) => {
 			// verify
 		},
@@ -190,7 +133,7 @@ export const flow: Record<string, Flow> = {
 	locationVariables: {
 		message: "Choose the variables to define the location",
 		options: [],
-		metadata: {type: "input", goTo: "task", propertyName: "Location", requiresConfirmation: true},
+		metadata: {type: "input", goTo: "task", propertyName: "Location"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -198,7 +141,7 @@ export const flow: Record<string, Flow> = {
 	locationName: {
 		message: "Choose the name to define the location",
 		options: [],
-		metadata: {type: "input", goTo: "task", propertyName: "Location", requiresConfirmation: true},
+		metadata: {type: "input", goTo: "task", propertyName: "Location"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -206,7 +149,7 @@ export const flow: Record<string, Flow> = {
 	locationType: {
 		message: "Choose the type to define the location",
 		options: [],
-		metadata: {type: "input", goTo: "task", propertyName: "Location", requiresConfirmation: true},
+		metadata: {type: "input", goTo: "task", propertyName: "Location"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -214,7 +157,7 @@ export const flow: Record<string, Flow> = {
 	locationCollection: {
 		message: "Choose the collection to define the location",
 		options: [],
-		metadata: {type: "input", goTo: "task", propertyName: "Location", requiresConfirmation: true},
+		metadata: {type: "input", goTo: "task", propertyName: "Location"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -222,19 +165,18 @@ export const flow: Record<string, Flow> = {
 	params: {
 		message: "Define the params",
 		options: [],
-		metadata: {type: "input", goTo: "task"},
+		metadata: {type: "input", goTo: "task", propertyName: "Params"},
 		onChange: async (input) => {
 			// verify
 		},
 	},
 	robotNumbers: {
 		message: "Define the number of robots",
-		// definir opções de escolher um número ou range??
 		options: [
 			{ label: "Number", next: "robotSingleNumber" },
 			{ label: "Range", next: "robotNumRange" },
 		],
-		metadata: {type: "option", propertyName: "RobotNumber"},
+		metadata: {type: "option" },
 		onChange: async (input) => {
 			// verify
 		},
@@ -242,7 +184,7 @@ export const flow: Record<string, Flow> = {
 	robotSingleNumber: {
 		message: "Choose the range of number",
 		options: [],
-		metadata: {type: "input", goTo: "task", propertyName: "RobotNumber", requiresConfirmation: true},
+		metadata: {type: "input", goTo: "task", propertyName: "RobotNumber"},
 		onChange: async (input) => {
 			// verify
 		},
@@ -250,72 +192,12 @@ export const flow: Record<string, Flow> = {
 	robotNumRange: {
 		message: "Choose the range of number",
 		options: [],
-		metadata: {type: "input", goTo: "task", propertyName: "RobotNumber", requiresConfirmation: true},
+		metadata: {type: "input", goTo: "task", propertyName: "RobotNumber"},
 		onChange: async (input) => {
 			// verify
 		},
 	},
 };
-
-// const flux = {
-// 	"Define Type": {
-// 		"childs": [
-// 			{
-// 				"Goal": {
-// 					"goalType":{
-// 						"childs":[
-// 							{
-// 								"achieve": {
-// 									"achieveCondition": "textInput",
-// 									"controls": "textInput",
-// 									"monitors": "select(controlledVariables)"
-// 								},
-// 								"query":{
-									
-// 								},
-// 								"perform": "null"
-// 							}
-// 						]
-// 					},
-// 					"name": "textInput"
-// 				}
-// 			}, 
-// 			{
-// 				"Task": {},
-// 			}
-// 		]
-// 	},
-// };
-
-// export function getAllProperties (){
-// 	return properties;
-// }
-
-// export function getPropertyType(name: string){
-// 	const property = properties.find(prop => prop.name === name);
-// 	return property?.type;
-// }
-
-// export function getFlow(): Record<string, Flow> {
-// 	return flow;
-// }
-
-// function expand(key: string, symbolTable: {}) : string[] {
-// 	if (symbolTable[key]) return symbolTable[key];
-
-// 	const expanded: string[] = [];
-// 	if (flow[key]) {
-// 		for (const elem of flow[key]) {
-// 			if (flow[elem]) {
-// 				expanded.push(...expand(elem, symbolTable));
-// 			} else {
-// 				expanded.push(elem);
-// 			}
-// 		}
-// 	}
-// 	symbolTable[key] = expanded;
-// 	return expanded;
-// }
 
 export function subFlowToDeleteFunction(initialStep: string): Set<string>{
 	const filteredFlow = {...flow};

@@ -210,35 +210,16 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	commands.push(
 		vscode.commands.registerCommand('goalModel.editNode', async (element: Node) => {
-			let currentStep = Object.entries(flow).find(element => element[1].metadata.initial === true)[0]; // inicial
+			let currentStep = element.nodeType === "Goal" ? "goal" : "task";
 			let selection;
 			while (element){
 				const step = flow[currentStep];
-				console.log("step: ", step);
 				const currentStepKey = Object.keys(flow).find(key => flow[key] === step);
-				console.log("currentStepKey: ", currentStepKey);
 				if (!step) break;
 
 				try {
-					const attr = element.attributes.find(el=> el.attrName == step.metadata.propertyName);
-					const attributeValue = element.attributes.find(el=> el.attrName == step.metadata.propertyName)?.attrValue;
-					console.log("attributeValue: ", attributeValue);
-					if (step.metadata.requiresConfirmation && !attributeValue) {
-						const confirmed = await vscode.window.showQuickPick([
-							{ label: "Yes", description: "Yes" },
-							{ label: "No", description: "No" },
-						], {title: "Are you sure you want to change?"});
-						if (confirmed?.label === "No") {
-							break;
-						} 
-						const subFlowToDelete = subFlowToDeleteFunction(currentStepKey);
-						console.log("subFlowToDelete: ", subFlowToDelete);
-						
-						subFlowToDelete.forEach((el) => {
-							element.removeAttribute(el);
-						});
-					}
-
+					const savedAttr = element.attributes.find(el=> el.attrName == step.metadata.propertyName);
+					
 					if (step.metadata.type === "option" || step.metadata.type === "boolean") {
 						const properties: {label: string, description: string}[] = [];
 						step.options.forEach(elem => {
@@ -247,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
 								description: elem.label,
 							});
 						});
-						selection = await vscode.window.showQuickPick([...properties]);
+						selection = await vscode.window.showQuickPick([...properties], {title: flow[currentStepKey].message});
 						if(selection == undefined) break;
 
 						if (selection) {
@@ -262,28 +243,43 @@ export function activate(context: vscode.ExtensionContext) {
 							element.addAttribute(step.metadata.propertyName, selection.label);
 						}
 
-						// console.log("attr: ", attr);
-						// if (step.metadata.requiresConfirmation && !attr) {
-						// 	const confirmed = await vscode.window.showQuickPick([
-						// 		{ label: "Yes", description: "Yes" },
-						// 		{ label: "No", description: "No" },
-						// 	], {title: "Are you sure you want to change this attribute?"});
-						// 	if (confirmed?.label === "No") {
-						// 		break;
-						// 	} 
-							// const subFlowToDelete = subFlowToDeleteFunction(currentStepKey);
-							// console.log("subFlowToDelete: ", subFlowToDelete);
-							
-							// element.addAttribute("type", step.metadata.propertyName + selection.label);
-						// }
+					const attributeValue = (step.metadata.propertyName ?? "") === "type" ? 
+																savedAttr?.attrValue === "istar." + selection.label : 
+																savedAttr?.attrValue === selection.label;
+					if (step.metadata.requiresConfirmation && !attributeValue) {
+						if (step.metadata.propertyName === "type") {
+							return;
+						}
+						const confirmed = await vscode.window.showQuickPick([
+							{ label: "Yes", description: "Yes" },
+							{ label: "No", description: "No" },
+						], {title: "Are you sure you want to change?"});
+						if (confirmed?.label === "No") {
+							break;
+						} 
+						const toDelete = flow[currentStepKey].options.find((el) => ((step.metadata.propertyName ?? "") === "type" ? "istar." + el.label : el.label) === savedAttr?.attrValue)?.next ?? "";
+						const subFlowToDelete = subFlowToDeleteFunction(toDelete);
+						
+						subFlowToDelete.forEach((el) => {
+							const propertyName = flow[el].metadata.propertyName;
+							if (propertyName) {
+								element.removeAttribute(propertyName);
+							}
+						});
+						
+						if (step.metadata.propertyName && step.metadata.propertyName !== "type") {
+							element.addAttribute(step.metadata.propertyName, selection.label);
+						}
+
+					}
 						currentStep = step.options.find((elem) => elem.label === selection.label)?.next ?? "";
 					} else if (step.metadata.type === "input") {
-						console.log("attr: ", attr);
 						const propertyName = await vscode.window.showInputBox({
 							placeHolder: step.message,
 							prompt: step.message,
-							value: attr ? attr.attrValue : ''
+							value: savedAttr ? savedAttr.attrValue : ''
 						});
+
 						if(propertyName == undefined) break;	
 						element.addAttribute(step.metadata.propertyName, propertyName);
 						currentStep = step.metadata.goTo ?? "";
@@ -292,65 +288,6 @@ export function activate(context: vscode.ExtensionContext) {
 					console.log("Erro ao editar o nó", error);
 				}
 			}
-			// let confirmed = false;
-			// while(!confirmed){
-			// 	const properties = getAllProperties().map(prop => {
-			// 			const attr = element.attributes.find(el=>el.attrName==prop.name);
-			// 			return {
-			// 				label: prop.name,
-			// 				description: attr? attr.attrValue : ''
-			// 			};
-			// 	});
-			// 	element.attributes.forEach(el=>{
-			// 		if(!properties.find(att => att.label == el.attrName)){
-			// 			properties.push({
-			// 				label: el.attrName, 
-			// 				description: el.attrValue
-			// 			});
-			// 		}
-			// 	});
-			// 	properties.push({label: "Custom Property", description: "Custom"});
-			// 	properties.push({label: "Confirm Edition", description: ""});
-			// 	const propertiesSet = new Set(properties);
-				// try {
-					// console.dir(propertiesSet, {depth:-1});
-					// const selected = await vscode.window.showQuickPick([...propertiesSet]);
-					// if(selected == undefined) break;
-					// if(selected.label == "Custom Property"){
-					// 	const propertyName = await vscode.window.showInputBox({
-					// 		placeHolder: "Type the custom property name",
-					// 		prompt: "Edit node content",
-					// 		value: ''
-					// 	});
-					// 	if(propertyName==undefined) continue;
-					// 	selected.label = propertyName;
-					// } else if ( selected.label == "Confirm Edition"){
-					// 	confirmed = true;
-					// 	break;
-					// }
-					// const attr = element.attributes.find(el=>el.attrName==selected.label);
-					// const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
-					// let input: string;
-					// if(selectedProperty?.options?.length){
-					// 	const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
-					// 		return {label: el, description: ''};
-					// 	});
-					// 	input = (await vscode.window.showQuickPick(options)).label;
-					// 	if(input == undefined) break;
-					// }else {
-					// 	input = await vscode.window.showInputBox({
-					// 		placeHolder: "Type " + selected.label,
-					// 		prompt: "Edit node content",
-					// 		value: attr?attr.attrValue : ''
-					// 	});
-					// 	if(input == undefined) break;	
-					// }
-					// element.removeAttribute(selected.label);
-					// element.addAttribute(selected.label, input);
-				// } catch (e) {
-				// 	console.log(e, "erro ao editar node");
-				// }
-			// }
 			element.parent.parent.saveGoalModel();
 		})
 	);

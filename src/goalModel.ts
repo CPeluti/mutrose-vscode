@@ -208,7 +208,7 @@ export class Node extends vscode.TreeItem {
         public attributes: NodeAttr[],
         public collapsibleState: vscode.TreeItemCollapsibleState,
         public tag: string,
-        public readonly nodeType: string,
+        public nodeType: "Goal" | "Task",
         public readonly parent: Mission,
         public readonly customId: string,
         public pos: {x: number, y: number},
@@ -247,7 +247,9 @@ export class Node extends vscode.TreeItem {
         }
     }
     removeAttribute(tag){
-		this.attributes = this.attributes.filter(attr => attr != tag);
+		this.attributes = this.attributes.filter(attr => {
+            console.log(attr.attrName, tag);
+            return attr.attrName != tag});
         try{
             this.parent.parent.saveGoalModel();
             return;
