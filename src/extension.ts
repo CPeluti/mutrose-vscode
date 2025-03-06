@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 import * as child_process from 'child_process';
 import { GoalModel, GoalModelProvider, Mission, Node, NodeRefinement, Refinement } from './goalModel';
@@ -22,6 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "gm-parser" is now active!');
 
+	const binary = os.platform() == "darwin" ? 'mutrose-mac' : 'mutrose';
 	const debugOptions = {};
 
 	// The command has been defined in the package.json file
@@ -91,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			
 			}
-			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
+			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", binary).path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
 					console.error(error);
@@ -122,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
 					showInfo("config file doesn't exists");
 					return;
 				}
-				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
+				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", binary).path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
 				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
 					if(error){
 						showInfo(`Error: ${error}`);

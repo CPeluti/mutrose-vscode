@@ -32,7 +32,7 @@ export class Ihtn {
 		let id = Object.keys(this.ihtn).length+2;
 		Object.keys(this.ihtn).forEach((key)=>{
 			const node: NodeType = this.ihtn[key];
-			const type = (node.type == 'action'? 'Task' : (node.type == 'method' ? 'Goal' : 'Task'));
+			const type = (node.type == 'action'? 'Task' : (node.type == 'method' ? 'Task' : 'Task'));
 			model.addNode(
 				parseInt(key),
 				node.name,
@@ -44,8 +44,8 @@ export class Ihtn {
 			const agents = node.agents.join(",");
 			const oldId = id;
 			node.agentId = id;
-			model.addNode(id++, agents, 'Quality');
-			model.addRefinement(id++,oldId,parseInt(key), 'qualification');
+			model.addNode(id++, agents, 'Resource');
+			model.addRefinement(id++,oldId,parseInt(key), 'needed');
 		});
 		const order = [];
 		Object.keys(this.ihtn).forEach((el)=>{
@@ -86,7 +86,7 @@ export class piStarModel {
 			}
 		});
 	}
-	addRefinement(id:number, source:number, target: number, type: 'and'|'or'|'qualification'){
+	addRefinement(id:number, source:number, target: number, type: 'and'|'or'|'needed'){
 		let istarType;
 		switch(type){
 			case 'and':
@@ -95,8 +95,8 @@ export class piStarModel {
 			case 'or':
 				istarType = 'istar.OrRefinementLink';
 				break;
-			case 'qualification':
-				istarType='istar.QualificationLink';
+			case 'needed':
+				istarType='istar.NeededByLink';
 				break;
 		}
 		this.links.push({
