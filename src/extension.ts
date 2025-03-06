@@ -10,6 +10,7 @@ import { PistarEditorProvider } from './pistarEditor';
 import { getAllProperties } from './utilities/getAllProperties';
 import { cwd } from 'process';
 import { Ihtn } from './ihtn';
+import { virtualIhtnProvider } from './virtualIhtn';
 
 
 // This method is called when your extension is activated
@@ -32,10 +33,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const gmProvider = new GoalModelProvider(rootPath);
 	const treeView = vscode.window.createTreeView('goalModel',{treeDataProvider: gmProvider});
-
+	const pistarProvider = new PistarEditorProvider(context);
 	// vscode.window.registerTreeDataProvider('goalModel', gmProvider);
 
-	context.subscriptions.push(PistarEditorProvider.register(context));
+	// context.subscriptions.push(PistarEditorProvider.register(context));
+	const pistarView = vscode.window.registerCustomEditorProvider("mutrose.pistar", pistarProvider);
+
+
+	vscode.workspace.registerTextDocumentContentProvider('ihtn', virtualIhtnProvider);
+
 
 	const commands: Array<vscode.Disposable> = [];
 
@@ -52,12 +58,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// execute mutrose command
 	commands.push(
-		vscode.commands.registerCommand('ihtn.parse', ()=>{
+		vscode.commands.registerCommand('ihtn.parse', async ()=>{
 			console.log(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.json').fsPath);
-			const file = fs.readFileSync(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.json').fsPath);
+			const file = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.json').fsPath;
 			try{
-				const ihtn = new Ihtn(JSON.parse(file.toString()));
-				ihtn.convert(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.gm').fsPath);
+				const uri = vscode.Uri.parse('ihtn:'+file);
+				console.log(uri);
+				const doc = await vscode.workspace.openTextDocument(uri); // calls back into the provider
+				vscode.commands.executeCommand('vscode.openWith', doc.uri, "mutrose.pistar");
+				// PistarEditorProvider.
+				// PistarEditorProvider.
+				// console.log(doc);
+				// await vscode.window.showTextDocument(doc, { preview: false });
+				// const ihtn = new Ihtn(JSON.parse(file.toString()));
+				// ihtn.convert(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri,'ihtn','ihtn_1.gm').fsPath);
 			} catch (e) {
 				console.log(e);
 			}

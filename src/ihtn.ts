@@ -27,7 +27,7 @@ export class Ihtn {
 	constructor(content:any){
 		this.ihtn = ihtnSchema.parse(content);
 	}
-	convert(outputPath: string){
+	convert(){
 		const model = new piStarModel();
 		let id = Object.keys(this.ihtn).length+2;
 		Object.keys(this.ihtn).forEach((key)=>{
@@ -64,7 +64,7 @@ export class Ihtn {
 			// });
 		});
 		model.space(order, 150, 200, 150, 50);
-		model.generate(outputPath, id++);
+		return model.generate(id++);
 	}
 }
 
@@ -184,7 +184,7 @@ export class piStarModel {
 		}
 
 	}
-	generate(name: string, id){
+	generate(id){
 		const output = {
 			actors: [
 				{
@@ -221,6 +221,6 @@ export class piStarModel {
 				}
 			}
 		};
-		writeFileSync(name, JSON.stringify(output));
+		return JSON.stringify(output);
 	}
 }

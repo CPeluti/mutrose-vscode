@@ -12,7 +12,7 @@ const properties: Property[] = [
 	// 	options: ["sequencial","parallel", "fallback"] 
 	// },
 	{
-		name: "Goal type",	
+		name: "GoalType",	
 		options: ["Achieve", "Query","Perform"]
 	},
 	{
