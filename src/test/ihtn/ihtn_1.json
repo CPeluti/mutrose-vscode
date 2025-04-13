@@ -42,7 +42,7 @@
         "agents": [
             "r1",
             "Nurse1",
-            "Room3"
+            "Room2"
         ],
         "children": [
             "4",
@@ -59,7 +59,7 @@
         ],
         "agents": [
             "r1",
-            "Room3"
+            "Room2"
         ],
         "children": ""
     },
