@@ -140,16 +140,16 @@ export function activate(context: vscode.ExtensionContext) {
 						mutrose.show();
 						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'ihtn').path;
 						const ihtns = fs.readdirSync(ihtnPath);
-						ihtns.forEach(el=>{
-							child_process.exec(`python3 ${vscode.Uri.joinPath(context.extensionUri,"binaries", "generateIhtnImage.py").path} ${el}`, {cwd: ihtnPath}, (error, stdout, stderr)=>{
-								if(error){
-									showInfo(`Error: ${error}`);
-									console.error(error);
-								} else {
-									showInfo(`iHtn image generated with success!`);
-								}
-							});
-						});
+						// ihtns.forEach(el=>{
+						// 	child_process.exec(`python3 ${vscode.Uri.joinPath(context.extensionUri,"binaries", "generateIhtnImage.py").path} ${el}`, {cwd: ihtnPath}, (error, stdout, stderr)=>{
+						// 		if(error){
+						// 			showInfo(`Error: ${error}`);
+						// 			console.error(error);
+						// 		} else {
+						// 			showInfo(`iHtn image generated with success!`);
+						// 		}
+						// 	});
+						// });
 					}
 					// fs.unlinkSync('./temp.txt');
 				});
