@@ -4,9 +4,18 @@
 		<nurse>Nurse1</nurse>
 		<pickup_location>Room3</pickup_location>
 	</Delivery>
+	<Delivery>
+		<name>Delivery2</name>
+		<nurse>Nurse2</nurse>
+		<pickup_location>Room2</pickup_location>
+	</Delivery>
 	<Nurse>
 		<name>Nurse1</name>
 		<sample_id>sample1</sample_id>
+	</Nurse>
+	<Nurse>
+		<name>Nurse2</name>
+		<sample_id>sample2</sample_id>
 	</Nurse>
 	<Location>
 		<name>Room1</name>

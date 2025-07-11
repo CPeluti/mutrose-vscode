@@ -16,6 +16,26 @@ import { virtualIhtnProvider } from './virtualIhtn';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
+
+function checkBinary(binary: string): boolean{
+	const unixCommand = `which ${binary} 2>/dev/null`;
+	const windowsCommand = `where ${binary}`;
+	try{
+		switch(os.platform()){
+			case 'win32':
+				child_process.execSync(windowsCommand);
+				break;
+			default:
+				child_process.execSync(unixCommand);
+				break;
+		}
+		return true;
+	} catch (e){
+		console.error(e);
+		return false;
+	}
+}
+
 export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -23,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "gm-parser" is now active!');
 
-	const binary = os.platform() == "darwin" ? 'mutrose-mac' : 'mutrose';
+	const binary = os.platform() == "darwin" ? 'mutrose-mac' : os.platform() == 'win32'? 'mutrose.exe':'mutrose';
 	const debugOptions = {};
 
 	// The command has been defined in the package.json file
@@ -87,8 +107,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
 			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 			const showInfo = vscode.window.showInformationMessage;
-			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
-			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
+			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).fsPath;
+			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).fsPath;
 			if (!fs.existsSync(hddlPath)) {
 				showInfo("hddl file doesn't exists!");
 				return;
@@ -97,7 +117,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			
 			}
-			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", binary).path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
+			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", binary).fsPath} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.fsPath}, (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
 					console.error(error);
@@ -119,17 +139,19 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.commands.registerCommand('goalModel.generateIhtn', (element) => {
 				const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
 				const showInfo = vscode.window.showInformationMessage;
-				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
-				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
+				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).fsPath;
+				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).fsPath;
 				if (!fs.existsSync(hddlPath)) {
+					console.log(hddlPath)
 					showInfo("hddl file doesn't exists!");
 					return;
 				} else if (!fs.existsSync(configPath)) {
+					console.log(configPath)
 					showInfo("config file doesn't exists");
 					return;
 				}
-				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", binary).path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
-				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
+				const command = `${checkBinary("mutrose")?"mutrose" : vscode.Uri.joinPath(context.extensionUri,"binaries", binary).fsPath} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
+				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders[0].uri.fsPath}, (error, stdout, stderr) => {
 					if(error){
 						showInfo(`Error: ${error}`);
 						console.log(error, stdout);
@@ -138,7 +160,7 @@ export function activate(context: vscode.ExtensionContext) {
 						const mutrose = vscode.window.createOutputChannel('Mutrose');
 						mutrose.append(stdout);
 						mutrose.show();
-						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'ihtn').path;
+						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'ihtn').fsPath;
 						const ihtns = fs.readdirSync(ihtnPath);
 						// ihtns.forEach(el=>{
 						// 	child_process.exec(`python3 ${vscode.Uri.joinPath(context.extensionUri,"binaries", "generateIhtnImage.py").path} ${el}`, {cwd: ihtnPath}, (error, stdout, stderr)=>{
