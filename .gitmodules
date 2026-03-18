@@ -1,0 +1,3 @@
+[submodule "src/editors/gm-editor"]
+	path = src/editors/gm-editor
+	url = git@github.com:CPeluti/gm-editor.git
