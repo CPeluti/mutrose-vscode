@@ -23,8 +23,8 @@
 	"contributes": {
 		"customEditors": [
 			{
-				"viewType": "mutrose.pistar",
-				"displayName": "PiStar Editor",
+				"viewType": "mutrose.customEditor",
+				"displayName": "Custom Editor",
 				"selector": [
 					{
 						"filenamePattern": "*.gm"
@@ -268,7 +268,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",
-		"@types/node": "^16.11.7",
+		"@types/node": "^16.18.126",
 		"@types/vscode": "^1.96.0",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",

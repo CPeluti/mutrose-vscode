@@ -239,7 +239,7 @@
     },
     {
       "id": "bd3bd411-535d-460a-92ec-a8e950e9e8ce",
-      "type": "istar.AndRefinementLink",
+      "type": "istar.OrRefinementLink",
       "source": "c348a0e5-756e-405b-b192-1943e9112a08",
       "target": "3ca4c630-6c0d-47f2-9c9d-b41744a62ebc"
     },

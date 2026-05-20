@@ -9,6 +9,7 @@ import { GoalModel, GoalModelProvider, Mission, Node, NodeRefinement, Refinement
 import { PistarEditorProvider } from './pistarEditor';
 import { getAllProperties } from './utilities/getAllProperties';
 import { cwd } from 'process';
+import { CustomEditorProvider } from './customEditor';
 
 
 // This method is called when your extension is activated
@@ -34,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// vscode.window.registerTreeDataProvider('goalModel', gmProvider);
 
-	context.subscriptions.push(PistarEditorProvider.register(context));
+	context.subscriptions.push(CustomEditorProvider.register(context));
 
 	const commands: Array<vscode.Disposable> = [];
 
