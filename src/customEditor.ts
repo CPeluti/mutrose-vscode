@@ -26,6 +26,8 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     _token: vscode.CancellationToken
   ): Promise<void> {
 
+    let isUpdatingFromWebview = false;
+  
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [
@@ -44,30 +46,33 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     };
 
     // Quando o VS Code recarregar o documento (ex: arquivo alterado externamente)
-    const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-      if (e.document.uri.toString() === document.uri.toString()) {
-        sendDocumentToWebview();
-      }
-    });
+  const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+    if (e.document.uri.toString() === document.uri.toString()) {
+      if (isUpdatingFromWebview) return;
+      sendDocumentToWebview();
+    }
+  });
 
     webviewPanel.onDidDispose(() => {
       changeDocSubscription.dispose();
     });
 
     // Receber edições vindas do React
-    webviewPanel.webview.onDidReceiveMessage(message => {
+    webviewPanel.webview.onDidReceiveMessage(async message => {
       switch (message.command) {
         case "edit":
-          this.applyEdit(document, message.content);
+          isUpdatingFromWebview = true;
+          await this.applyEdit(document, message.content);
+          isUpdatingFromWebview = false;
+          break;
+        case "ready":
+          sendDocumentToWebview();
           break;
       }
     });
 
     // Enviar conteúdo inicial assim que a webview estiver pronta
-    webviewPanel.webview.onDidReceiveMessage(message => {
-      console.log("teste");
-      if (message.command === "ready") sendDocumentToWebview();
-    });
+
   }
 
   // Aplica edição via WorkspaceEdit — isso ativa undo/redo e dirty state automaticamente
