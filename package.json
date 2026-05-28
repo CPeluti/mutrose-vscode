@@ -258,11 +258,14 @@
 		}
 	},
 	"scripts": {
+		"compile:webview": "cd src/editors/gm-editor && npm install && npm run build && cd ../..",
+		"compile:server": "cd src/lsp/lsp-mutrose && npm install && npm run compile && cd ../../../..",
+		"compile:client": "npm install && tsc -b",
 		"vscode:prepublish": "npm run compile",
 		"start:webview": "cd webview-ui && npm run dev",
 		"build:webview": "cd webview-ui && npm run build && cd ..",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
+		"compile": "npm run compile:webview && npm run compile:server && npm run compile:client",
+		"watch": "npm run compile && tsc -b -w",
 		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
 		"test": "sh ./scripts/e2e.sh"
 	},
@@ -275,6 +278,9 @@
 		"@vscode/test-electron": "2.4.1",
 		"eslint": "^8.35.0",
 		"mocha": "^9.2.1",
-		"typescript": "^5.0.2"
+		"typescript": "^5.9.2"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
 	}
 }
