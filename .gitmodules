@@ -1,3 +1,6 @@
 [submodule "src/editors/gm-editor"]
 	path = src/editors/gm-editor
 	url = git@github.com:CPeluti/gm-editor.git
+[submodule "src/lsp/lsp-mutrose"]
+	path = src/lsp/lsp-mutrose
+	url = git@github.com:AnaJordao/lsp-mutrose.git

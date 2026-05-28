@@ -10,14 +10,45 @@ import { PistarEditorProvider } from './pistarEditor';
 import { getAllProperties } from './utilities/getAllProperties';
 import { cwd } from 'process';
 import { CustomEditorProvider } from './customEditor';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { workspace } from 'vscode';
 
-
+let client: LanguageClient;
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
+	const serverModule = context.asAbsolutePath(
+		path.join('src', 'lsp', 'lsp-mutrose', 'server', 'out', 'server.js')
+	);
+	console.log(path.join('src', 'lsp', 'lsp-mutrose', 'server', 'out', 'server.js'));
+
+	const serverOptions: ServerOptions = {
+		run: {
+			module: serverModule,
+			transport: TransportKind.ipc
+		},
+		debug: {
+			module: serverModule,
+			transport: TransportKind.ipc,
+			options: { execArgv: ['--nolazy', '--inspect=6009'] }
+		}
+	};
+
+	const clientOptions: LanguageClientOptions = {
+		documentSelector: [
+			{ scheme: 'file', language: 'plaintext' },
+			{ scheme: 'file', pattern: '**/*.gm' }
+		],
+		synchronize: {
+			fileEvents: workspace.createFileSystemWatcher('**/*.{txt,gm}')
+		}
+	};
+
+
+	client = new LanguageClient('meuLSP', 'Meu LSP', serverOptions, clientOptions);
+	client.start();
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "gm-parser" is now active!');
 
@@ -53,10 +84,10 @@ export function activate(context: vscode.ExtensionContext) {
 	// execute mutrose command
 	commands.push(
 		vscode.commands.registerCommand('goalModel.execMutRose', (element: GoalModel) => {
-			const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
+			const cfg: {hddlPath: string, configPath: string} | undefined = vscode.workspace.getConfiguration().get('gmParser');
 			const showInfo = vscode.window.showInformationMessage;
-			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
-			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
+			const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, cfg!.hddlPath).path;
+			const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, cfg!.configPath).path;
 			if (!fs.existsSync(hddlPath)) {
 				showInfo("hddl file doesn't exists!");
 				return;
@@ -65,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			
 			}
-			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,{cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
+			child_process.exec(`${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg!.hddlPath} ${element.filePath} ${cfg!.configPath} -p`,{cwd: vscode.workspace.workspaceFolders![0].uri.path}, (error, stdout, stderr) => {
 				if(error){
 					showInfo(`Error: ${error}`);
 					console.error(error);
@@ -85,10 +116,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	commands.push(
 			vscode.commands.registerCommand('goalModel.generateIhtn', (element) => {
-				const cfg: {hddlPath: string, configPath: string} = vscode.workspace.getConfiguration().get('gmParser');
+				const cfg: {hddlPath: string, configPath: string} | undefined = vscode.workspace.getConfiguration().get('gmParser');
 				const showInfo = vscode.window.showInformationMessage;
-				const hddlPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.hddlPath).path;
-				const configPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, cfg.configPath).path;
+				const hddlPath: string | undefined = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, cfg!.hddlPath).path;
+				const configPath: string | undefined = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, cfg!.configPath).path;
 				if (!fs.existsSync(hddlPath)) {
 					showInfo("hddl file doesn't exists!");
 					return;
@@ -96,8 +127,8 @@ export function activate(context: vscode.ExtensionContext) {
 					showInfo("config file doesn't exists");
 					return;
 				}
-				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
-				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders[0].uri.path}, (error, stdout, stderr) => {
+				const command = `${vscode.Uri.joinPath(context.extensionUri,"binaries", "mutrose").path} ${cfg?.hddlPath} ${element.filePath} ${cfg?.configPath} -h`;
+				child_process.exec(command, {cwd: vscode.workspace.workspaceFolders![0].uri.path}, (error, stdout, stderr) => {
 					if(error){
 						showInfo(`Error: ${error}`);
 						console.log(error, stdout);
@@ -106,7 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
 						const mutrose = vscode.window.createOutputChannel('Mutrose');
 						mutrose.append(stdout);
 						mutrose.show();
-						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'ihtn').path;
+						const ihtnPath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'ihtn').path;
 						const ihtns = fs.readdirSync(ihtnPath);
 						ihtns.forEach(el=>{
 							child_process.exec(`python3 ${vscode.Uri.joinPath(context.extensionUri,"binaries", "generateIhtnImage.py").path} ${el}`, {cwd: ihtnPath}, (error, stdout, stderr)=>{
@@ -142,10 +173,10 @@ export function activate(context: vscode.ExtensionContext) {
 				value: `${element instanceof Mission? element.name : element.tag}`
 			});
 			if(element instanceof Mission) {
-				element.name = newName;
+				element.name = newName!;
 				element.parent.saveGoalModel();
 			} else {
-				element.tag = newName;
+				element.tag = newName!;
 				element.parent.parent.saveGoalModel();
 			}
 		})
@@ -171,7 +202,7 @@ export function activate(context: vscode.ExtensionContext) {
 					prompt: "Node Title",
 					value: ''
 				});
-				element.addNewNode(type.label, title);
+				element.addNewNode(type!.label, title);
 				element.parent.saveGoalModel();
 			} catch (e){
 				console.log(e, "erro ao adicionar property");
@@ -185,7 +216,7 @@ export function activate(context: vscode.ExtensionContext) {
 					{label:"And", description:'And Refinement'},
 					{label:"Or", description:'Or Refinement'}
 				]);
-				element.changeRefinementType(selected.label == "And"?"istar.AndRefinementLink" : "istar.OrRefinementLink");
+				element.changeRefinementType(selected!.label == "And"?"istar.AndRefinementLink" : "istar.OrRefinementLink");
 				element.parent.parent.parent.saveGoalModel();
 			} catch (e){
 				console.error("failed to change node refinement", e);
@@ -249,12 +280,12 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 					const attr = element.attributes.find(el=>el.attrName==selected.label);
 					const selectedProperty = getAllProperties().find(el=>el.name == selected.label);
-					let input: string;
+					let input: string | undefined;
 					if(selectedProperty?.options?.length){
 						const options: vscode.QuickPickItem[] = selectedProperty.options.map(el=>{
 							return {label: el, description: ''};
 						});
-						input = (await vscode.window.showQuickPick(options)).label;
+						input = (await vscode.window.showQuickPick(options))!.label;
 						if(input == undefined) break;
 					}else {
 						input = await vscode.window.showInputBox({
@@ -297,8 +328,8 @@ export function activate(context: vscode.ExtensionContext) {
 					break;
 			}
 			try{
-				const selected = await vscode.window.showQuickPick(items);
-				element.addAttribute(selected.label, "");
+				const selected = await vscode.window.showQuickPick(items!);
+				element.addAttribute(selected!.label, "");
 				element.parent.parent.saveGoalModel();
 			} catch (e){
 				console.log(e, "erro ao adicionar property");
@@ -362,7 +393,7 @@ export function activate(context: vscode.ExtensionContext) {
 				};
 			});
 			const selected = await vscode.window.showQuickPick(items);
-			element.addRefinement(type,selected.description, selected.label, gm.generateNewId());
+			element.addRefinement(type,selected!.description, selected!.label, gm.generateNewId());
 			gm.saveGoalModel();
 		})
 	);
@@ -383,8 +414,8 @@ export function activate(context: vscode.ExtensionContext) {
 					description: node.customId
 				};
 			});
-			const selected = await vscode.window.showQuickPick(items);
-			element.addRefinement(selected.description, selected.label, gm.generateNewId());
+			const selected = await vscode.window.showQuickPick(items!);
+			element.addRefinement(selected!.description, selected!.label, gm.generateNewId());
 			gm.saveGoalModel();
 		})
 	);
@@ -402,3 +433,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
+export function deactivate(): Thenable<void> | undefined {
+  return client?.stop();
+}
