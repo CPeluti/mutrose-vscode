@@ -1,4 +1,4 @@
 {
-	"gmParser.hddlPath": "hddl/LabSampleLogistics.hddl",
-	"gmParser.configPath": "configuration/configuration.json"
+  "gmParser.hddlPath": "hddl/LabSampleLogistics.hddl",
+  "gmParser.configPath": "configuration/configuration.json"
 }

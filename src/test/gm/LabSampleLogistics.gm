@@ -30,7 +30,7 @@
           "customProperties": {
             "Description": "",
             "GoalType": "Achieve",
-            "AchieveCondition": "deliveries_requested->forAll(current_delivery |)",
+            "AchieveConditi": "deliveries_requested->forAll(current_delivery |)",
             "Monitors": "deliveries_requested",
             "Controls": "current_delivery : Delivery"
           }

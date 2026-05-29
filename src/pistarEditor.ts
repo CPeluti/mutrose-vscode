@@ -1,119 +1,137 @@
-import * as vscode from 'vscode';
-
+import * as vscode from "vscode";
 
 export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
-	public static register(context: vscode.ExtensionContext): vscode.Disposable {
-		const provider = new PistarEditorProvider(context);
-		const providerRegistration = vscode.window.registerCustomEditorProvider(PistarEditorProvider.viewType, provider);
-		return providerRegistration;
-	}
+  public static register(context: vscode.ExtensionContext): vscode.Disposable {
+    const provider = new PistarEditorProvider(context);
+    const providerRegistration = vscode.window.registerCustomEditorProvider(
+      PistarEditorProvider.viewType,
+      provider,
+    );
+    return providerRegistration;
+  }
 
-    changeByWrite = false;
-    private static readonly viewType = 'mutrose.pistar';
+  changeByWrite = false;
+  private static readonly viewType = "mutrose.pistar";
 
-    constructor(
-		private readonly context: vscode.ExtensionContext
-	) { }
-    public async resolveCustomTextEditor(
-		document: vscode.TextDocument,
-		webviewPanel: vscode.WebviewPanel,
-		_token: vscode.CancellationToken
-	): Promise<void> {
-		// Setup initial content for the webview
-		webviewPanel.webview.options = {
-			enableScripts: true,
-		};
-		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+  constructor(private readonly context: vscode.ExtensionContext) {}
+  public async resolveCustomTextEditor(
+    document: vscode.TextDocument,
+    webviewPanel: vscode.WebviewPanel,
+    _token: vscode.CancellationToken,
+  ): Promise<void> {
+    // Setup initial content for the webview
+    webviewPanel.webview.options = {
+      enableScripts: true,
+    };
+    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
-		function updateWebview() {
-			webviewPanel.webview.postMessage({
-				type: 'update',
-				data: document.getText(),
-			});
-		}
+    function updateWebview() {
+      webviewPanel.webview.postMessage({
+        type: "update",
+        data: document.getText(),
+      });
+    }
 
-		// Hook up event handlers so that we can synchronize the webview with the text document.
-		//
-		// The text document acts as our model, so we have to sync change in the document to our
-		// editor and sync changes in the editor back to the document.
-		// 
-		// Remember that a single text document can also be shared between multiple custom
-		// editors (this happens for example when you split a custom editor)
+    // Hook up event handlers so that we can synchronize the webview with the text document.
+    //
+    // The text document acts as our model, so we have to sync change in the document to our
+    // editor and sync changes in the editor back to the document.
+    //
+    // Remember that a single text document can also be shared between multiple custom
+    // editors (this happens for example when you split a custom editor)
 
-		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-			if (e.document.uri.toString() === document.uri.toString() && !this.changeByWrite) {
-				updateWebview();
-			}
-            if(this.changeByWrite){
-                this.changeByWrite = false;
-            }
-		});
+    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
+      (e) => {
+        if (
+          e.document.uri.toString() === document.uri.toString() &&
+          !this.changeByWrite
+        ) {
+          updateWebview();
+        }
+        if (this.changeByWrite) {
+          this.changeByWrite = false;
+        }
+      },
+    );
 
-		// Make sure we get rid of the listener when our editor is closed.
-		webviewPanel.onDidDispose(() => {
-			changeDocumentSubscription.dispose();
-		});
+    // Make sure we get rid of the listener when our editor is closed.
+    webviewPanel.onDidDispose(() => {
+      changeDocumentSubscription.dispose();
+    });
 
-		// Receive message from the webview.
-		webviewPanel.webview.onDidReceiveMessage(e => {
-			switch (e.type) {
-				case 'change':
-					this.updateDocument(document, e.payload).then(()=>{
-                        this.changeByWrite=true;
-                    });
-					return;
-                case 'select':
-                    if(e.payload){
-                        vscode.commands.executeCommand("goalModel.focusElement", e.payload.target, e.payload.parent);
-                    }
-					return;
-			}
-		}, undefined,);
+    // Receive message from the webview.
+    webviewPanel.webview.onDidReceiveMessage((e) => {
+      switch (e.type) {
+        case "change":
+          this.updateDocument(document, e.payload).then(() => {
+            this.changeByWrite = true;
+          });
+          return;
+        case "select":
+          if (e.payload) {
+            vscode.commands.executeCommand(
+              "goalModel.focusElement",
+              e.payload.target,
+              e.payload.parent,
+            );
+          }
+          return;
+      }
+    }, undefined);
 
-		updateWebview();
-	}
+    updateWebview();
+  }
 
-    private updateDocument(document: vscode.TextDocument, newDocument: JSON) {
-		const json = this.getDocumentAsJson(document);
+  private updateDocument(document: vscode.TextDocument, newDocument: JSON) {
+    const json = this.getDocumentAsJson(document);
 
-		return this.updateTextDocument(document, newDocument);
-	}
+    return this.updateTextDocument(document, newDocument);
+  }
 
-    private updateTextDocument(document: vscode.TextDocument, json: any) {
-		const edit = new vscode.WorkspaceEdit();
+  private updateTextDocument(document: vscode.TextDocument, json: any) {
+    const edit = new vscode.WorkspaceEdit();
 
-		// Just replace the entire document every time for this example extension.
-		// A more complete extension should compute minimal edits instead.
-		edit.replace(
-			document.uri,
-			new vscode.Range(0, 0, document.lineCount, 0),
-			JSON.stringify(json, null, 2));
-        const apply = vscode.workspace.applyEdit(edit);
-        // this.changeByWrite=false;
-		return apply;
-	}
+    // Just replace the entire document every time for this example extension.
+    // A more complete extension should compute minimal edits instead.
+    edit.replace(
+      document.uri,
+      new vscode.Range(0, 0, document.lineCount, 0),
+      JSON.stringify(json, null, 2),
+    );
+    const apply = vscode.workspace.applyEdit(edit);
+    // this.changeByWrite=false;
+    return apply;
+  }
 
-    private getDocumentAsJson(document: vscode.TextDocument): any {
-		const text = document.getText();
-		if (text.trim().length === 0) {
-			return {};
-		}
+  private getDocumentAsJson(document: vscode.TextDocument): any {
+    const text = document.getText();
+    if (text.trim().length === 0) {
+      return {};
+    }
 
-		try {
-			return JSON.parse(text);
-		} catch {
-			throw new Error('Could not get document as json. Content is not valid json');
-		}
-	}
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error(
+        "Could not get document as json. Content is not valid json",
+      );
+    }
+  }
 
-    private getHtmlForWebview(webview: vscode.Webview): string {
-		const getUri = (path: string) => {
-            return webview.asWebviewUri(vscode.Uri.joinPath(
-                this.context.extensionUri,"resources","piStar","tool",path
-            ));
-        };
-        
-		return `
+  private getHtmlForWebview(webview: vscode.Webview): string {
+    const getUri = (path: string) => {
+      return webview.asWebviewUri(
+        vscode.Uri.joinPath(
+          this.context.extensionUri,
+          "resources",
+          "piStar",
+          "tool",
+          path,
+        ),
+      );
+    };
+
+    return `
 			<!DOCTYPE html>
             <html lang="en">
                 <head>
@@ -134,12 +152,12 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                     <link rel="icon" href="app/ui/images/favicon.ico">
 
                     <!-- bootstrap styles -->
-                    <link href="${getUri('app/ui/lib/bootstrap/bootstrap.min.css')}" rel="stylesheet">  <!-- Bootstrap core CSS -->
+                    <link href="${getUri("app/ui/lib/bootstrap/bootstrap.min.css")}" rel="stylesheet">  <!-- Bootstrap core CSS -->
                     <!-- library-specific styles -->
-                    <link href="${getUri('app/istarcore/lib/joint.min.css')}" rel="stylesheet"> <!-- joint js -->
-                    <link href="${getUri('app/ui/lib/bootstrap3-editable/bootstrap-editable.css')}" rel="stylesheet"> <!-- x-editable -->
+                    <link href="${getUri("app/istarcore/lib/joint.min.css")}" rel="stylesheet"> <!-- joint js -->
+                    <link href="${getUri("app/ui/lib/bootstrap3-editable/bootstrap-editable.css")}" rel="stylesheet"> <!-- x-editable -->
                     <!-- tool styles -->
-                    <link href="${getUri('pistar.css')}" rel="stylesheet">
+                    <link href="${getUri("pistar.css")}" rel="stylesheet">
                 </head>
 
                 <body>
@@ -187,7 +205,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                                 <div class="add-dropdown-button dropdown">
                                     <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actors"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add some kind of Actor">
-                                        <img src="${getUri('language/images/Actor.svg')}" height="25" alt=""/><br>
+                                        <img src="${getUri("language/images/Actor.svg")}" height="25" alt=""/><br>
                                         Actor...
                                         <span class="caret"></span>
                                     </button>
@@ -198,7 +216,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                                     <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-actor-links"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
                                             title="Add links between actors">
-                                        <img src="${getUri('language/images/IsALink.svg')}" height="25" alt=""/><br>
+                                        <img src="${getUri("language/images/IsALink.svg")}" height="25" alt=""/><br>
                                         Actor links...
                                         <span class="caret"></span>
                                     </button>
@@ -208,7 +226,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                                 <div class="add-dropdown-button dropdown">
                                     <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-dependency-links"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Add dependency link">
-                                        <img src="${getUri('language/images/DependencyLink.svg')}" height="25" alt=""/><br>
+                                        <img src="${getUri("language/images/DependencyLink.svg")}" height="25" alt=""/><br>
                                         Dependency...
                                         <span class="caret"></span>
                                     </button>
@@ -347,7 +365,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                 <script type="text/template" id="add-button-template">
                     <button type="button" class="btn btn-default add-button" id="add-<%- label %>" title="<%- tooltip %>">
                         <img
-                                src="${getUri('language/images/')}<%- name %>.svg" height="25" alt="" onError="this.onerror=null;this.src=${getUri('language/images/')}<%- defaultButtonImage %>;"/>
+                                src="${getUri("language/images/")}<%- name %>.svg" height="25" alt="" onError="this.onerror=null;this.src=${getUri("language/images/")}<%- defaultButtonImage %>;"/>
                         <br><%- label %>
                     </button>
                 </script>
@@ -357,7 +375,7 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                         <button class="btn add-button btn-default dropdown-toggle" type="button" id="menu-dropdown-<%- name %>"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"
                                 title="<%- tooltip %>">
-                            <img src="${getUri('language/images/')}<%- name %>.svg')}" height="25" alt="" onError="this.onerror=null;this.src=${getUri('language/images/')}<%- defaultButtonImage %>;"/><br>
+                            <img src="${getUri("language/images/")}<%- name %>.svg')}" height="25" alt="" onError="this.onerror=null;this.src=${getUri("language/images/")}<%- defaultButtonImage %>;"/><br>
                             <%- label %>...
                             <span class="caret"></span>
                         </button>
@@ -367,8 +385,8 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 
                 <script type="text/template" id="add-dropdown-item-template">
                     <a id="d-add-<%- name %>" title="<%- tooltip %>" href="#">
-                        <img id="d-add-<%- name %>-img" src="${getUri('language/images/')}<%- buttonImage %>.svg" height="35" alt=""
-                            onError="this.onerror=null;this.src=${getUri('language/images/')}<%- defaultButtonImage %>;"/>
+                        <img id="d-add-<%- name %>-img" src="${getUri("language/images/")}<%- buttonImage %>.svg" height="35" alt=""
+                            onError="this.onerror=null;this.src=${getUri("language/images/")}<%- defaultButtonImage %>;"/>
                         <%- label %>
                     </a>
                 </script>
@@ -574,50 +592,50 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
 
 
                 <!-- dependencies -->
-                <script src="${getUri('app/istarcore/lib/jquery.min.js')}"></script>
-                <script src="${getUri('app/istarcore/lib/lodash.min.js')}"></script>
-                <script src="${getUri('app/istarcore/lib/backbone-min.js')}"></script>
-                <script src="${getUri('app/istarcore/lib/joint.min.js')}"></script>
+                <script src="${getUri("app/istarcore/lib/jquery.min.js")}"></script>
+                <script src="${getUri("app/istarcore/lib/lodash.min.js")}"></script>
+                <script src="${getUri("app/istarcore/lib/backbone-min.js")}"></script>
+                <script src="${getUri("app/istarcore/lib/joint.min.js")}"></script>
 
-                <script src="${getUri('app/ui/lib/jscolor/jscolor.min.js')}"></script>
-                <script src="${getUri('app/ui/lib/bootstrap/bootstrap.min.js')}"></script>
-                <script src="${getUri('app/ui/lib/bootstrap3-editable/bootstrap-editable.min.js')}"></script>
-                <script src="${getUri('app/ui/lib/bootbox/bootbox.min.js')}"></script>
+                <script src="${getUri("app/ui/lib/jscolor/jscolor.min.js")}"></script>
+                <script src="${getUri("app/ui/lib/bootstrap/bootstrap.min.js")}"></script>
+                <script src="${getUri("app/ui/lib/bootstrap3-editable/bootstrap-editable.min.js")}"></script>
+                <script src="${getUri("app/ui/lib/bootbox/bootbox.min.js")}"></script>
 
                 <!-- istar core -->
-                <script src="${getUri('app/istarcore/istarFunctions.js')}"></script>
-                <script src="${getUri('app/istarcore/metamodelManager.js')}"></script>
-                <script src="${getUri('app/istarcore/fileManager.js')}"></script>
-                <script src="${getUri('app/istarcore/defaultShapes.js')}"></script>
-                <script src="${getUri('app/istarcore/undoManager.js')}"></script>
-                <script src="${getUri('app/ui/ui.js')}"></script>
-                <script src="${getUri('app/ui/models/addButton.js')}"></script>
-                <script src="${getUri('app/ui/views/addButton.js')}"></script>
-                <script src="${getUri('app/ui/views/addButtonDropdown.js')}"></script>
-                <script src="${getUri('app/ui/views/addButtonDropdownItem.js')}"></script>
-                <script src="${getUri('app/ui/controllers/addButton.js')}"></script>
-                <script src="${getUri('app/ui/views/propertiesTable.js')}"></script>
-                <script src="${getUri('app/ui/istarmodels.js')}"></script>
+                <script src="${getUri("app/istarcore/istarFunctions.js")}"></script>
+                <script src="${getUri("app/istarcore/metamodelManager.js")}"></script>
+                <script src="${getUri("app/istarcore/fileManager.js")}"></script>
+                <script src="${getUri("app/istarcore/defaultShapes.js")}"></script>
+                <script src="${getUri("app/istarcore/undoManager.js")}"></script>
+                <script src="${getUri("app/ui/ui.js")}"></script>
+                <script src="${getUri("app/ui/models/addButton.js")}"></script>
+                <script src="${getUri("app/ui/views/addButton.js")}"></script>
+                <script src="${getUri("app/ui/views/addButtonDropdown.js")}"></script>
+                <script src="${getUri("app/ui/views/addButtonDropdownItem.js")}"></script>
+                <script src="${getUri("app/ui/controllers/addButton.js")}"></script>
+                <script src="${getUri("app/ui/views/propertiesTable.js")}"></script>
+                <script src="${getUri("app/ui/istarmodels.js")}"></script>
 
                 <!-- auto-layout -->
-                <script src="${getUri('app/layout/lib/d3-collection.v1.min.js')}"></script>
-                <script src="${getUri('app/layout/lib/d3-dispatch.v1.min.js')}"></script>
-                <script src="${getUri('app/layout/lib/d3-quadtree.v1.min.js')}"></script>
-                <script src="${getUri('app/layout/lib/d3-timer.v1.min.js')}"></script>
-                <script src="${getUri('app/layout/lib/d3-force.v1.min.js')}"></script>
-                <script src="${getUri('app/layout/layout.js')}"></script>
+                <script src="${getUri("app/layout/lib/d3-collection.v1.min.js")}"></script>
+                <script src="${getUri("app/layout/lib/d3-dispatch.v1.min.js")}"></script>
+                <script src="${getUri("app/layout/lib/d3-quadtree.v1.min.js")}"></script>
+                <script src="${getUri("app/layout/lib/d3-timer.v1.min.js")}"></script>
+                <script src="${getUri("app/layout/lib/d3-force.v1.min.js")}"></script>
+                <script src="${getUri("app/layout/layout.js")}"></script>
 
                 <!-- language specific -->
-                <script src="${getUri('language/shapes.js')}"></script>
-                <script src="${getUri('language/metamodel.js')}"></script>
-                <script src="${getUri('language/constraints.js')}"></script>
-                <script src="${getUri('language/ui.metamodel.js')}"></script>
+                <script src="${getUri("language/shapes.js")}"></script>
+                <script src="${getUri("language/metamodel.js")}"></script>
+                <script src="${getUri("language/constraints.js")}"></script>
+                <script src="${getUri("language/ui.metamodel.js")}"></script>
 
                 <!-- insert your plugin(s) here, after this line -->
 
                 <!-- end of plugin(s) area -->
 
-                <script src="${getUri('app/ui/main.js')}"></script>
+                <script src="${getUri("app/ui/main.js")}"></script>
                 <script>
                     window.addEventListener('message', event => {
                         const message = event.data; // The JSON data our extension sent
@@ -631,5 +649,5 @@ export class PistarEditorProvider implements vscode.CustomTextEditorProvider {
                 </body>
             </html>
             `;
-	}
+  }
 }

@@ -2,18 +2,17 @@
 import * as vscode from "vscode";
 
 export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
-
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
     const provider = new CustomEditorProvider(context);
     return vscode.window.registerCustomEditorProvider(
-      "mutrose.customEditor",   // deve bater com o viewType do package.json
+      "mutrose.customEditor", // deve bater com o viewType do package.json
       provider,
       {
         webviewOptions: {
-          retainContextWhenHidden: true  // mantém o React vivo ao trocar de aba
+          retainContextWhenHidden: true, // mantém o React vivo ao trocar de aba
         },
-        supportsMultipleEditorsPerDocument: false
-      }
+        supportsMultipleEditorsPerDocument: false,
+      },
     );
   }
 
@@ -23,16 +22,21 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
   public async resolveCustomTextEditor(
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel,
-    _token: vscode.CancellationToken
+    _token: vscode.CancellationToken,
   ): Promise<void> {
-
     let isUpdatingFromWebview = false;
-  
+
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [
-        vscode.Uri.joinPath(this.context.extensionUri, "src", "editors", "dist", "webview")
-      ]
+        vscode.Uri.joinPath(
+          this.context.extensionUri,
+          "src",
+          "editors",
+          "dist",
+          "webview",
+        ),
+      ],
     };
 
     webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
@@ -41,24 +45,26 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     const sendDocumentToWebview = () => {
       webviewPanel.webview.postMessage({
         command: "load",
-        content: document.getText()
+        content: document.getText(),
       });
     };
 
     // Quando o VS Code recarregar o documento (ex: arquivo alterado externamente)
-  const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-    if (e.document.uri.toString() === document.uri.toString()) {
-      if (isUpdatingFromWebview) return;
-      sendDocumentToWebview();
-    }
-  });
+    const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(
+      (e) => {
+        if (e.document.uri.toString() === document.uri.toString()) {
+          if (isUpdatingFromWebview) return;
+          sendDocumentToWebview();
+        }
+      },
+    );
 
     webviewPanel.onDidDispose(() => {
       changeDocSubscription.dispose();
     });
 
     // Receber edições vindas do React
-    webviewPanel.webview.onDidReceiveMessage(async message => {
+    webviewPanel.webview.onDidReceiveMessage(async (message) => {
       switch (message.command) {
         case "edit":
           isUpdatingFromWebview = true;
@@ -72,7 +78,6 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     // Enviar conteúdo inicial assim que a webview estiver pronta
-
   }
 
   // Aplica edição via WorkspaceEdit — isso ativa undo/redo e dirty state automaticamente
@@ -81,17 +86,31 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     edit.replace(
       document.uri,
       new vscode.Range(0, 0, document.lineCount, 0),
-      newContent
+      newContent,
     );
     vscode.workspace.applyEdit(edit);
   }
 
   private getHtml(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "src",  "editors", "dist", "webview", "main.js")
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "src",
+        "editors",
+        "dist",
+        "webview",
+        "main.js",
+      ),
     );
     const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "src",  "editors", "dist", "webview", "main.css")
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "src",
+        "editors",
+        "dist",
+        "webview",
+        "main.css",
+      ),
     );
     const nonce = getNonce();
 
