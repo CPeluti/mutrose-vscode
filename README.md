@@ -5,7 +5,7 @@ This extension ships all the needed tooling for modelling and decomposing missio
 ## What's included?
 
 - MutRoSe Binary
-- Custom text editor for `.gm` files (legacy gm-editor by default; optional `@istar-ts` editor)
+- Custom text editor for `.gm` files, built on [`@istar-ts`](https://github.com/vieirin/istar-ts)
 - A new Tree View for all .gm in the workspace
 
 ## System Requirements
@@ -31,20 +31,19 @@ Since the extension expects the same project pattern as the MutRoSe, your worksp
 - output
 - configuration
 
-### Optional: @istar-ts editor
+### Goal model editor
 
-By default the `.gm` custom editor uses the legacy gm-editor webview. To try the new
-[`@istar-ts`](https://github.com/vieirin/istar-ts) React editor (LSP diagnostics on the canvas,
-MutRoSe GoalType coloring, G#/AT# naming), set in your workspace settings:
+`.gm` files open in the [`@istar-ts`](https://github.com/vieirin/istar-ts) React editor (LSP
+diagnostics on the canvas, MutRoSe GoalType coloring, G#/AT# naming). By default it is drawn in
+the legacy React Flow look; to use the plain istar-ts look, set in your workspace settings:
 
 ```json
 {
-  "mutrose.useIstarTs": true
+  "mutrose.istarTsReactFlowStyle": false
 }
 ```
 
-Re-open any `.gm` tab after changing the setting. The legacy editor remains the default so
-existing workflows are unchanged.
+Re-open any `.gm` tab after changing the setting.
 
 ### Directories
 
@@ -95,25 +94,4 @@ The path to vscode's extesions folder usually is `~/.vscode-server/extensions/le
 
 For using the Tree View it should mostly be intuitive, but the main idea is to right click every type of element to interact with them. For example, if you right click a Goal, all available options related to the goal will appear in a menu.
 
-For the piStar, almost everything continues the same as the one hosted by the UFPE. The exceptions are while creating a element and saving the model:
-
-- When you create an element (actor, goal or task), it's numerated automatically.
-- To save the file you just need to press CTRL-S or save the file like you normally would do with VSCode.
-
-### Known Bugs & workarounds
-
-#### Auto Save bugs the movement of elements inside pistar
-
-Sadly, the only solution as of now is to disable the auto save.
-
-#### PiStar is empty on opening a file
-
-Sometimes when you open a .gm file, the pistar can be entirely empty. To solve that you just need to save the file with CTRL-S or something equivalent and it should correct it self.
-
-#### Can't delete a element
-
-When you try select a element and delete sometimes it appears to do nothing. Usually that happens because the focus, even though you clicked on the editor, is on the wrong tab of the VSCode and to solve that you just need to click on the right tab (where the name of the tab is).
-
-#### Enumeration isn't working
-
-When you create a new element using the PiStar menu, sometimes the enumeration doesn't appear even though the text file is correct. That usually happens when more than one element is created without saving the file. To solve that, you just need to save it.
+In the goal model editor, elements (actors, goals and tasks) are numbered automatically when created. To save the file, press CTRL-S or save it like you normally would in VSCode.

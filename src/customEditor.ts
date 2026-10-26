@@ -1,15 +1,11 @@
 // src/MeuEditorProvider.ts
 import * as vscode from "vscode";
 
-function useIstarTsEditor(): boolean {
-  return vscode.workspace.getConfiguration("mutrose").get<boolean>("useIstarTs", false);
-}
-
-/** With the istar-ts editor: draw it like the legacy React Flow editor. */
+/** Draw the istar-ts editor like the legacy React Flow editor. */
 function useReactFlowStyle(): boolean {
   return vscode.workspace
     .getConfiguration("mutrose")
-    .get<boolean>("istarTsReactFlowStyle", false);
+    .get<boolean>("istarTsReactFlowStyle", true);
 }
 
 export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
@@ -36,18 +32,10 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     _token: vscode.CancellationToken,
   ): Promise<void> {
     let isUpdatingFromWebview = false;
-    const istar = useIstarTsEditor();
 
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [
-        vscode.Uri.joinPath(
-          this.context.extensionUri,
-          "src",
-          "editors",
-          "dist",
-          "webview",
-        ),
         vscode.Uri.joinPath(
           this.context.extensionUri,
           "src",
@@ -58,7 +46,7 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
       ],
     };
 
-    webviewPanel.webview.html = this.getHtml(webviewPanel.webview, istar);
+    webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
 
     // Utilitário para enviar o conteúdo atual ao React
     const sendDocumentToWebview = () => {
@@ -150,7 +138,7 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
           sendDiagnosticsToWebview();
           break;
         case "select":
-          if (istar && message.payload?.target) {
+          if (message.payload?.target) {
             vscode.commands.executeCommand(
               "goalModel.focusElement",
               message.payload.target,
@@ -179,8 +167,8 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     return vscode.workspace.applyEdit(edit);
   }
 
-  private getHtml(webview: vscode.Webview, istar: boolean): string {
-    const bundle = istar ? "istar-webview" : "webview";
+  private getHtml(webview: vscode.Webview): string {
+    const bundle = "istar-webview";
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
@@ -236,7 +224,7 @@ body,
 
   </style>
   </head>
-<body style="padding:0;" data-editor-style="${istar && useReactFlowStyle() ? "reactflow" : "default"}">
+<body style="padding:0;" data-editor-style="${useReactFlowStyle() ? "reactflow" : "default"}">
   <div id="root"></div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>

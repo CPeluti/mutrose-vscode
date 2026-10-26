@@ -14,7 +14,6 @@ import {
   NodeRefinement,
   Refinement,
 } from "./goalModel";
-import { PistarEditorProvider } from "./pistarEditor";
 import { getAllProperties } from "./utilities/getAllProperties";
 import {
   pickNodeFromQuickPick,

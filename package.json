@@ -248,17 +248,11 @@
           "default": "./hddl/hddl.txt",
           "description": "Controls the maximum number of problems produced by the server."
         },
-        "mutrose.useIstarTs": {
-          "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "Use the @istar-ts React editor for .gm files instead of the legacy gm-editor webview. Re-open .gm tabs after changing this setting."
-        },
         "mutrose.istarTsReactFlowStyle": {
           "scope": "window",
           "type": "boolean",
-          "default": false,
-          "description": "With mutrose.useIstarTs, draw the @istar-ts editor like the legacy React Flow editor: VS Code dark/light theme, curved links, the mission as a box instead of a boundary around the goals, and the Achieve / Query / Perform / Or / And side bar with LSP diagnostics. Re-open .gm tabs after changing this setting."
+          "default": true,
+          "description": "Draw the @istar-ts editor like the legacy React Flow editor: VS Code dark/light theme, curved links, the mission as a box instead of a boundary around the goals, and the Achieve / Query / Perform / Or / And side bar with LSP diagnostics. Re-open .gm tabs after changing this setting."
         },
         "languageServerExample.trace.server": {
           "scope": "window",
@@ -275,8 +269,7 @@
     }
   },
   "scripts": {
-    "compile:webview": "npm run compile:webview:gm && npm run compile:webview:istar",
-    "compile:webview:gm": "cd src/editors/gm-editor && npm install && npm run build && cd ../..",
+    "compile:webview": "npm run compile:webview:istar",
     "compile:webview:istar": "cd src/editors/istar-editor && npm install && npm run build && cd ../..",
     "compile:server": "cd src/lsp/lsp-mutrose && npm install && npm run compile && cd ../../../..",
     "compile:client": "npm install && tsc -b",
