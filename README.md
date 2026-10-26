@@ -5,7 +5,7 @@ This extension ships all the needed tooling for modelling and decomposing missio
 ## What's included?
 
 - MutRoSe Binary
-- PiStar as an Custom Text Editor for .gm files
+- Custom text editor for `.gm` files (legacy gm-editor by default; optional `@istar-ts` editor)
 - A new Tree View for all .gm in the workspace
 
 ## System Requirements
@@ -30,6 +30,21 @@ Since the extension expects the same project pattern as the MutRoSe, your worksp
 - knowledge
 - output
 - configuration
+
+### Optional: @istar-ts editor
+
+By default the `.gm` custom editor uses the legacy gm-editor webview. To try the new
+[`@istar-ts`](https://github.com/vieirin/istar-ts) React editor (LSP diagnostics on the canvas,
+MutRoSe GoalType coloring, G#/AT# naming), set in your workspace settings:
+
+```json
+{
+  "mutrose.useIstarTs": true
+}
+```
+
+Re-open any `.gm` tab after changing the setting. The legacy editor remains the default so
+existing workflows are unchanged.
 
 ### Directories
 

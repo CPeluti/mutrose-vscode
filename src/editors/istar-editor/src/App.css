@@ -1,0 +1,180 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+}
+
+.app {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.mutrose-goal,
+.mutrose-task {
+  position: relative;
+}
+
+.istar-inspector {
+  width: 260px;
+  border-left: 1px solid var(--istar-panel-border, #d4d4d8);
+  overflow: auto;
+}
+
+/*
+ * mutrose.istarTsReactFlowStyle: the legacy gm-editor look, in VS Code's theme colours.
+ * Nodes keep dark outlines and text on their own fills; links follow the editor foreground.
+ */
+.mutrose-rf .istar-canvas {
+  --istar-font-family: var(--vscode-font-family, system-ui, sans-serif);
+  --istar-canvas-bg: var(--vscode-editor-background, #1e1e1e);
+  --istar-text: var(--vscode-editor-foreground, #d4d4d4);
+  --istar-link-stroke: var(--vscode-editor-foreground, #d4d4d4);
+  --istar-link-width: 2px;
+  --istar-panel-bg: var(--vscode-editor-background, #1e1e1e);
+  --istar-panel-border: var(--vscode-widget-border, #333);
+  --istar-node-text: #000;
+  --istar-node-stroke: #000;
+}
+.mutrose-rf .react-flow {
+  --xy-background-color: var(--vscode-editor-background, #1e1e1e);
+  --xy-background-pattern-dots-color-default: var(--vscode-editorLineNumber-foreground, #6e7681);
+}
+
+.rf-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 20px;
+}
+.rf-node .istar-shape {
+  position: absolute;
+  inset: 0;
+}
+.mutrose-rf .rf-label {
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.rf-mission {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #1a192b;
+  border-radius: 3px;
+}
+.mutrose-rf .istar-actor.is-selected .rf-mission {
+  border-color: var(--istar-selection);
+  box-shadow: 0 0 0 1px var(--istar-selection);
+}
+
+.rf-sidebar {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 280px;
+  min-width: 280px;
+  padding: 16px;
+  overflow-y: auto;
+  color: var(--vscode-editor-foreground, #d4d4d4);
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-left: 1px solid var(--vscode-widget-border, #333);
+}
+.rf-tool {
+  height: 40px;
+  font: inherit;
+  font-size: 14px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #1a192b;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.rf-tool.is-active {
+  background: #86efac;
+}
+.rf-tool:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.rf-diagnostics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vscode-widget-border, #3f3f46);
+  font-size: 12px;
+}
+.rf-diagnostics header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.rf-diagnostics-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+.rf-diagnostics-count {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--vscode-badge-background, #1f2937);
+  color: var(--vscode-badge-foreground, #e5e7eb);
+}
+.rf-valid {
+  color: #4ade80;
+}
+.rf-diagnostics ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 18rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.rf-diagnostics li {
+  padding: 8px;
+  border: 1px solid;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.rf-diagnostics li.is-error {
+  border-color: #ef4444;
+  background: rgba(69, 10, 10, 0.4);
+  color: #fecaca;
+}
+.rf-diagnostics li.is-warning {
+  border-color: #eab308;
+  background: rgba(66, 32, 6, 0.4);
+  color: #fef08a;
+}
+.rf-diagnostic-head {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.rf-line {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.7;
+}

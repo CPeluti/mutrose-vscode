@@ -1,6 +1,17 @@
 // src/MeuEditorProvider.ts
 import * as vscode from "vscode";
 
+function useIstarTsEditor(): boolean {
+  return vscode.workspace.getConfiguration("mutrose").get<boolean>("useIstarTs", false);
+}
+
+/** With the istar-ts editor: draw it like the legacy React Flow editor. */
+function useReactFlowStyle(): boolean {
+  return vscode.workspace
+    .getConfiguration("mutrose")
+    .get<boolean>("istarTsReactFlowStyle", false);
+}
+
 export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
     const provider = new CustomEditorProvider(context);
@@ -16,7 +27,7 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     );
   }
 
-  constructor(private readonly context: vscode.ExtensionContext) { }
+  constructor(private readonly context: vscode.ExtensionContext) {}
 
   // Chamado pelo VS Code ao abrir um arquivo associado
   public async resolveCustomTextEditor(
@@ -25,6 +36,7 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     _token: vscode.CancellationToken,
   ): Promise<void> {
     let isUpdatingFromWebview = false;
+    const istar = useIstarTsEditor();
 
     webviewPanel.webview.options = {
       enableScripts: true,
@@ -36,10 +48,17 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
           "dist",
           "webview",
         ),
+        vscode.Uri.joinPath(
+          this.context.extensionUri,
+          "src",
+          "editors",
+          "dist",
+          "istar-webview",
+        ),
       ],
     };
 
-    webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
+    webviewPanel.webview.html = this.getHtml(webviewPanel.webview, istar);
 
     // Utilitário para enviar o conteúdo atual ao React
     const sendDocumentToWebview = () => {
@@ -91,11 +110,12 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     // Quando o VS Code recarregar o documento (ex: arquivo alterado externamente)
     const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(
       (e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          if (isUpdatingFromWebview) return;
-          sendDocumentToWebview();
-          sendDiagnosticsToWebview();
-        }
+        if (e.document.uri.toString() !== document.uri.toString()) return;
+        // Skip echo while a webview edit is being applied (flag stays true until
+        // applyEdit's promise resolves, which is after this event fires).
+        if (isUpdatingFromWebview) return;
+        sendDocumentToWebview();
+        sendDiagnosticsToWebview();
       },
     );
 
@@ -116,37 +136,58 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.onDidReceiveMessage(async (message) => {
       switch (message.command) {
         case "edit":
+          if (typeof message.content !== "string") break;
+          if (message.content === document.getText()) break;
           isUpdatingFromWebview = true;
-          await this.applyEdit(document, message.content);
-          isUpdatingFromWebview = false;
+          try {
+            await this.applyEdit(document, message.content);
+          } finally {
+            isUpdatingFromWebview = false;
+          }
           break;
         case "ready":
           sendDocumentToWebview();
           sendDiagnosticsToWebview();
+          break;
+        case "select":
+          if (istar && message.payload?.target) {
+            vscode.commands.executeCommand(
+              "goalModel.focusElement",
+              message.payload.target,
+              message.payload.parent,
+            );
+          }
           break;
       }
     });
   }
 
   // Aplica edição via WorkspaceEdit — isso ativa undo/redo e dirty state automaticamente
-  private applyEdit(document: vscode.TextDocument, newContent: string) {
+  private applyEdit(
+    document: vscode.TextDocument,
+    newContent: string,
+  ): Thenable<boolean> {
     const edit = new vscode.WorkspaceEdit();
     edit.replace(
       document.uri,
-      new vscode.Range(0, 0, document.lineCount, 0),
+      new vscode.Range(
+        document.positionAt(0),
+        document.positionAt(document.getText().length),
+      ),
       newContent,
     );
-    vscode.workspace.applyEdit(edit);
+    return vscode.workspace.applyEdit(edit);
   }
 
-  private getHtml(webview: vscode.Webview): string {
+  private getHtml(webview: vscode.Webview, istar: boolean): string {
+    const bundle = istar ? "istar-webview" : "webview";
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
         "src",
         "editors",
         "dist",
-        "webview",
+        bundle,
         "main.js",
       ),
     );
@@ -156,7 +197,7 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
         "src",
         "editors",
         "dist",
-        "webview",
+        bundle,
         "main.css",
       ),
     );
@@ -195,7 +236,7 @@ body,
 
   </style>
   </head>
-<body style="padding:0;">
+<body style="padding:0;" data-editor-style="${istar && useReactFlowStyle() ? "reactflow" : "default"}">
   <div id="root"></div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
@@ -215,7 +256,8 @@ export function getNodeLineRanges(
   text: string,
 ): Array<{ id: string; startLine: number; endLine: number }> {
   const lines = text.split(/\r?\n/);
-  const nodeRanges: Array<{ id: string; startLine: number; endLine: number }> = [];
+  const nodeRanges: Array<{ id: string; startLine: number; endLine: number }> =
+    [];
 
   const idRegex = /"id"\s*:\s*"([^"]+)"/g;
   let match: RegExpExecArray | null;
