@@ -121,13 +121,14 @@ function MissionNode(props: ElementComponentProps): ReactElement {
 export const reactFlowStyleExtension: IstarExtension = {
   name: 'mutrose-react-flow-style',
   elements: {
-    'istar.Actor': { boundary: false, component: MissionNode, size: { width: 300, height: 40 } },
+    'istar.Actor': { boundary: true, component: MissionNode, size: { width: 300, height: 300 } },
     'istar.Goal': { component: GoalNode, size: { width: 300, height: 60 } },
     'istar.Task': { component: TaskNode, size: { width: 300, height: 60 } },
   },
 };
 
 const TOOLS: { label: string; tool: Tool }[] = [
+  { label: 'Actor', tool: { type: 'element', kind: 'istar.Actor' } },
   { label: 'Achieve', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Achieve' } } },
   { label: 'Query', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Query' } } },
   { label: 'Perform', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Perform' } } },

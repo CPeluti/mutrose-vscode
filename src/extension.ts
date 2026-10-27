@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import * as crypto from "crypto";
 
 import * as child_process from "child_process";
 import {
@@ -217,8 +218,142 @@ export function activate(context: vscode.ExtensionContext) {
   );
   // create new mission command
   commands.push(
-    vscode.commands.registerCommand("goalModel.createNewMission", () => {
-      console.log("TODO");
+    vscode.commands.registerCommand("goalModel.createNewMission", async () => {
+      if (!rootPath) {
+        vscode.window.showErrorMessage(
+          "No workspace folder found. Please open a workspace to create a mission.",
+        );
+        return;
+      }
+
+      const gmFolderPath = path.join(rootPath, "gm");
+      if (!fs.existsSync(gmFolderPath)) {
+        fs.mkdirSync(gmFolderPath, { recursive: true });
+      }
+
+      // Determines the next mission number (M1, M2, etc.) by scanning existing .gm files
+      let nextMissionNum = 1;
+      try {
+        const existingFiles = fs
+          .readdirSync(gmFolderPath)
+          .filter((f) => f.endsWith(".gm"));
+        for (const file of existingFiles) {
+          try {
+            const raw = fs.readFileSync(path.join(gmFolderPath, file), "utf-8");
+            const parsed = JSON.parse(raw);
+            for (const actor of parsed.actors || []) {
+              const match = (actor.text || "").match(/^M(\d+)/i);
+              if (match) {
+                nextMissionNum = Math.max(
+                  nextMissionNum,
+                  parseInt(match[1], 10) + 1,
+                );
+              }
+            }
+          } catch {
+            // Ignore malformed files
+          }
+        }
+      } catch (err) {
+        console.error("Error reading gm folder:", err);
+      }
+
+      const missionInput = await vscode.window.showInputBox({
+        prompt: "Enter mission name",
+        placeHolder: `e.g. Lab Samples Logistics (will be created as M${nextMissionNum}: Lab Samples Logistics)`,
+        validateInput: (value) => {
+          if (!value || value.trim().length === 0) {
+            return "Mission name cannot be empty.";
+          }
+          return null;
+        },
+      });
+
+      if (!missionInput) {
+        return;
+      }
+
+      const rawName = missionInput.trim();
+      const hasPrefix = /^M\d+:\s*/i.test(rawName);
+      const missionTag = hasPrefix ? rawName : `M${nextMissionNum}: ${rawName}`;
+      const cleanName = hasPrefix ? rawName.replace(/^M\d+:\s*/i, "") : rawName;
+
+      let fileBaseName = cleanName
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .split(/\s+/)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join("");
+
+      if (!fileBaseName) {
+        fileBaseName = `Mission${nextMissionNum}`;
+      }
+
+      let fileName = `${fileBaseName}.gm`;
+      let targetPath = path.join(gmFolderPath, fileName);
+
+      let counter = 1;
+      while (fs.existsSync(targetPath)) {
+        fileName = `${fileBaseName}_${counter}.gm`;
+        targetPath = path.join(gmFolderPath, fileName);
+        counter++;
+      }
+
+      const actorId = crypto.randomUUID();
+      const newGmContent = {
+        actors: [
+          {
+            id: actorId,
+            text: missionTag,
+            type: "istar.Actor",
+            x: 300,
+            y: 80,
+            customProperties: {
+              Description: "",
+            },
+            nodes: [],
+          },
+        ],
+        orphans: [],
+        dependencies: [],
+        links: [],
+        display: {},
+        tool: "custom",
+        istar: "2.0",
+        saveDate: new Date().toUTCString(),
+        diagram: {
+          width: 2000,
+          height: 1300,
+          name: cleanName,
+          customProperties: {
+            Description: "",
+          },
+        },
+      };
+
+      try {
+        fs.writeFileSync(
+          targetPath,
+          JSON.stringify(newGmContent, null, 2),
+          "utf-8",
+        );
+        gmProvider.refresh();
+        vscode.window.showInformationMessage(
+          `Mission "${missionTag}" created in gm/${fileName}`,
+        );
+
+        const fileUri = vscode.Uri.file(targetPath);
+        await vscode.commands.executeCommand(
+          "vscode.openWith",
+          fileUri,
+          "mutrose.customEditor",
+        );
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Failed to create mission file: ${String(err)}`,
+        );
+        console.error(err);
+      }
     }),
   );
 

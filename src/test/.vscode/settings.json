@@ -1,4 +1,5 @@
 {
   "gmParser.hddlPath": "hddl/LabSampleLogistics.hddl",
-  "gmParser.configPath": "configuration/configuration.json"
+  "gmParser.configPath": "configuration/configuration.json",
+  "mutrose.istarTsReactFlowStyle": true
 }

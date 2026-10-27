@@ -44,6 +44,8 @@ body,
   --istar-panel-border: var(--vscode-widget-border, #333);
   --istar-node-text: #000;
   --istar-node-stroke: #000;
+  --istar-actor-fill: color-mix(in srgb, var(--vscode-editor-selectionBackground, #264f78) 18%, transparent);
+  --istar-boundary-stroke: var(--vscode-focusBorder, #007fd4);
 }
 .mutrose-rf .react-flow {
   --xy-background-color: var(--vscode-editor-background, #1e1e1e);
@@ -67,21 +69,83 @@ body,
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* Position mission header/symbol inside the boundary container */
+.mutrose-rf .istar-actor .istar-actor-symbol {
+  left: 16px !important;
+  top: 12px !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: calc(100% - 32px);
+  z-index: 2;
+}
+
+.istar-actor.is-frameless {
+  width: auto !important;
+  height: auto !important;
+  min-width: 300px;
+  min-height: 40px;
+}
+.istar-actor.is-frameless .istar-actor-symbol {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .rf-mission {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  padding: 0 10px;
-  background: #fff;
-  border: 1px solid #1a192b;
-  border-radius: 3px;
+  min-width: 220px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 36px;
+  height: auto;
+  padding: 6px 14px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border: 1.5px solid var(--vscode-focusBorder, #007fd4);
+  border-radius: 6px;
+  color: var(--vscode-editor-foreground, inherit);
+  font-weight: 600;
+  word-break: break-word;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: grab;
 }
 .mutrose-rf .istar-actor.is-selected .rf-mission {
   border-color: var(--istar-selection);
-  box-shadow: 0 0 0 1px var(--istar-selection);
+  box-shadow: 0 0 0 2px var(--istar-selection);
+}
+.mutrose-rf .rf-mission .rf-label {
+  color: var(--vscode-editor-foreground, inherit);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.mutrose-rf .rf-mission .istar-label-input {
+  color: var(--vscode-editor-foreground, inherit);
+  background: var(--vscode-input-background, rgba(0, 0, 0, 0.4));
+  border: 1px solid var(--vscode-focusBorder, #007fd4);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+/* Mission boundary container enclosing all inner goals and tasks */
+.mutrose-rf .istar-actor-boundary rect,
+.istar-actor-boundary rect {
+  fill: var(--istar-actor-fill, color-mix(in srgb, var(--vscode-editor-selectionBackground, #264f78) 18%, transparent));
+  stroke: var(--istar-boundary-stroke, var(--vscode-focusBorder, #007fd4));
+  stroke-width: 2px;
+  stroke-dasharray: 8 5;
+  rx: 16px;
+  ry: 16px;
+}
+.mutrose-rf .istar-actor.is-selected .istar-actor-boundary rect {
+  stroke: var(--istar-selection, #007fd4);
+  stroke-width: 2.5px;
+  stroke-dasharray: none;
+  fill: color-mix(in srgb, var(--vscode-editor-selectionBackground, #264f78) 28%, transparent);
 }
 
 .rf-sidebar {

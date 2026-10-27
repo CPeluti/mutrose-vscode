@@ -75,10 +75,21 @@
         },
         {
           "command": "goalModel.createNewMission",
-          "when": "view == goalModel"
+          "when": "view == goalModel",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
+        {
+          "command": "goalModel.createNewMission",
+          "when": "viewItem == goalModel",
+          "group": "navigation"
+        },
+        {
+          "command": "goalModel.createNewMission",
+          "when": "viewItem == mission",
+          "group": "navigation"
+        },
         {
           "command": "goalModel.execMutRose",
           "when": "viewItem == goalModel",
@@ -197,7 +208,8 @@
       },
       {
         "command": "goalModel.createNewMission",
-        "title": "Create Mission"
+        "title": "Create Mission",
+        "icon": "$(add)"
       },
       {
         "command": "goalModel.addProperty",
