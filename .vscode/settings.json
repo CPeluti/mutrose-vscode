@@ -1,7 +1,7 @@
 {
   "editor.insertSpaces": false,
-  "typescript.tsc.autoDetect": "off",
-  "typescript.preferences.quoteStyle": "single",
+  "ts.tsc.autoDetect": "off",
+  "ts.preferences.quoteStyle": "single",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   }

@@ -71,12 +71,17 @@ The extension expects the variables to contain the relative path for both files 
 
 #### Example for the variables
 
-```
+```json
 {
 	"gmParser.hddlPath": "hddl/FoodLogistics.hddl",
-	"gmParser.configPath": "configuration/configurationDelivery.json"
+	"gmParser.configPath": "configuration/configurationDelivery.json",
+	"mutrose.path": "binaries/mutrose"
 }
 ```
+
+- `gmParser.hddlPath`: Relative path to the HDDL file in the workspace.
+- `gmParser.configPath`: Relative path to the configuration file in the workspace.
+- `mutrose.path`: (Optional) Custom path to the MutRoSe binary. Can be an absolute path or relative to the workspace root. If omitted, the bundled binary in `binaries/mutrose` is used.
 
 Besides that, the extension also expects the path inside the configuration file to be relative since MutRoSe is executed from the workspace's root.
 

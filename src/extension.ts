@@ -21,6 +21,7 @@ import {
   promptAndSetPropertyValue,
   runEditNodeLoop,
 } from "./utilities/nodePropertyEditor";
+import { getMutroseBinaryPath } from "./utilities/mutroseBinary";
 import { cwd } from "process";
 import { CustomEditorProvider } from "./customEditor";
 import {
@@ -117,13 +118,25 @@ export function activate(context: vscode.ExtensionContext) {
         const cfg: { hddlPath: string; configPath: string } | undefined =
           vscode.workspace.getConfiguration().get("gmParser");
         const showInfo = vscode.window.showInformationMessage;
+
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+          showInfo("No workspace folder open!");
+          return;
+        }
+
+        if (!cfg?.hddlPath || !cfg?.configPath) {
+          showInfo("Please configure gmParser.hddlPath and gmParser.configPath in settings.json");
+          return;
+        }
+
         const hddlPath = vscode.Uri.joinPath(
-          vscode.workspace.workspaceFolders![0].uri,
-          cfg!.hddlPath,
+          workspaceFolder.uri,
+          cfg.hddlPath,
         ).path;
         const configPath = vscode.Uri.joinPath(
-          vscode.workspace.workspaceFolders![0].uri,
-          cfg!.configPath,
+          workspaceFolder.uri,
+          cfg.configPath,
         ).path;
         if (!fs.existsSync(hddlPath)) {
           showInfo("hddl file doesn't exists!");
@@ -132,9 +145,16 @@ export function activate(context: vscode.ExtensionContext) {
           showInfo("config file doesn't exists");
           return;
         }
+
+        const mutroseRes = getMutroseBinaryPath(context);
+        if (mutroseRes.error) {
+          showInfo(mutroseRes.error);
+          return;
+        }
+
         child_process.exec(
-          `${vscode.Uri.joinPath(context.extensionUri, "binaries", "mutrose").path} ${cfg!.hddlPath} ${element.filePath} ${cfg!.configPath} -p`,
-          { cwd: vscode.workspace.workspaceFolders![0].uri.path },
+          `"${mutroseRes.binaryPath}" ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,
+          { cwd: workspaceFolder.uri.path },
           (error, stdout, stderr) => {
             if (error) {
               showInfo(`Error: ${error}`);
@@ -160,13 +180,25 @@ export function activate(context: vscode.ExtensionContext) {
       const cfg: { hddlPath: string; configPath: string } | undefined =
         vscode.workspace.getConfiguration().get("gmParser");
       const showInfo = vscode.window.showInformationMessage;
+
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        showInfo("No workspace folder open!");
+        return;
+      }
+
+      if (!cfg?.hddlPath || !cfg?.configPath) {
+        showInfo("Please configure gmParser.hddlPath and gmParser.configPath in settings.json");
+        return;
+      }
+
       const hddlPath: string | undefined = vscode.Uri.joinPath(
-        vscode.workspace.workspaceFolders![0].uri,
-        cfg!.hddlPath,
+        workspaceFolder.uri,
+        cfg.hddlPath,
       ).path;
       const configPath: string | undefined = vscode.Uri.joinPath(
-        vscode.workspace.workspaceFolders![0].uri,
-        cfg!.configPath,
+        workspaceFolder.uri,
+        cfg.configPath,
       ).path;
       if (!fs.existsSync(hddlPath)) {
         showInfo("hddl file doesn't exists!");
@@ -175,10 +207,17 @@ export function activate(context: vscode.ExtensionContext) {
         showInfo("config file doesn't exists");
         return;
       }
-      const command = `${vscode.Uri.joinPath(context.extensionUri, "binaries", "mutrose").path} ${cfg?.hddlPath} ${element.filePath} ${cfg?.configPath} -h`;
+
+      const mutroseRes = getMutroseBinaryPath(context);
+      if (mutroseRes.error) {
+        showInfo(mutroseRes.error);
+        return;
+      }
+
+      const command = `"${mutroseRes.binaryPath}" ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
       child_process.exec(
         command,
-        { cwd: vscode.workspace.workspaceFolders![0].uri.path },
+        { cwd: workspaceFolder.uri.path },
         (error, stdout, stderr) => {
           if (error) {
             showInfo(`Error: ${error}`);
@@ -189,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
             mutrose.append(stdout);
             mutrose.show();
             const ihtnPath = vscode.Uri.joinPath(
-              vscode.workspace.workspaceFolders![0].uri,
+              workspaceFolder.uri,
               "ihtn",
             ).path;
             const ihtns = fs.readdirSync(ihtnPath);

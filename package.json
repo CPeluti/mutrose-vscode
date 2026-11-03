@@ -246,7 +246,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "Example configuration",
+      "title": "MutRoSe",
       "properties": {
         "languageServerExample.maxNumberOfProblems": {
           "scope": "resource",
@@ -254,11 +254,29 @@
           "default": 100,
           "description": "Controls the maximum number of problems produced by the server."
         },
+        "mutrose.path": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description": "Path to the MutRoSe executable. Can be absolute or relative to the workspace folder. If not defined, the bundled binary in binaries/mutrose will be used."
+        },
+        "gmParser.mutrosePath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description": "Path to the MutRoSe executable. Can be absolute or relative to the workspace folder. If not defined, the bundled binary in binaries/mutrose will be used."
+        },
         "gmParser.hddlPath": {
-          "scope": "window",
+          "scope": "resource",
           "type": "string",
           "default": "./hddl/hddl.txt",
-          "description": "Controls the maximum number of problems produced by the server."
+          "description": "Relative path to the HDDL file in the workspace."
+        },
+        "gmParser.configPath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "./configuration/configuration.json",
+          "description": "Relative path to the MutRoSe configuration file in the workspace."
         },
         "mutrose.istarTsReactFlowStyle": {
           "scope": "window",
