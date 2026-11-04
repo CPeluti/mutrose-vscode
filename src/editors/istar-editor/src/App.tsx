@@ -1,21 +1,15 @@
+import { createMirrorStore, createRemoteDispatcher } from '@istar-ts/actions';
 import type {
   CustomProperties,
-  ElementDisplay,
   ElementKind,
   IstarElement,
   IstarModel,
 } from '@istar-ts/core';
-import {
-  createEmptyModel,
-  isActorKind,
-  parsePistar,
-  toPistar,
-} from '@istar-ts/core';
+import { isActorKind } from '@istar-ts/core';
 import type { ElementIssue, IstarCanvasHandle, Selection } from '@istar-ts/react';
 import {
   IstarCanvas,
   IstarInspector,
-  useIstarStore,
 } from '@istar-ts/react';
 import '@istar-ts/react/styles.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -23,14 +17,13 @@ import type { ReactElement } from 'react';
 import { mutroseExtension } from './mutroseExtension';
 import type { LspDiagnostic } from './reactFlowStyle';
 import { ReactFlowSidebar, reactFlowStyleExtension } from './reactFlowStyle';
-import vscode from './vscode';
+import vscode, { istarPort } from './vscode';
 import './App.css';
 
 interface ClipboardItem {
   kind: ElementKind;
   name: string;
   customProperties?: CustomProperties;
-  display?: ElementDisplay;
   originalParent?: string;
   originalPosition: { x: number; y: number };
   isCut: boolean;
@@ -101,7 +94,7 @@ function useVsCodeDark(): boolean {
 }
 
 export default function App(): ReactElement {
-  const { store } = useIstarStore(createEmptyModel);
+  const [mirror] = useState(() => createMirrorStore(createRemoteDispatcher(istarPort)));
   const canvasRef = useRef<IstarCanvasHandle>(null);
   const [issues, setIssues] = useState<ElementIssue[]>([]);
   const [diagnostics, setDiagnostics] = useState<LspDiagnostic[]>([]);
@@ -111,28 +104,10 @@ export default function App(): ReactElement {
     vscode.postMessage({ command: 'ready' });
   }, []);
 
-  // Persist every model edit (including moveElement on node drag-stop) back to the .gm document.
-  useEffect(() => {
-    return store.subscribe((event) => {
-      if (event.source === 'load') return;
-      vscode.postMessage({
-        command: 'edit',
-        content: toPistar(event.model, { saveDate: new Date() }),
-      });
-    });
-  }, [store]);
-
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const msg = event.data;
-      if (msg.command === 'load' && typeof msg.content === 'string') {
-        try {
-          const text = msg.content.trim();
-          store.load(text ? parsePistar(text) : createEmptyModel());
-        } catch (err) {
-          console.error('Failed to parse goal model', err);
-        }
-      } else if (msg.command === 'diagnostics' && Array.isArray(msg.diagnostics)) {
+      if (msg.command === 'diagnostics' && Array.isArray(msg.diagnostics)) {
         setDiagnostics(msg.diagnostics as LspDiagnostic[]);
         const next: ElementIssue[] = [];
         for (const d of msg.diagnostics as LspDiagnostic[]) {
@@ -151,7 +126,7 @@ export default function App(): ReactElement {
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [store]);
+  }, []);
 
   const onSelectionChange = useCallback((selection: Selection) => {
     selectedElementRef.current = selection;
@@ -159,7 +134,7 @@ export default function App(): ReactElement {
       vscode.postMessage({ command: 'select', payload: null });
       return;
     }
-    const element = store.getModel().elements.get(selection.id);
+    const element = mirror.getModel().elements.get(selection.id);
     vscode.postMessage({
       command: 'select',
       payload: {
@@ -167,7 +142,7 @@ export default function App(): ReactElement {
         parent: element?.parent ?? null,
       },
     });
-  }, [store]);
+  }, [mirror]);
 
   const clipboardRef = useRef<ClipboardItem | null>(null);
   const pasteCountRef = useRef(0);
@@ -176,14 +151,13 @@ export default function App(): ReactElement {
   const handleCopy = useCallback(() => {
     const sel = selectedElementRef.current;
     if (!sel || sel.type !== 'element') return;
-    const el = store.getModel().elements.get(sel.id);
+    const el = mirror.getModel().elements.get(sel.id);
     if (!el) return;
 
     const item: ClipboardItem = {
       kind: el.kind,
       name: el.name,
       customProperties: el.customProperties ? { ...el.customProperties } : undefined,
-      display: el.display ? { ...el.display } : undefined,
       originalParent: el.parent,
       originalPosition: { x: el.x, y: el.y },
       isCut: false,
@@ -195,19 +169,18 @@ export default function App(): ReactElement {
     } catch {
       // ignore
     }
-  }, [store]);
+  }, [mirror]);
 
   const handleCut = useCallback(() => {
     const sel = selectedElementRef.current;
     if (!sel || sel.type !== 'element') return;
-    const el = store.getModel().elements.get(sel.id);
+    const el = mirror.getModel().elements.get(sel.id);
     if (!el) return;
 
     const item: ClipboardItem = {
       kind: el.kind,
       name: el.name,
       customProperties: el.customProperties ? { ...el.customProperties } : undefined,
-      display: el.display ? { ...el.display } : undefined,
       originalParent: el.parent,
       originalPosition: { x: el.x, y: el.y },
       isCut: true,
@@ -220,10 +193,10 @@ export default function App(): ReactElement {
       // ignore
     }
 
-    store.removeElement(el.id);
+    void mirror.dispatcher.dispatch({ kind: 'deleteElement', elementIds: [el.id] });
     canvasRef.current?.select(null);
     selectedElementRef.current = null;
-  }, [store]);
+  }, [mirror]);
 
   const handlePaste = useCallback(() => {
     let item = clipboardRef.current;
@@ -242,7 +215,7 @@ export default function App(): ReactElement {
 
     pasteCountRef.current += 1;
     const offset = 40 * pasteCountRef.current;
-    const model = store.getModel();
+    const model = mirror.getModel();
 
     let targetParent: string | undefined;
     let x = item.originalPosition.x + offset;
@@ -299,29 +272,25 @@ export default function App(): ReactElement {
       newName = getNextName(model, item.kind, item.name, true);
     }
 
-    let createdId: string | null = null;
-    store.transaction(() => {
-      const created = store.addElement({
-        kind: item.kind,
-        name: newName,
-        x: Math.round(x),
-        y: Math.round(y),
-        parent: targetParent,
-        customProperties: item.customProperties ? { ...item.customProperties } : undefined,
-        display: item.display ? { ...item.display } : undefined,
-      });
-      createdId = created.id;
-    });
-
-    if (createdId) {
-      const idToFocus = createdId;
-      canvasRef.current?.select({ type: 'element', id: idToFocus });
-      setTimeout(() => {
+    void mirror.dispatcher
+      .dispatch({
+        kind: 'createNode',
+        elementTypeId: item.kind,
+        containerId: targetParent,
+        location: { x: Math.round(x), y: Math.round(y) },
+        args: {
+          name: newName,
+          customProperties: item.customProperties ? { ...item.customProperties } : undefined,
+        },
+      })
+      .then((result) => {
+        if (!result.ok) return;
+        const idToFocus = result.createdIds[0];
+        if (!idToFocus) return;
         canvasRef.current?.select({ type: 'element', id: idToFocus });
         void canvasRef.current?.centerOn(idToFocus, { duration: 150 });
-      }, 50);
-    }
-  }, [store]);
+      });
+  }, [mirror]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -334,12 +303,10 @@ export default function App(): ReactElement {
       }
 
       const mod = event.metaKey || event.ctrlKey;
-      console.log("aqui" ,event)
       if (!mod) return;
 
       const key = event.key.toLowerCase();
       if (key === 'c') {
-        console.log("cc")
         handleCopy();
       } else if (key === 'x') {
         event.preventDefault();
@@ -361,7 +328,8 @@ export default function App(): ReactElement {
       <div className="app mutrose-rf">
         <IstarCanvas
           ref={canvasRef}
-          store={store}
+          store={mirror}
+          dispatcher={mirror.dispatcher}
           extensions={stableExtensions}
           issues={issues}
           onSelectionChange={onSelectionChange}
@@ -381,7 +349,8 @@ export default function App(): ReactElement {
     <div className="app">
       <IstarCanvas
         ref={canvasRef}
-        store={store}
+        store={mirror}
+        dispatcher={mirror.dispatcher}
         extensions={stableExtensions}
         issues={issues}
         onSelectionChange={onSelectionChange}

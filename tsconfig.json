@@ -10,7 +10,8 @@
     "sourceMap": true,
     "composite": true,
     "types": [
-      "node"
+      "node",
+      "mocha"
     ],
     "skipLibCheck": true
   },
