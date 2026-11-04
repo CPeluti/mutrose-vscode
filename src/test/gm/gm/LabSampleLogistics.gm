@@ -38,8 +38,8 @@
           "id": "c348a0e5-756e-405b-b192-1943e9112a08",
           "text": "G5: Fetch Delivery's Nurse",
           "type": "istar.Goal",
-          "x": -691.382318290529,
-          "y": 772.1713132630796,
+          "x": -1264.1594959674546,
+          "y": 465.30381294872893,
           "customProperties": {
             "Description": "",
             "GoalType": "Query",
@@ -368,7 +368,7 @@
   },
   "tool": "custom",
   "istar": "2.0",
-  "saveDate": "Tue, 29 Sep 2026 01:44:11 GMT",
+  "saveDate": "Wed, 04 Nov 2026 04:23:18 GMT",
   "diagram": {
     "width": 2000,
     "height": 1300,
