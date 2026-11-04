@@ -330,6 +330,7 @@ export default function App(): ReactElement {
           ref={canvasRef}
           store={mirror}
           dispatcher={mirror.dispatcher}
+          selectActorOnBodyClick
           extensions={stableExtensions}
           issues={issues}
           onSelectionChange={onSelectionChange}
@@ -351,6 +352,7 @@ export default function App(): ReactElement {
         ref={canvasRef}
         store={mirror}
         dispatcher={mirror.dispatcher}
+        selectActorOnBodyClick
         extensions={stableExtensions}
         issues={issues}
         onSelectionChange={onSelectionChange}
