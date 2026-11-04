@@ -66,6 +66,12 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "goalModel",
+        "contents": "No goal models found in the workspace.\n[Create New Mission](command:goalModel.createNewMission)"
+      }
+    ],
     "menus": {
       "view/title": [
         {

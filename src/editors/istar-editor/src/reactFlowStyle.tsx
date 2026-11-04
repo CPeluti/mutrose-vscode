@@ -132,6 +132,7 @@ const TOOLS: { label: string; tool: Tool }[] = [
   { label: 'Achieve', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Achieve' } } },
   { label: 'Query', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Query' } } },
   { label: 'Perform', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Perform' } } },
+  { label: 'Task', tool: { type: 'element', kind: 'istar.Task' } },
   { label: 'Or Decomposition', tool: { type: 'link', kind: 'istar.OrRefinementLink' } },
   { label: 'And Decomposition', tool: { type: 'link', kind: 'istar.AndRefinementLink' } },
 ];

@@ -40,8 +40,11 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
   > = this._onDidChangeTreeData.event;
 
   constructor(private workspaceRoot: string | undefined) {
+    if (!workspaceRoot) {
+      return;
+    }
     const gmFolderPath = path.join(this.workspaceRoot, "gm");
-    if (this.pathExists(gmFolderPath) && workspaceRoot) {
+    if (this.pathExists(gmFolderPath)) {
       let gmList = fs.readdirSync(gmFolderPath);
       gmList = gmList.filter((gm) => gm.includes(".gm"));
       gmList.forEach((gm) => {

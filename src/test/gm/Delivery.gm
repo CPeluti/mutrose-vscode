@@ -4,7 +4,7 @@
       "id": "ae7cf0f8-6318-4863-8320-e2309bf07538",
       "text": "M3: Delivery",
       "type": "istar.Actor",
-      "x": 300,
+      "x": 228.16197183098586,
       "y": 80,
       "customProperties": {
         "Description": ""
@@ -14,8 +14,8 @@
           "id": "b4ec2cc9-f6a2-49f1-a31e-535935477d8a",
           "text": "G1: New Goal",
           "type": "istar.Goal",
-          "x": 320,
-          "y": 185,
+          "x": 228.16197183098586,
+          "y": 214.2816901408451,
           "customProperties": {
             "Description": "",
             "GoalType": "Achieve"
@@ -48,7 +48,7 @@
   "display": {},
   "tool": "custom",
   "istar": "2.0",
-  "saveDate": "Tue, 27 Oct 2026 00:18:39 GMT",
+  "saveDate": "Wed, 04 Nov 2026 15:17:09 GMT",
   "diagram": {
     "width": 2000,
     "height": 1300,
