@@ -1,0 +1,9 @@
+{
+  // The extension host alone: the LSP project reference in tsconfig.json needs a Java runtime
+  // (antlr) to build, so `tsc -b` stops there on machines without one. `npm run compile:host`
+  // uses this file to emit out/ for the extension (and its unit test) regardless.
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "composite": false },
+  "include": ["src"],
+  "exclude": ["src/lsp", "src/editors", "node_modules", ".vscode-test"]
+}
