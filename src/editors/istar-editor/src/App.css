@@ -70,7 +70,11 @@ body,
   line-height: 1.5;
 }
 
-/* Position mission header/symbol inside the boundary container */
+/*
+ * Position mission header/symbol inside the boundary container. (`.is-frameless`, the alternate
+ * layout for `boundary: false` actors, doesn't apply here: `reactFlowStyleExtension` always sets
+ * `boundary: true` for `istar.Actor`, so istar-ts never adds that class to ours.)
+ */
 .mutrose-rf .istar-actor .istar-actor-symbol {
   left: 16px !important;
   top: 12px !important;
@@ -78,19 +82,6 @@ body,
   height: auto !important;
   max-width: calc(100% - 32px);
   z-index: 2;
-}
-
-.istar-actor.is-frameless {
-  width: auto !important;
-  height: auto !important;
-  min-width: 300px;
-  min-height: 40px;
-}
-.istar-actor.is-frameless .istar-actor-symbol {
-  position: relative !important;
-  inset: auto !important;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 .rf-mission {
