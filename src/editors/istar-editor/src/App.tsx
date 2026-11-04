@@ -10,6 +10,8 @@ import type { ElementIssue, IstarCanvasHandle, Selection } from '@istar-ts/react
 import {
   IstarCanvas,
   IstarInspector,
+  IstarPalette,
+  IstarProvider,
 } from '@istar-ts/react';
 import '@istar-ts/react/styles.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -321,6 +323,10 @@ export default function App(): ReactElement {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleCopy, handleCut, handlePaste]);
 
+  const handleDecompose = useCallback(() => {
+    vscode.postMessage({ command: 'decompose' });
+  }, []);
+
   const stableExtensions = useMemo(() => extensions, []);
 
   if (reactFlowStyle) {
@@ -335,7 +341,7 @@ export default function App(): ReactElement {
           issues={issues}
           onSelectionChange={onSelectionChange}
           palette={false}
-          aside={<ReactFlowSidebar diagnostics={diagnostics} />}
+          aside={<ReactFlowSidebar diagnostics={diagnostics} onDecompose={handleDecompose} />}
           colorMode={dark ? 'dark' : 'light'}
           linkShape="curved"
           background
@@ -348,18 +354,37 @@ export default function App(): ReactElement {
 
   return (
     <div className="app">
-      <IstarCanvas
-        ref={canvasRef}
+      <IstarProvider
         store={mirror}
         dispatcher={mirror.dispatcher}
-        selectActorOnBodyClick
         extensions={stableExtensions}
         issues={issues}
         onSelectionChange={onSelectionChange}
-        palette="left"
-        aside={<IstarInspector />}
-        fitView
-      />
+      >
+        <div className="istar-palette-container">
+          <IstarPalette orientation="vertical" />
+          <div className="istar-palette-section istar-palette-actions">
+            <button
+              type="button"
+              className="istar-palette-button istar-decompose-btn"
+              onClick={handleDecompose}
+              title="Decompor o goal model atual com o MutRoSe"
+            >
+              <span aria-hidden className="istar-palette-glyph">
+                ⚡
+              </span>
+              <span className="istar-palette-label">Decompose</span>
+            </button>
+          </div>
+        </div>
+        <IstarCanvas
+          ref={canvasRef}
+          palette={false}
+          selectActorOnBodyClick
+          aside={<IstarInspector />}
+          fitView
+        />
+      </IstarProvider>
     </div>
   );
 }

@@ -168,6 +168,40 @@ body,
   opacity: 0.5;
   cursor: default;
 }
+.rf-decompose-btn {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #fff);
+  border: 1px solid var(--vscode-button-border, transparent);
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+.rf-decompose-btn:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+.istar-palette-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 5;
+  border-right: 1px solid var(--istar-panel-border, #d9d9d9);
+  background: var(--istar-palette-bg, var(--istar-panel-bg, #fafafa));
+}
+.istar-palette-container .istar-palette.is-vertical {
+  border-right: none;
+  flex: 1 1 auto;
+}
+.istar-palette-actions {
+  padding: 6px 4px 8px;
+  border-top: 1px solid var(--istar-palette-divider, #dcdcdc);
+}
+.istar-decompose-btn {
+  width: 100%;
+  cursor: pointer;
+}
+.istar-decompose-btn:hover:not(:disabled) {
+  background: var(--istar-button-hover-bg, rgba(0, 0, 0, 0.06));
+}
 .rf-diagnostics {
   display: flex;
   flex-direction: column;

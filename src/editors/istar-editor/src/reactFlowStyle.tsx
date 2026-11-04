@@ -139,8 +139,13 @@ const TOOLS: { label: string; tool: Tool }[] = [
 
 const sameTool = (a: Tool | null, b: Tool): boolean => JSON.stringify(a) === JSON.stringify(b);
 
-/** gm-editor's side bar: creation tools, then the LSP diagnostics. */
-export function ReactFlowSidebar({ diagnostics }: { diagnostics: readonly LspDiagnostic[] }): ReactElement {
+interface ReactFlowSidebarProps {
+  diagnostics: readonly LspDiagnostic[];
+  onDecompose?: () => void;
+}
+
+/** gm-editor's side bar: creation tools, action buttons, then the LSP diagnostics. */
+export function ReactFlowSidebar({ diagnostics, onDecompose }: ReactFlowSidebarProps): ReactElement {
   const { tool, setTool, readOnly } = useIstarEditor();
   const errors = diagnostics.filter((d) => d.severity === 'error').length;
   const warnings = diagnostics.filter((d) => d.severity === 'warning').length;
@@ -161,6 +166,16 @@ export function ReactFlowSidebar({ diagnostics }: { diagnostics: readonly LspDia
           </button>
         );
       })}
+      {onDecompose && (
+        <button
+          type="button"
+          className="rf-tool rf-decompose-btn"
+          onClick={onDecompose}
+          title="Decompor o goal model atual com o MutRoSe"
+        >
+          Decompose with MutRoSe
+        </button>
+      )}
       <section className="rf-diagnostics">
         <header>
           <span className="rf-diagnostics-title">Diagnósticos LSP</span>

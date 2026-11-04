@@ -146,6 +146,11 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
             );
           }
           break;
+        case "decompose":
+          vscode.commands.executeCommand("goalModel.execMutRose", {
+            filePath: document.uri.fsPath,
+          });
+          break;
       }
     });
   }
