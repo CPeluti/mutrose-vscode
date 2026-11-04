@@ -7,7 +7,7 @@ import { IstarServer } from "./istarServer";
 function useReactFlowStyle(): boolean {
   return vscode.workspace
     .getConfiguration("mutrose")
-    .get<boolean>("istarTsReactFlowStyle", true);
+    .get<boolean>("istarTsReactFlowStyle", false);
 }
 
 export class CustomEditorProvider implements vscode.CustomTextEditorProvider {

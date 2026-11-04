@@ -6,14 +6,12 @@
 import type { Tool } from '@istar-ts/react';
 import type { ElementComponentProps, IstarExtension } from '@istar-ts/react';
 import {
-  actorBoundary,
   EditableLabel,
   ElementIssuesBadge,
   useIstarEditor,
   useTypedProperties,
 } from '@istar-ts/react';
-import type { CSSProperties, ReactElement, ReactNode } from 'react';
-import { useMemo } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { mutroseGoalProperties } from './mutroseExtension';
 
 export interface LspDiagnostic {
@@ -106,34 +104,16 @@ function TaskNode(props: ElementComponentProps): ReactElement {
 /** The mission (actor) as React Flow's default node: a plain labelled box. */
 function MissionNode(props: ElementComponentProps): ReactElement {
   const { element, editing, setEditing, actions } = props;
-  const { model, registry } = useIstarEditor();
-  // `boundary: false` draws the actor as this small header box rather than a container around
-  // its elements, so the bound itself is drawn here as a background, to show the actor's limits.
-  const bounds = useMemo(
-    () => actorBoundary(model, registry, element, []),
-    [model, registry, element],
-  );
-  const areaStyle: CSSProperties = {
-    position: 'absolute',
-    left: bounds.x - element.x,
-    top: bounds.y - element.y,
-    width: bounds.width,
-    height: bounds.height,
-    pointerEvents: 'none',
-  };
   return (
-    <>
-      <div className="rf-mission-area" style={areaStyle} />
-      <div className="rf-mission">
-        <EditableLabel
-          className="rf-label"
-          value={element.name}
-          editing={editing}
-          onCommit={actions.rename}
-          onDone={() => setEditing(false)}
-        />
-      </div>
-    </>
+    <div className="rf-mission">
+      <EditableLabel
+        className="rf-label"
+        value={element.name}
+        editing={editing}
+        onCommit={actions.rename}
+        onDone={() => setEditing(false)}
+      />
+    </div>
   );
 }
 
@@ -141,13 +121,14 @@ function MissionNode(props: ElementComponentProps): ReactElement {
 export const reactFlowStyleExtension: IstarExtension = {
   name: 'mutrose-react-flow-style',
   elements: {
-    'istar.Actor': { boundary: false, component: MissionNode, size: { width: 300, height: 40 } },
+    'istar.Actor': { boundary: true, component: MissionNode, size: { width: 300, height: 300 } },
     'istar.Goal': { component: GoalNode, size: { width: 300, height: 60 } },
     'istar.Task': { component: TaskNode, size: { width: 300, height: 60 } },
   },
 };
 
 const TOOLS: { label: string; tool: Tool }[] = [
+  { label: 'Actor', tool: { type: 'element', kind: 'istar.Actor' } },
   { label: 'Achieve', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Achieve' } } },
   { label: 'Query', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Query' } } },
   { label: 'Perform', tool: { type: 'element', kind: 'istar.Goal', properties: { GoalType: 'Perform' } } },

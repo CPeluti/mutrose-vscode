@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import * as crypto from "crypto";
 
 import * as child_process from "child_process";
 import {
@@ -20,6 +21,7 @@ import {
   promptAndSetPropertyValue,
   runEditNodeLoop,
 } from "./utilities/nodePropertyEditor";
+import { getMutroseBinaryPath } from "./utilities/mutroseBinary";
 import { cwd } from "process";
 import { CustomEditorProvider } from "./customEditor";
 import {
@@ -116,13 +118,25 @@ export function activate(context: vscode.ExtensionContext) {
         const cfg: { hddlPath: string; configPath: string } | undefined =
           vscode.workspace.getConfiguration().get("gmParser");
         const showInfo = vscode.window.showInformationMessage;
+
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+          showInfo("No workspace folder open!");
+          return;
+        }
+
+        if (!cfg?.hddlPath || !cfg?.configPath) {
+          showInfo("Please configure gmParser.hddlPath and gmParser.configPath in settings.json");
+          return;
+        }
+
         const hddlPath = vscode.Uri.joinPath(
-          vscode.workspace.workspaceFolders![0].uri,
-          cfg!.hddlPath,
+          workspaceFolder.uri,
+          cfg.hddlPath,
         ).path;
         const configPath = vscode.Uri.joinPath(
-          vscode.workspace.workspaceFolders![0].uri,
-          cfg!.configPath,
+          workspaceFolder.uri,
+          cfg.configPath,
         ).path;
         if (!fs.existsSync(hddlPath)) {
           showInfo("hddl file doesn't exists!");
@@ -131,9 +145,16 @@ export function activate(context: vscode.ExtensionContext) {
           showInfo("config file doesn't exists");
           return;
         }
+
+        const mutroseRes = getMutroseBinaryPath(context);
+        if (mutroseRes.error) {
+          showInfo(mutroseRes.error);
+          return;
+        }
+
         child_process.exec(
-          `${vscode.Uri.joinPath(context.extensionUri, "binaries", "mutrose").path} ${cfg!.hddlPath} ${element.filePath} ${cfg!.configPath} -p`,
-          { cwd: vscode.workspace.workspaceFolders![0].uri.path },
+          `"${mutroseRes.binaryPath}" ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -p`,
+          { cwd: workspaceFolder.uri.path },
           (error, stdout, stderr) => {
             if (error) {
               showInfo(`Error: ${error}`);
@@ -159,13 +180,25 @@ export function activate(context: vscode.ExtensionContext) {
       const cfg: { hddlPath: string; configPath: string } | undefined =
         vscode.workspace.getConfiguration().get("gmParser");
       const showInfo = vscode.window.showInformationMessage;
+
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        showInfo("No workspace folder open!");
+        return;
+      }
+
+      if (!cfg?.hddlPath || !cfg?.configPath) {
+        showInfo("Please configure gmParser.hddlPath and gmParser.configPath in settings.json");
+        return;
+      }
+
       const hddlPath: string | undefined = vscode.Uri.joinPath(
-        vscode.workspace.workspaceFolders![0].uri,
-        cfg!.hddlPath,
+        workspaceFolder.uri,
+        cfg.hddlPath,
       ).path;
       const configPath: string | undefined = vscode.Uri.joinPath(
-        vscode.workspace.workspaceFolders![0].uri,
-        cfg!.configPath,
+        workspaceFolder.uri,
+        cfg.configPath,
       ).path;
       if (!fs.existsSync(hddlPath)) {
         showInfo("hddl file doesn't exists!");
@@ -174,10 +207,17 @@ export function activate(context: vscode.ExtensionContext) {
         showInfo("config file doesn't exists");
         return;
       }
-      const command = `${vscode.Uri.joinPath(context.extensionUri, "binaries", "mutrose").path} ${cfg?.hddlPath} ${element.filePath} ${cfg?.configPath} -h`;
+
+      const mutroseRes = getMutroseBinaryPath(context);
+      if (mutroseRes.error) {
+        showInfo(mutroseRes.error);
+        return;
+      }
+
+      const command = `"${mutroseRes.binaryPath}" ${cfg.hddlPath} ${element.filePath} ${cfg.configPath} -h`;
       child_process.exec(
         command,
-        { cwd: vscode.workspace.workspaceFolders![0].uri.path },
+        { cwd: workspaceFolder.uri.path },
         (error, stdout, stderr) => {
           if (error) {
             showInfo(`Error: ${error}`);
@@ -188,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
             mutrose.append(stdout);
             mutrose.show();
             const ihtnPath = vscode.Uri.joinPath(
-              vscode.workspace.workspaceFolders![0].uri,
+              workspaceFolder.uri,
               "ihtn",
             ).path;
             const ihtns = fs.readdirSync(ihtnPath);
@@ -217,8 +257,142 @@ export function activate(context: vscode.ExtensionContext) {
   );
   // create new mission command
   commands.push(
-    vscode.commands.registerCommand("goalModel.createNewMission", () => {
-      console.log("TODO");
+    vscode.commands.registerCommand("goalModel.createNewMission", async () => {
+      if (!rootPath) {
+        vscode.window.showErrorMessage(
+          "No workspace folder found. Please open a workspace to create a mission.",
+        );
+        return;
+      }
+
+      const gmFolderPath = path.join(rootPath, "gm");
+      if (!fs.existsSync(gmFolderPath)) {
+        fs.mkdirSync(gmFolderPath, { recursive: true });
+      }
+
+      // Determines the next mission number (M1, M2, etc.) by scanning existing .gm files
+      let nextMissionNum = 1;
+      try {
+        const existingFiles = fs
+          .readdirSync(gmFolderPath)
+          .filter((f) => f.endsWith(".gm"));
+        for (const file of existingFiles) {
+          try {
+            const raw = fs.readFileSync(path.join(gmFolderPath, file), "utf-8");
+            const parsed = JSON.parse(raw);
+            for (const actor of parsed.actors || []) {
+              const match = (actor.text || "").match(/^M(\d+)/i);
+              if (match) {
+                nextMissionNum = Math.max(
+                  nextMissionNum,
+                  parseInt(match[1], 10) + 1,
+                );
+              }
+            }
+          } catch {
+            // Ignore malformed files
+          }
+        }
+      } catch (err) {
+        console.error("Error reading gm folder:", err);
+      }
+
+      const missionInput = await vscode.window.showInputBox({
+        prompt: "Enter mission name",
+        placeHolder: `e.g. Lab Samples Logistics (will be created as M${nextMissionNum}: Lab Samples Logistics)`,
+        validateInput: (value) => {
+          if (!value || value.trim().length === 0) {
+            return "Mission name cannot be empty.";
+          }
+          return null;
+        },
+      });
+
+      if (!missionInput) {
+        return;
+      }
+
+      const rawName = missionInput.trim();
+      const hasPrefix = /^M\d+:\s*/i.test(rawName);
+      const missionTag = hasPrefix ? rawName : `M${nextMissionNum}: ${rawName}`;
+      const cleanName = hasPrefix ? rawName.replace(/^M\d+:\s*/i, "") : rawName;
+
+      let fileBaseName = cleanName
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .split(/\s+/)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join("");
+
+      if (!fileBaseName) {
+        fileBaseName = `Mission${nextMissionNum}`;
+      }
+
+      let fileName = `${fileBaseName}.gm`;
+      let targetPath = path.join(gmFolderPath, fileName);
+
+      let counter = 1;
+      while (fs.existsSync(targetPath)) {
+        fileName = `${fileBaseName}_${counter}.gm`;
+        targetPath = path.join(gmFolderPath, fileName);
+        counter++;
+      }
+
+      const actorId = crypto.randomUUID();
+      const newGmContent = {
+        actors: [
+          {
+            id: actorId,
+            text: missionTag,
+            type: "istar.Actor",
+            x: 300,
+            y: 80,
+            customProperties: {
+              Description: "",
+            },
+            nodes: [],
+          },
+        ],
+        orphans: [],
+        dependencies: [],
+        links: [],
+        display: {},
+        tool: "custom",
+        istar: "2.0",
+        saveDate: new Date().toUTCString(),
+        diagram: {
+          width: 2000,
+          height: 1300,
+          name: cleanName,
+          customProperties: {
+            Description: "",
+          },
+        },
+      };
+
+      try {
+        fs.writeFileSync(
+          targetPath,
+          JSON.stringify(newGmContent, null, 2),
+          "utf-8",
+        );
+        gmProvider.refresh();
+        vscode.window.showInformationMessage(
+          `Mission "${missionTag}" created in gm/${fileName}`,
+        );
+
+        const fileUri = vscode.Uri.file(targetPath);
+        await vscode.commands.executeCommand(
+          "vscode.openWith",
+          fileUri,
+          "mutrose.customEditor",
+        );
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Failed to create mission file: ${String(err)}`,
+        );
+        console.error(err);
+      }
     }),
   );
 

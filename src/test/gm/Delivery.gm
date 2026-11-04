@@ -1,0 +1,60 @@
+{
+  "actors": [
+    {
+      "id": "ae7cf0f8-6318-4863-8320-e2309bf07538",
+      "text": "M3: Delivery",
+      "type": "istar.Actor",
+      "x": 300,
+      "y": 80,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": [
+        {
+          "id": "b4ec2cc9-f6a2-49f1-a31e-535935477d8a",
+          "text": "G1: New Goal",
+          "type": "istar.Goal",
+          "x": 320,
+          "y": 185,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Achieve"
+          }
+        },
+        {
+          "id": "38ce670e-30a2-460e-a4c6-c5ce2fd6f940",
+          "text": "G2: New Goal",
+          "type": "istar.Goal",
+          "x": 334,
+          "y": 577,
+          "customProperties": {
+            "Description": "",
+            "GoalType": "Query"
+          }
+        }
+      ]
+    }
+  ],
+  "orphans": [],
+  "dependencies": [],
+  "links": [
+    {
+      "id": "806c46ef-e233-47c8-afb3-6ad015abb895",
+      "type": "istar.AndRefinementLink",
+      "source": "b4ec2cc9-f6a2-49f1-a31e-535935477d8a",
+      "target": "38ce670e-30a2-460e-a4c6-c5ce2fd6f940"
+    }
+  ],
+  "display": {},
+  "tool": "custom",
+  "istar": "2.0",
+  "saveDate": "Tue, 27 Oct 2026 00:18:39 GMT",
+  "diagram": {
+    "width": 2000,
+    "height": 1300,
+    "name": "Delivery",
+    "customProperties": {
+      "Description": ""
+    }
+  }
+}

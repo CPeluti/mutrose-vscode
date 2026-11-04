@@ -66,6 +66,9 @@ function TaskNode(props: ElementComponentProps): ReactElement {
 export const mutroseExtension: IstarExtension = {
   name: 'mutrose',
   elements: {
+    'istar.Actor': {
+      defaultName: ({ model }) => `M${nextNumber(model, /^M(\d+)/)}: New Actor`,
+    },
     'istar.Goal': {
       component: GoalNode,
       properties: mutroseGoalProperties,
