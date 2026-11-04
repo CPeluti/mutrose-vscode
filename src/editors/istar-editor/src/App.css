@@ -67,6 +67,12 @@ body,
   font-size: 12px;
   line-height: 1.5;
 }
+.rf-mission-area {
+  box-sizing: border-box;
+  border: 1px dashed var(--vscode-editorLineNumber-foreground, #6e7681);
+  border-radius: 6px;
+  background: var(--vscode-editor-selectionBackground, rgba(127, 127, 127, 0.08));
+}
 .rf-mission {
   display: flex;
   align-items: center;
