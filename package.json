@@ -279,7 +279,8 @@
     "compile": "npm run compile:webview && npm run compile:server && npm run compile:client",
     "watch": "npm run compile && tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-    "test": "sh ./scripts/e2e.sh"
+    "test": "sh ./scripts/e2e.sh",
+    "test:unit": "tsc -b && mocha \"out/**/*.test.js\""
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -296,6 +297,8 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@istar-ts/actions": "0.16.0",
+    "@istar-ts/core": "0.16.0",
     "vscode-languageclient": "^9.0.1"
   }
 }

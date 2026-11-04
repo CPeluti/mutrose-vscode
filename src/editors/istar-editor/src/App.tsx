@@ -1,9 +1,8 @@
-import { createEmptyModel, parsePistar, toPistar } from '@istar-ts/core';
+import { createMirrorStore, createRemoteDispatcher } from '@istar-ts/actions';
 import type { ElementIssue, IstarCanvasHandle, Selection } from '@istar-ts/react';
 import {
   IstarCanvas,
   IstarInspector,
-  useIstarStore,
 } from '@istar-ts/react';
 import '@istar-ts/react/styles.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -11,7 +10,7 @@ import type { ReactElement } from 'react';
 import { mutroseExtension } from './mutroseExtension';
 import type { LspDiagnostic } from './reactFlowStyle';
 import { ReactFlowSidebar, reactFlowStyleExtension } from './reactFlowStyle';
-import vscode from './vscode';
+import vscode, { istarPort } from './vscode';
 import './App.css';
 
 /** Set by the extension from `mutrose.istarTsReactFlowStyle` (see customEditor.ts). */
@@ -34,7 +33,7 @@ function useVsCodeDark(): boolean {
 }
 
 export default function App(): ReactElement {
-  const { store } = useIstarStore(createEmptyModel);
+  const [mirror] = useState(() => createMirrorStore(createRemoteDispatcher(istarPort)));
   const canvasRef = useRef<IstarCanvasHandle>(null);
   const [issues, setIssues] = useState<ElementIssue[]>([]);
   const [diagnostics, setDiagnostics] = useState<LspDiagnostic[]>([]);
@@ -44,28 +43,10 @@ export default function App(): ReactElement {
     vscode.postMessage({ command: 'ready' });
   }, []);
 
-  // Persist every model edit (including moveElement on node drag-stop) back to the .gm document.
-  useEffect(() => {
-    return store.subscribe((event) => {
-      if (event.source === 'load') return;
-      vscode.postMessage({
-        command: 'edit',
-        content: toPistar(event.model, { saveDate: new Date() }),
-      });
-    });
-  }, [store]);
-
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const msg = event.data;
-      if (msg.command === 'load' && typeof msg.content === 'string') {
-        try {
-          const text = msg.content.trim();
-          store.load(text ? parsePistar(text) : createEmptyModel());
-        } catch (err) {
-          console.error('Failed to parse goal model', err);
-        }
-      } else if (msg.command === 'diagnostics' && Array.isArray(msg.diagnostics)) {
+      if (msg.command === 'diagnostics' && Array.isArray(msg.diagnostics)) {
         setDiagnostics(msg.diagnostics as LspDiagnostic[]);
         const next: ElementIssue[] = [];
         for (const d of msg.diagnostics as LspDiagnostic[]) {
@@ -84,14 +65,14 @@ export default function App(): ReactElement {
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [store]);
+  }, []);
 
   const onSelectionChange = useCallback((selection: Selection) => {
     if (!selection || selection.type !== 'element') {
       vscode.postMessage({ command: 'select', payload: null });
       return;
     }
-    const element = store.getModel().elements.get(selection.id);
+    const element = mirror.getModel().elements.get(selection.id);
     vscode.postMessage({
       command: 'select',
       payload: {
@@ -99,7 +80,7 @@ export default function App(): ReactElement {
         parent: element?.parent ?? null,
       },
     });
-  }, [store]);
+  }, [mirror]);
 
   const stableExtensions = useMemo(() => extensions, []);
 
@@ -108,7 +89,8 @@ export default function App(): ReactElement {
       <div className="app mutrose-rf">
         <IstarCanvas
           ref={canvasRef}
-          store={store}
+          store={mirror}
+          dispatcher={mirror.dispatcher}
           extensions={stableExtensions}
           issues={issues}
           onSelectionChange={onSelectionChange}
@@ -128,7 +110,8 @@ export default function App(): ReactElement {
     <div className="app">
       <IstarCanvas
         ref={canvasRef}
-        store={store}
+        store={mirror}
+        dispatcher={mirror.dispatcher}
         extensions={stableExtensions}
         issues={issues}
         onSelectionChange={onSelectionChange}

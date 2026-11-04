@@ -1,5 +1,7 @@
 // src/MeuEditorProvider.ts
+import type { MessagePortLike } from "@istar-ts/actions";
 import * as vscode from "vscode";
+import { IstarServer } from "./istarServer";
 
 /** Draw the istar-ts editor like the legacy React Flow editor. */
 function useReactFlowStyle(): boolean {
@@ -31,8 +33,6 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken,
   ): Promise<void> {
-    let isUpdatingFromWebview = false;
-
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [
@@ -48,13 +48,21 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
 
     webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
 
-    // Utilitário para enviar o conteúdo atual ao React
-    const sendDocumentToWebview = () => {
-      webviewPanel.webview.postMessage({
-        command: "load",
-        content: document.getText(),
-      });
+    // Port shim over the webview channel: RPC frames ride `{ command: 'istar-rpc', frame }`
+    // alongside the existing `{ command }` messages.
+    const port: MessagePortLike = {
+      postMessage: (data) => {
+        webviewPanel.webview.postMessage({ command: "istar-rpc", frame: data });
+      },
+      onmessage: null,
     };
+    const server = new IstarServer(
+      {
+        getText: () => document.getText(),
+        replaceAll: (text) => Promise.resolve(this.applyEdit(document, text)).then(() => undefined),
+      },
+      port,
+    );
 
     // Utilitário para enviar diagnósticos atuais do LSP ao React
     const sendDiagnosticsToWebview = () => {
@@ -95,14 +103,13 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
       });
     };
 
-    // Quando o VS Code recarregar o documento (ex: arquivo alterado externamente)
+    // Quando o VS Code recarregar o documento (ex: arquivo alterado externamente).
+    // `reloadFromDocument` no-ops when the text is the one the server itself just wrote
+    // (the echo of an edit coming from the webview), so no extra guard is needed here.
     const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(
       (e) => {
         if (e.document.uri.toString() !== document.uri.toString()) return;
-        // Skip echo while a webview edit is being applied (flag stays true until
-        // applyEdit's promise resolves, which is after this event fires).
-        if (isUpdatingFromWebview) return;
-        sendDocumentToWebview();
+        server.reloadFromDocument();
         sendDiagnosticsToWebview();
       },
     );
@@ -118,23 +125,16 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.onDidDispose(() => {
       changeDocSubscription.dispose();
       changeDiagnosticsSubscription.dispose();
+      server.dispose();
     });
 
     // Receber mensagens vindas do React
     webviewPanel.webview.onDidReceiveMessage(async (message) => {
       switch (message.command) {
-        case "edit":
-          if (typeof message.content !== "string") break;
-          if (message.content === document.getText()) break;
-          isUpdatingFromWebview = true;
-          try {
-            await this.applyEdit(document, message.content);
-          } finally {
-            isUpdatingFromWebview = false;
-          }
+        case "istar-rpc":
+          port.onmessage?.({ data: message.frame });
           break;
         case "ready":
-          sendDocumentToWebview();
           sendDiagnosticsToWebview();
           break;
         case "select":
