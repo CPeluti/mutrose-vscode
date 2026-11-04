@@ -309,6 +309,8 @@
     "compile:webview:istar": "cd src/editors/istar-editor && npm install && npm run build && cd ../..",
     "compile:server": "cd src/lsp/lsp-mutrose && npm install && npm run compile && cd ../../../..",
     "compile:client": "npm install && tsc -b",
+    "compile:host": "tsc -p tsconfig.host.json",
+    "compile:dev": "npm run compile:webview && npm run compile:host",
     "vscode:prepublish": "npm run compile",
     "start:webview": "cd webview-ui && npm run dev",
     "build:webview": "cd webview-ui && npm run build && cd ..",
@@ -316,7 +318,7 @@
     "watch": "npm run compile && tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
     "test": "sh ./scripts/e2e.sh",
-    "test:unit": "tsc -b && mocha \"out/**/*.test.js\""
+    "test:unit": "npm run compile:host && mocha \"out/**/*.test.js\""
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -333,8 +335,8 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@istar-ts/actions": "0.16.3",
-    "@istar-ts/core": "0.16.3",
+    "@istar-ts/actions": "0.17.1",
+    "@istar-ts/core": "0.17.1",
     "vscode-languageclient": "^9.0.1"
   }
 }
