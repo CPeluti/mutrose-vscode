@@ -335,8 +335,8 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@istar-ts/actions": "0.17.1",
-    "@istar-ts/core": "0.17.1",
+    "@istar-ts/actions": "0.17.2",
+    "@istar-ts/core": "0.17.2",
     "vscode-languageclient": "^9.0.1"
   }
 }

@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@istar-ts/actions": "0.17.1",
-    "@istar-ts/core": "0.17.1",
-    "@istar-ts/react": "0.17.1",
+    "@istar-ts/actions": "0.17.2",
+    "@istar-ts/core": "0.17.2",
+    "@istar-ts/react": "0.17.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
