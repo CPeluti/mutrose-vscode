@@ -3,7 +3,7 @@
   "description": "GoalModel Editor for MutRoSe",
   "author": "Caio Peluti & Ana Jordão",
   "license": "MIT",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "repository": {
     "type": "git",
     "url": "https://github.com/CPeluti/mutrose-vscode"
@@ -337,6 +337,9 @@
   "dependencies": {
     "@istar-ts/actions": "0.17.2",
     "@istar-ts/core": "0.17.2",
-    "vscode-languageclient": "^9.0.1"
+    "antlr4ts": "^0.5.0-alpha.4",
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11"
   }
 }
