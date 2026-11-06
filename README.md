@@ -85,15 +85,31 @@ The extension expects the variables to contain the relative path for both files 
 
 Besides that, the extension also expects the path inside the configuration file to be relative since MutRoSe is executed from the workspace's root.
 
-Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install the matplotlib with pip, that's usually done by running the following commands:
+Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install ete4 with pip, that's usually done by running the following commands:
 
 ```
 $ chmod +x <path_to_vscode_extensions_folder>/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose
 $ pip3 install PyQt6
-$ pip3 install https://github.com/etetoolkit/ete/archive/ete4.zip
+$ pip3 install ete4
 ```
 
 The path to vscode's extesions folder usually is `~/.vscode-server/extensions/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose`
+
+### macOS / Apple Silicon
+
+The bundled `binaries/mutrose` is a Linux x86-64 binary and cannot run on macOS (it also
+deadlocks under Docker/qemu emulation). Build a native binary instead:
+
+```
+$ tools/mutrose/build-macos.sh
+```
+
+This installs Boost/Bison/Flex via Homebrew, builds MutRoSe from source, and installs it to
+`~/.local/bin/mutrose`. Then set in your workspace settings.json:
+
+```json
+{ "mutrose.path": "~/.local/bin/mutrose" }
+```
 
 ### How to model
 
