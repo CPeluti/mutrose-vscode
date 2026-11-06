@@ -85,15 +85,42 @@ The extension expects the variables to contain the relative path for both files 
 
 Besides that, the extension also expects the path inside the configuration file to be relative since MutRoSe is executed from the workspace's root.
 
-Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install the matplotlib with pip, that's usually done by running the following commands:
+Lastly, it's also needed to give permission for the MutRoSe binary to be executable and install ete4 with pip, that's usually done by running the following commands:
 
 ```
 $ chmod +x <path_to_vscode_extensions_folder>/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose
 $ pip3 install PyQt6
-$ pip3 install https://github.com/etetoolkit/ete/archive/ete4.zip
+$ pip3 install ete4
 ```
 
 The path to vscode's extesions folder usually is `~/.vscode-server/extensions/les-unb.mutrose-vscode-<current_extension_version>/binaries/mutrose`
+
+### macOS / Apple Silicon
+
+The bundled `binaries/mutrose` is a Linux x86-64 binary: it cannot run on macOS, and it deadlocks
+under Docker's qemu emulation. Use the container build, which compiles MutRoSe for arm64 Linux
+and runs it natively inside Docker Desktop (or OrbStack):
+
+```
+$ tools/mutrose/mutrose-docker hddl/<file>.hddl gm/<file>.gm configuration/configuration.json -p
+```
+
+The first run builds the `mutrose:arm64` image. Point the extension at the wrapper, with an
+absolute path or `~` (the setting is resolved outside the workspace too):
+
+```json
+{ "mutrose.path": "~/path/to/mutrose-vscode/tools/mutrose/mutrose-docker" }
+```
+
+MutRoSe writes `output/task_output.json` relative to the workspace root and does not create the
+folder, so the workspace needs an `output/` directory (the sample workspace `src/test` has one).
+
+`tools/mutrose/build-macos.sh` builds a native macOS binary instead (Homebrew Boost, Bison and
+Flex, installed to `~/.local/bin/mutrose`). **Known issue:** that binary currently produces an
+empty decomposition (exit 0, no task instances) on inputs the Linux build decomposes correctly;
+the `world_db->select(...)` query returns nothing on macOS, most likely a Boost version
+sensitivity (Homebrew's 1.9x vs the 1.74 the project was developed against). Prefer the
+container build until that is resolved.
 
 ### How to model
 

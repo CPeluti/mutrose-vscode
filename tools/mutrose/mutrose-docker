@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Runs MutRoSe inside a native-arch Linux container, built from
+# tools/mutrose/Dockerfile. Use this if build-macos.sh produces empty
+# decompositions on your inputs.
+#
+# Usage: tools/mutrose/mutrose-docker <hddl-file> <gm-file> <config-file> [options...]
+# (run from the directory containing your hddl/gm/configuration/knowledge folders)
+set -euo pipefail
+
+# VS Code/Cursor launch child processes with a minimal PATH that lacks /usr/local/bin
+# (Docker Desktop) and /opt/homebrew/bin, so make sure `docker` is reachable.
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IMAGE="mutrose:arm64"
+
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  echo "==> Building $IMAGE (first use only)" >&2
+  docker build -t "$IMAGE" "$SCRIPT_DIR"
+fi
+
+# The extension passes the goal-model file as an absolute host path while running from the
+# workspace root. Inside the container only $PWD is visible (as /w), so rewrite absolute
+# arguments under $PWD to /w/..., and bind-mount the parent directory of any other absolute
+# path that exists on the host, read-only, at the same location.
+HOST_PWD="$(pwd -P)"
+mounts=(-v "$HOST_PWD":/w)
+args=()
+for a in "$@"; do
+  case "$a" in
+    "$HOST_PWD"/*) args+=("/w/${a#"$HOST_PWD"/}") ;;
+    /*)
+      if [ -e "$a" ]; then
+        d="$(cd "$(dirname "$a")" && pwd -P)"
+        mounts+=(-v "$d":"$d":ro)
+        args+=("$d/$(basename "$a")")
+      else
+        args+=("$a")
+      fi ;;
+    *) args+=("$a") ;;
+  esac
+done
+
+docker run --rm "${mounts[@]}" -w /w "$IMAGE" mutrose "${args[@]}"
