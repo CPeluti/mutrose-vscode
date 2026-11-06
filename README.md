@@ -111,6 +111,23 @@ This installs Boost/Bison/Flex via Homebrew, builds MutRoSe from source, and ins
 { "mutrose.path": "~/.local/bin/mutrose" }
 ```
 
+**Known issue:** on some inputs the native macOS build silently produces an empty decomposition
+(exit code 0, but `output/task_output.json` has empty `actions`/`tasks`/`mission_decompositions`)
+even though a Linux build of the same commit decomposes correctly. The divergence traces back to
+the knowledge-base query step (`world_db->select(...)` in the goal model) returning no results on
+macOS; the root cause (likely a Boost `property_tree`/query-parser version sensitivity — Homebrew
+ships a much newer Boost than the Linux distros this project was developed against) is still open.
+If you hit this, use the Docker fallback instead, which runs a native-Linux build in a container:
+
+```
+$ tools/mutrose/mutrose-docker hddl/<file>.hddl gm/<file>.gm configuration/configuration.json -p
+```
+
+The first run builds the `mutrose:arm64` image (requires Docker Desktop/Orbstack with native
+arm64 support — the bundled Linux x86-64 `binaries/mutrose` deadlocks under qemu emulation, but a
+natively-built arm64 image does not). Point `mutrose.path` at the wrapper script itself if you want
+the extension to use it.
+
 ### How to model
 
 For using the Tree View it should mostly be intuitive, but the main idea is to right click every type of element to interact with them. For example, if you right click a Goal, all available options related to the goal will appear in a menu.
