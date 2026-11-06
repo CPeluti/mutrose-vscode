@@ -1,5 +1,5 @@
 // A launch configuration that builds the webview and the extension host, then opens the
-// extension inside a new window on the src/test/gm sample workspace.
+// extension inside a new window on the src/test sample workspace.
 {
   "version": "0.2.0",
   "configurations": [
@@ -9,7 +9,7 @@
       "name": "Launch Client",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/src/test/gm",
+        "${workspaceRoot}/src/test",
         "--extensionDevelopmentPath=${workspaceRoot}"
       ],
       "timeout": 30000,
