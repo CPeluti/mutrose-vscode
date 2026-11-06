@@ -19,4 +19,26 @@ if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   docker build -t "$IMAGE" "$SCRIPT_DIR"
 fi
 
-docker run --rm -v "$PWD":/w -w /w "$IMAGE" mutrose "$@"
+# The extension passes the goal-model file as an absolute host path while running from the
+# workspace root. Inside the container only $PWD is visible (as /w), so rewrite absolute
+# arguments under $PWD to /w/..., and bind-mount the parent directory of any other absolute
+# path that exists on the host, read-only, at the same location.
+HOST_PWD="$(pwd -P)"
+mounts=(-v "$HOST_PWD":/w)
+args=()
+for a in "$@"; do
+  case "$a" in
+    "$HOST_PWD"/*) args+=("/w/${a#"$HOST_PWD"/}") ;;
+    /*)
+      if [ -e "$a" ]; then
+        d="$(cd "$(dirname "$a")" && pwd -P)"
+        mounts+=(-v "$d":"$d":ro)
+        args+=("$d/$(basename "$a")")
+      else
+        args+=("$a")
+      fi ;;
+    *) args+=("$a") ;;
+  esac
+done
+
+docker run --rm "${mounts[@]}" -w /w "$IMAGE" mutrose "${args[@]}"
