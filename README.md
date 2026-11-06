@@ -97,36 +97,30 @@ The path to vscode's extesions folder usually is `~/.vscode-server/extensions/le
 
 ### macOS / Apple Silicon
 
-The bundled `binaries/mutrose` is a Linux x86-64 binary and cannot run on macOS (it also
-deadlocks under Docker/qemu emulation). Build a native binary instead:
-
-```
-$ tools/mutrose/build-macos.sh
-```
-
-This installs Boost/Bison/Flex via Homebrew, builds MutRoSe from source, and installs it to
-`~/.local/bin/mutrose`. Then set in your workspace settings.json:
-
-```json
-{ "mutrose.path": "~/.local/bin/mutrose" }
-```
-
-**Known issue:** on some inputs the native macOS build silently produces an empty decomposition
-(exit code 0, but `output/task_output.json` has empty `actions`/`tasks`/`mission_decompositions`)
-even though a Linux build of the same commit decomposes correctly. The divergence traces back to
-the knowledge-base query step (`world_db->select(...)` in the goal model) returning no results on
-macOS; the root cause (likely a Boost `property_tree`/query-parser version sensitivity — Homebrew
-ships a much newer Boost than the Linux distros this project was developed against) is still open.
-If you hit this, use the Docker fallback instead, which runs a native-Linux build in a container:
+The bundled `binaries/mutrose` is a Linux x86-64 binary: it cannot run on macOS, and it deadlocks
+under Docker's qemu emulation. Use the container build, which compiles MutRoSe for arm64 Linux
+and runs it natively inside Docker Desktop (or OrbStack):
 
 ```
 $ tools/mutrose/mutrose-docker hddl/<file>.hddl gm/<file>.gm configuration/configuration.json -p
 ```
 
-The first run builds the `mutrose:arm64` image (requires Docker Desktop/Orbstack with native
-arm64 support — the bundled Linux x86-64 `binaries/mutrose` deadlocks under qemu emulation, but a
-natively-built arm64 image does not). Point `mutrose.path` at the wrapper script itself if you want
-the extension to use it.
+The first run builds the `mutrose:arm64` image. Point the extension at the wrapper, with an
+absolute path or `~` (the setting is resolved outside the workspace too):
+
+```json
+{ "mutrose.path": "~/path/to/mutrose-vscode/tools/mutrose/mutrose-docker" }
+```
+
+MutRoSe writes `output/task_output.json` relative to the workspace root and does not create the
+folder, so the workspace needs an `output/` directory (the sample workspace `src/test` has one).
+
+`tools/mutrose/build-macos.sh` builds a native macOS binary instead (Homebrew Boost, Bison and
+Flex, installed to `~/.local/bin/mutrose`). **Known issue:** that binary currently produces an
+empty decomposition (exit 0, no task instances) on inputs the Linux build decomposes correctly;
+the `world_db->select(...)` query returns nothing on macOS, most likely a Boost version
+sensitivity (Homebrew's 1.9x vs the 1.74 the project was developed against). Prefer the
+container build until that is resolved.
 
 ### How to model
 

@@ -7,6 +7,10 @@
 # (run from the directory containing your hddl/gm/configuration/knowledge folders)
 set -euo pipefail
 
+# VS Code/Cursor launch child processes with a minimal PATH that lacks /usr/local/bin
+# (Docker Desktop) and /opt/homebrew/bin, so make sure `docker` is reachable.
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE="mutrose:arm64"
 
