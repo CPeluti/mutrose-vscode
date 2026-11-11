@@ -424,9 +424,8 @@ export async function promptAndSetPropertyValue(
     if (newValue === undefined) return false;
   }
 
-  node.removeAttribute(propName);
-  node.addAttribute(propName, newValue);
-  node.parent.parent.saveGoalModel();
+  node.setAttribute(propName, newValue);
+  await node.parent.parent.saveGoalModel();
   vscode.window.showInformationMessage(`Propriedade '${propName}' atualizada com sucesso!`);
   return true;
 }
@@ -502,8 +501,7 @@ export async function runEditNodeLoop(node: Node): Promise<void> {
         { placeHolder: "Selecione a propriedade a remover" }
       );
       if (toRemove) {
-        node.removeAttribute(toRemove.label);
-        node.parent.parent.saveGoalModel();
+        await node.removeAttribute(toRemove.label);
         vscode.window.showInformationMessage(`Propriedade '${toRemove.label}' removida.`);
       }
     } else {

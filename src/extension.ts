@@ -408,10 +408,10 @@ export function activate(context: vscode.ExtensionContext) {
         });
         if (element instanceof Mission) {
           element.name = newName!;
-          element.parent.saveGoalModel();
+          await element.parent.saveGoalModel();
         } else {
           element.tag = newName!;
-          element.parent.parent.saveGoalModel();
+          await element.parent.parent.saveGoalModel();
         }
       },
     ),
@@ -439,7 +439,7 @@ export function activate(context: vscode.ExtensionContext) {
           value: "",
         });
         element.addNewNode(type!.label, title);
-        element.parent.saveGoalModel();
+        await element.parent.saveGoalModel();
       } catch (e) {
         console.log(e, "erro ao adicionar property");
       }
@@ -459,7 +459,7 @@ export function activate(context: vscode.ExtensionContext) {
               ? "istar.AndRefinementLink"
               : "istar.OrRefinementLink",
           );
-          element.parent.parent.parent.saveGoalModel();
+          await element.parent.parent.parent.saveGoalModel();
         } catch (e) {
           console.error("failed to change node refinement", e);
         }
@@ -478,7 +478,7 @@ export function activate(context: vscode.ExtensionContext) {
           });
           if (input) {
             element.setRuntimeAnnotation(input);
-            element.parent.parent.saveGoalModel();
+            await element.parent.parent.saveGoalModel();
           }
         } catch (e) {
           console.error("failed to change node refinement", e);
@@ -543,7 +543,7 @@ export function activate(context: vscode.ExtensionContext) {
   commands.push(
     vscode.commands.registerCommand("goalModel.deleteNode", async (element) => {
       element.remove();
-      element.parent.parent.saveGoalModel();
+      await element.parent.parent.saveGoalModel();
     }),
   );
 
@@ -556,85 +556,12 @@ export function activate(context: vscode.ExtensionContext) {
       },
     ),
   );
-  // add refinements to a node command
-
-  commands.push(
-    vscode.commands.registerCommand(
-      "goalModel.addRefinementToNode",
-      async (element: Node) => {
-        const types: vscode.QuickPickItem[] = [
-          {
-            label: "and",
-            description: "and",
-          },
-          {
-            label: "or",
-            description: "or",
-          },
-        ];
-        const gm = element.parent.parent;
-        let type;
-        if (
-          element.refinements?.type == "istar.AndRefinementLink" ||
-          element.refinements?.type == "istar.OrRefinementLink"
-        ) {
-          type =
-            element.refinements.type == "istar.AndRefinementLink"
-              ? "and"
-              : "or";
-        } else {
-          type = await vscode.window.showQuickPick(types);
-        }
-        const items: vscode.QuickPickItem[] = element.parent.nodes
-          .filter((e) => e != element)
-          .map((node) => {
-            return {
-              label: node.name,
-              description: node.customId,
-            };
-          });
-        const selected = await vscode.window.showQuickPick(items);
-        element.addRefinement(
-          type,
-          selected!.description,
-          selected!.label,
-          gm.generateNewId(),
-        );
-        gm.saveGoalModel();
-      },
-    ),
-  );
-
   // delete property from node command
   commands.push(
     vscode.commands.registerCommand(
       "goalModel.deleteProperty",
       async (element) => {
-        element.parent.removeAttribute(element);
-      },
-    ),
-  );
-  commands.push(
-    vscode.commands.registerCommand(
-      "goalModel.addRefinement",
-      async (element: NodeRefinement) => {
-        const targetNode = element.parent;
-        const gm = targetNode.parent.parent;
-        const items: vscode.QuickPickItem[] = targetNode.parent.nodes
-          .filter((e) => e != targetNode)
-          .map((node) => {
-            return {
-              label: node.name,
-              description: node.customId,
-            };
-          });
-        const selected = await vscode.window.showQuickPick(items!);
-        element.addRefinement(
-          selected!.description,
-          selected!.label,
-          gm.generateNewId(),
-        );
-        gm.saveGoalModel();
+        await element.parent.removeAttribute(element);
       },
     ),
   );
@@ -643,11 +570,12 @@ export function activate(context: vscode.ExtensionContext) {
       "goalModel.deleteRefinement",
       async (element: Refinement) => {
         element.parent.removeRefinement(element);
-        element.parent.parent.parent.parent.saveGoalModel();
+        await element.parent.parent.parent.parent.saveGoalModel();
       },
     ),
   );
 
+  context.subscriptions.push(gmProvider);
   commands.forEach((command) => context.subscriptions.push(command));
 }
 

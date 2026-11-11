@@ -3,7 +3,7 @@
   "description": "GoalModel Editor for MutRoSe",
   "author": "Caio Peluti & Ana Jordão",
   "license": "MIT",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/CPeluti/mutrose-vscode"
@@ -112,11 +112,6 @@
           "group": "navigation"
         },
         {
-          "command": "goalModel.addRefinement",
-          "when": "viewItem == refinements",
-          "group": "navigation"
-        },
-        {
           "command": "goalModel.rename",
           "when": "viewItem == mission",
           "group": "navigation"
@@ -133,11 +128,6 @@
         },
         {
           "command": "goalModel.setRuntimeAnnotation",
-          "when": "viewItem == node",
-          "group": "navigation"
-        },
-        {
-          "command": "goalModel.addRefinementToNode",
           "when": "viewItem == node",
           "group": "navigation"
         },
@@ -171,14 +161,6 @@
       {
         "command": "goalModel.setRuntimeAnnotation",
         "title": "Set Runtime Annotation"
-      },
-      {
-        "command": "goalModel.addRefinementToNode",
-        "title": "Add refinements to the node"
-      },
-      {
-        "command": "goalModel.addRefinement",
-        "title": "Add refinements to the refinementList"
       },
       {
         "command": "goalModel.addNode",

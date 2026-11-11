@@ -7,7 +7,9 @@ import { convertJSON2JS } from "./parser";
 // It's suposed that all goal models are inside the "gm" folder
 export class GoalModelProvider implements vscode.TreeDataProvider<
   void | GoalModel | Mission | Node | NodeAttr | Refinement | NodeRefinement
-> {
+>, vscode.Disposable {
+  private fileWatcher: vscode.FileSystemWatcher | undefined;
+  private docChangeDisposables: vscode.Disposable[] = [];
   private _onDidChangeTreeData: vscode.EventEmitter<
     | void
     | GoalModel
@@ -45,17 +47,38 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
     }
     const gmFolderPath = path.join(this.workspaceRoot, "gm");
     if (this.pathExists(gmFolderPath)) {
-      let gmList = fs.readdirSync(gmFolderPath);
-      gmList = gmList.filter((gm) => gm.includes(".gm"));
-      gmList.forEach((gm) => {
-        const fileWatcher = vscode.workspace.createFileSystemWatcher(
-          path.join(gmFolderPath, gm),
-        );
-        fileWatcher.onDidChange(() => {
-          this.refresh();
-        });
-      });
+      this.fileWatcher = vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(gmFolderPath, "*.gm"),
+      );
+      this.fileWatcher.onDidChange(() => this.refresh());
+      this.fileWatcher.onDidCreate(() => this.refresh());
+      this.fileWatcher.onDidDelete(() => this.refresh());
     }
+
+    let debounceTimer: NodeJS.Timeout | undefined;
+    const debouncedRefresh = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        this.refresh();
+      }, 250);
+    };
+
+    const docSub = vscode.workspace.onDidChangeTextDocument((e) => {
+      if (e.document.uri.fsPath.endsWith(".gm")) {
+        debouncedRefresh();
+      }
+    });
+    const saveSub = vscode.workspace.onDidSaveTextDocument((doc) => {
+      if (doc.uri.fsPath.endsWith(".gm")) {
+        this.refresh();
+      }
+    });
+    this.docChangeDisposables.push(docSub, saveSub);
+  }
+
+  public dispose(): void {
+    this.fileWatcher?.dispose();
+    this.docChangeDisposables.forEach((d) => d.dispose());
   }
 
   goalModels: GoalModel[] = [];
@@ -141,30 +164,36 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
     const workspaceRoot = this.workspaceRoot;
     if (this.pathExists(gmFolderPath) && workspaceRoot) {
       let gmList = fs.readdirSync(gmFolderPath);
-      gmList = gmList.filter((gm) => gm.includes(".gm"));
+      gmList = gmList.filter((gm) => gm.endsWith(".gm"));
 
       const gms: { gm: string; filePath: string }[] = gmList.map((gm) => {
+        const filePath = path.join(gmFolderPath, gm);
+        const openDoc = vscode.workspace.textDocuments.find(
+          (d) => d.uri.fsPath === filePath,
+        );
         return {
-          gm: fs.readFileSync(path.join(gmFolderPath, gm)).toString(),
-          filePath: path.join(gmFolderPath, gm),
+          gm: openDoc ? openDoc.getText() : fs.readFileSync(filePath, "utf-8"),
+          filePath: filePath,
         };
       });
-      const parsedGMs: { gm: gmTypes.GoalModel; filePath }[] = gms.map(
-        ({ gm, filePath }) => {
+      const parsedGMs: { gm: gmTypes.GoalModel; filePath: string }[] = [];
+      for (const { gm, filePath } of gms) {
+        try {
           const res = JSON.parse(gm);
-          return { gm: res as gmTypes.GoalModel, filePath };
-        },
-      );
+          parsedGMs.push({ gm: res as gmTypes.GoalModel, filePath });
+        } catch (e) {
+          console.error(`Error parsing ${filePath}:`, e);
+        }
+      }
       const goalModels = parsedGMs.map(
         (gm: { gm: gmTypes.GoalModel; filePath: string }) => {
-          const gmName = gm.filePath.replace(/(^.*[\\/])|(\.drawio)/gi, "");
+          const gmName = gm.filePath.replace(/(^.*[\\/])|(\.gm)/gi, "");
           const goalModel = new GoalModel(
             gmName,
             vscode.TreeItemCollapsibleState.Collapsed,
             gm.gm,
             gm.filePath,
           );
-          // const test = goalModel.parseToGm()
           return goalModel;
         },
       );
@@ -240,15 +269,6 @@ export class NodeRefinement extends vscode.TreeItem {
       );
     });
   }
-  addRefinement(targetId, tag, newId): void {
-    this.refinements.push(
-      new Refinement(
-        { tag, linkId: newId, customId: targetId },
-        vscode.TreeItemCollapsibleState.None,
-        this,
-      ),
-    );
-  }
   parseRefinements(): gmTypes.Link[] {
     return this.refinements.map((r) =>
       r.parseLink(this.parent.customId, this.type),
@@ -320,30 +340,37 @@ export class Node extends vscode.TreeItem {
       customProperties: customProperties,
     };
   }
-  addAttribute(tag, value) {
-    const newAttr = new NodeAttr(
-      tag,
-      value,
-      true,
-      vscode.TreeItemCollapsibleState.None,
-      this,
+  setAttribute(name: string, value: string): void {
+    const existing = this.attributes.find(
+      (a) => a.custom && a.attrName.toLowerCase() === name.toLowerCase(),
     );
-    this.attributes.push(newAttr);
-    try {
-      this.parent.parent.saveGoalModel();
-      return;
-    } catch (e) {
-      return e;
+    if (existing) {
+      (existing as any).attrValue = value;
+      existing.label = value === "" ? '""' : value;
+      existing.tooltip = `${existing.attrName}-${value}`;
+    } else {
+      const newAttr = new NodeAttr(
+        name,
+        value,
+        true,
+        vscode.TreeItemCollapsibleState.None,
+        this,
+      );
+      this.attributes.push(newAttr);
     }
   }
-  removeAttribute(tag) {
-    this.attributes = this.attributes.filter((attr) => attr != tag);
-    try {
-      this.parent.parent.saveGoalModel();
-      return;
-    } catch (e) {
-      return e;
-    }
+  addAttribute(tag: string, value: string) {
+    this.setAttribute(tag, value);
+    return this.parent.parent.saveGoalModel();
+  }
+  removeAttribute(tag: string | NodeAttr) {
+    this.attributes = this.attributes.filter((attr) => {
+      if (typeof tag === "string") {
+        return attr.attrName.toLowerCase() !== tag.toLowerCase();
+      }
+      return attr !== tag;
+    });
+    return this.parent.parent.saveGoalModel();
   }
   getRefinements() {
     const links = this.parent.parent.links.filter(
@@ -395,21 +422,6 @@ export class Node extends vscode.TreeItem {
       this.tag.trim() +
       (this.runtimeAnnotation != "" ? ` [${this.runtimeAnnotation}]` : "");
     return;
-  }
-  addRefinement(type, targetId, tag, newId) {
-    type =
-      type.label == "and"
-        ? "istar.AndRefinementLink"
-        : "istar.OrRefinementLink";
-    if (!this.refinements) {
-      this.refinements = new NodeRefinement(
-        type,
-        [],
-        vscode.TreeItemCollapsibleState.Collapsed,
-        this,
-      );
-    }
-    this.refinements.addRefinement(targetId, tag, newId);
   }
   remove() {
     this.parent.deleteNode(this);
@@ -560,8 +572,8 @@ export class GoalModel extends vscode.TreeItem {
   public usedIds = new Set<string>();
   public actors: gmTypes.Actor[];
   public missions: Mission[];
-  public orphans: never[];
-  public dependencies: never[];
+  public orphans: any[];
+  public dependencies: any[];
   public links: gmTypes.Link[];
   public display: gmTypes.Display;
   public tool: string;
@@ -584,8 +596,8 @@ export class GoalModel extends vscode.TreeItem {
     this.istar = gm.istar;
     this.saveDate = gm.saveDate;
     this.diagram = gm.diagram;
-    this.orphans = [];
-    this.dependencies = [];
+    this.orphans = gm.orphans || [];
+    this.dependencies = gm.dependencies || [];
 
     const actors = gm.actors;
     const info = actors.map((actor) => {
@@ -638,10 +650,31 @@ export class GoalModel extends vscode.TreeItem {
       diagram: this.diagram,
     };
   }
-  public saveGoalModel() {
+  public async saveGoalModel(): Promise<void> {
     const gm = this.parseToGm();
-    const json = JSON.stringify(gm);
-    fs.writeFileSync(this.filePath, json);
+    const json = JSON.stringify(gm, null, 2);
+    const uri = vscode.Uri.file(this.filePath);
+
+    try {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const edit = new vscode.WorkspaceEdit();
+      edit.replace(
+        doc.uri,
+        new vscode.Range(
+          doc.positionAt(0),
+          doc.positionAt(doc.getText().length),
+        ),
+        json,
+      );
+      const applied = await vscode.workspace.applyEdit(edit);
+      if (applied) {
+        await doc.save();
+        return;
+      }
+    } catch (e) {
+      console.error("Error saving goal model via WorkspaceEdit:", e);
+    }
+    fs.writeFileSync(this.filePath, json, "utf-8");
   }
   generateNewId() {
     let id = 1;
