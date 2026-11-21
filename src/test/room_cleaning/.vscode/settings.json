@@ -1,0 +1,5 @@
+{
+    "gmParser.hddlPath": "hddl/RoomCleaning.hddl",
+    "gmParser.configPath": "configs/RoomCleaningConfig.json",
+    "mutrose.path": "/home/peluti/mutrose-vscode/binaries/mutrose"
+}

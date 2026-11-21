@@ -39,9 +39,9 @@
           "customProperties": {
             "Description": "",
             "GoalType": "Query",
-            "QueriedProperty": "world_db->select(n:Nurse | n.name in current_delivery.nurse)",
             "Controls": "current_nurse : Nurse",
-            "Monitors": "current_delivery"
+            "Monitors": "current_delivery",
+            "QueriedProperty": "world_db->select(x: Item | x."
           }
         },
         {

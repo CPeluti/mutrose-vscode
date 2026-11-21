@@ -288,8 +288,8 @@
   },
   "scripts": {
     "compile:webview": "npm run compile:webview:istar",
-    "compile:webview:istar": "cd src/editors/istar-editor && npm install && npm run build && cd ../..",
-    "compile:server": "cd src/lsp/lsp-mutrose && npm install && npm run compile && cd ../../../..",
+    "compile:webview:istar": "cd src/plugins/editor/istar-editor && npm install && npm run build && cd ../../../..",
+    "compile:server": "cd src/plugins/lsp/lsp-mutrose && npm install && npm run compile && cd ../../../..",
     "compile:client": "npm install && tsc -b",
     "compile:host": "tsc -p tsconfig.host.json",
     "compile:dev": "npm run compile:webview && npm run compile:host",

@@ -142,10 +142,15 @@ const sameTool = (a: Tool | null, b: Tool): boolean => JSON.stringify(a) === JSO
 interface ReactFlowSidebarProps {
   diagnostics: readonly LspDiagnostic[];
   onDecompose?: () => void;
+  onGenerateIhtn?: () => void;
 }
 
 /** gm-editor's side bar: creation tools, action buttons, then the LSP diagnostics. */
-export function ReactFlowSidebar({ diagnostics, onDecompose }: ReactFlowSidebarProps): ReactElement {
+export function ReactFlowSidebar({
+  diagnostics,
+  onDecompose,
+  onGenerateIhtn,
+}: ReactFlowSidebarProps): ReactElement {
   const { tool, setTool, readOnly } = useIstarEditor();
   const errors = diagnostics.filter((d) => d.severity === 'error').length;
   const warnings = diagnostics.filter((d) => d.severity === 'warning').length;
@@ -174,6 +179,16 @@ export function ReactFlowSidebar({ diagnostics, onDecompose }: ReactFlowSidebarP
           title="Decompor o goal model atual com o MutRoSe"
         >
           Decompose with MutRoSe
+        </button>
+      )}
+      {onGenerateIhtn && (
+        <button
+          type="button"
+          className="rf-tool rf-decompose-btn"
+          onClick={onGenerateIhtn}
+          title="Decompor gerando iHTNs com o MutRoSe"
+        >
+          Decompose generating iHTNs
         </button>
       )}
       <section className="rf-diagnostics">

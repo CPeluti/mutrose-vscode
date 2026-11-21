@@ -1,0 +1,22 @@
+<world_db>
+    <Room>
+        <name>RoomA</name>
+        <is_clean>False</is_clean>
+        <is_occupied>False</is_occupied>
+    </Room>
+    <Room>
+        <name>RoomC</name>
+        <is_clean>False</is_clean>
+        <is_occupied>False</is_occupied>
+    </Room>
+        <Room>
+        <name>RoomD</name>
+        <is_clean>False</is_clean>
+        <is_occupied>False</is_occupied>
+    </Room>
+    <Room>
+        <name>RoomE</name>
+        <is_clean>False</is_clean>
+        <is_occupied>False</is_occupied>
+    </Room>
+</world_db>

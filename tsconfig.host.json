@@ -5,5 +5,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": { "composite": false },
   "include": ["src"],
-  "exclude": ["src/lsp", "src/editors", "node_modules", ".vscode-test"]
+  "exclude": [
+    "src/plugins/lsp/lsp-mutrose",
+    "src/plugins/editor/gm-editor",
+    "src/plugins/editor/istar-editor",
+    "src/plugins/editor/dist",
+    "node_modules",
+    ".vscode-test"
+  ]
 }

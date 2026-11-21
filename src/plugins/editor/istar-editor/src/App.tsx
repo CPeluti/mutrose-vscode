@@ -327,6 +327,10 @@ export default function App(): ReactElement {
     vscode.postMessage({ command: 'decompose' });
   }, []);
 
+  const handleGenerateIhtn = useCallback(() => {
+    vscode.postMessage({ command: 'generateIhtn' });
+  }, []);
+
   const stableExtensions = useMemo(() => extensions, []);
 
   if (reactFlowStyle) {
@@ -341,7 +345,13 @@ export default function App(): ReactElement {
           issues={issues}
           onSelectionChange={onSelectionChange}
           palette={false}
-          aside={<ReactFlowSidebar diagnostics={diagnostics} onDecompose={handleDecompose} />}
+          aside={
+            <ReactFlowSidebar
+              diagnostics={diagnostics}
+              onDecompose={handleDecompose}
+              onGenerateIhtn={handleGenerateIhtn}
+            />
+          }
           colorMode={dark ? 'dark' : 'light'}
           linkShape="curved"
           background
@@ -374,6 +384,17 @@ export default function App(): ReactElement {
                 ⚡
               </span>
               <span className="istar-palette-label">Decompose</span>
+            </button>
+            <button
+              type="button"
+              className="istar-palette-button istar-decompose-btn"
+              onClick={handleGenerateIhtn}
+              title="Decompor o goal model atual gerando iHTNs com o MutRoSe"
+            >
+              <span aria-hidden className="istar-palette-glyph">
+                🌲
+              </span>
+              <span className="istar-palette-label">iHTNs</span>
             </button>
           </div>
         </div>

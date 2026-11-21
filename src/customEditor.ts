@@ -39,7 +39,8 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.Uri.joinPath(
           this.context.extensionUri,
           "src",
-          "editors",
+          "plugins",
+          "editor",
           "dist",
           "istar-webview",
         ),
@@ -151,6 +152,11 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
             filePath: document.uri.fsPath,
           });
           break;
+        case "generateIhtn":
+          vscode.commands.executeCommand("goalModel.generateIhtn", {
+            filePath: document.uri.fsPath,
+          });
+          break;
       }
     });
   }
@@ -178,7 +184,8 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
       vscode.Uri.joinPath(
         this.context.extensionUri,
         "src",
-        "editors",
+        "plugins",
+        "editor",
         "dist",
         bundle,
         "main.js",
@@ -188,7 +195,8 @@ export class CustomEditorProvider implements vscode.CustomTextEditorProvider {
       vscode.Uri.joinPath(
         this.context.extensionUri,
         "src",
-        "editors",
+        "plugins",
+        "editor",
         "dist",
         bundle,
         "main.css",

@@ -20,12 +20,14 @@
   ],
   "references": [
     {
-      "path": "./src/lsp/lsp-mutrose"
+      "path": "./src/plugins/lsp/lsp-mutrose"
     }
   ],
   "exclude": [
-    "src/lsp/lsp-mutrose",
-    "src/editors",
+    "src/plugins/lsp/lsp-mutrose",
+    "src/plugins/editor/gm-editor",
+    "src/plugins/editor/istar-editor",
+    "src/plugins/editor/dist",
     "node_modules",
     ".vscode-test"
   ]

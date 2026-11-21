@@ -47,6 +47,7 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
     }
     const gmFolderPath = path.join(this.workspaceRoot, "gm");
     if (this.pathExists(gmFolderPath)) {
+      this.goalModels = this.getGoalModels(gmFolderPath);
       this.fileWatcher = vscode.workspace.createFileSystemWatcher(
         new vscode.RelativePattern(gmFolderPath, "*.gm"),
       );
@@ -100,7 +101,27 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
     }
   }
 
+  public ensureGoalModelsLoaded(): GoalModel[] {
+    if (this.goalModels.length === 0 && this.workspaceRoot) {
+      const gmFolderPath = path.join(this.workspaceRoot, "gm");
+      if (this.pathExists(gmFolderPath)) {
+        this.goalModels = this.getGoalModels(gmFolderPath);
+      }
+    }
+    return this.goalModels;
+  }
+
   refresh(): void {
+    if (this.workspaceRoot) {
+      const gmFolderPath = path.join(this.workspaceRoot, "gm");
+      if (this.pathExists(gmFolderPath)) {
+        this.goalModels = this.getGoalModels(gmFolderPath);
+      } else {
+        this.goalModels = [];
+      }
+    } else {
+      this.goalModels = [];
+    }
     this._onDidChangeTreeData.fire();
   }
 
@@ -109,17 +130,40 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
   }
 
   findChildren(actorId: string, nodeId: string): Node | undefined {
-    const element = this.goalModels
-      .map((el) => {
+    this.ensureGoalModelsLoaded();
+    if (actorId) {
+      for (const el of this.goalModels) {
         const actor = el.missions.find((a) => a.customId == actorId);
         if (actor) {
           const node = actor.nodes.find((n) => n.customId == nodeId);
-          return node;
+          if (node) return node;
         }
-        return undefined;
-      }, nodeId)
-      .filter((el) => el != undefined)[0];
-    return element;
+      }
+    }
+    // Fallback: search across all missions if actorId is undefined or not found in specified actor
+    for (const el of this.goalModels) {
+      for (const actor of el.missions) {
+        const node = actor.nodes.find((n) => n.customId == nodeId);
+        if (node) return node;
+      }
+    }
+    return undefined;
+  }
+
+  findElement(targetId: string, parentId?: string): Node | Mission | undefined {
+    this.ensureGoalModelsLoaded();
+    if (targetId) {
+      // First try to find a Node
+      const node = this.findChildren(parentId || "", targetId);
+      if (node) return node;
+
+      // If not a node, check if targetId matches a Mission (Actor)
+      for (const el of this.goalModels) {
+        const actor = el.missions.find((a) => a.customId == targetId);
+        if (actor) return actor;
+      }
+    }
+    return undefined;
   }
 
   // GetChildren should be triggered by the click on the mission to get the goals;
@@ -143,19 +187,16 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
         return Promise.resolve(element.missions);
       } else if (element instanceof NodeRefinement) {
         return Promise.resolve(element.refinements);
-      } else {
+      } else if (element instanceof Mission) {
         return Promise.resolve(element.nodes);
+      } else {
+        return Promise.resolve([]);
       }
       // TODO: implement goal recursive getter
       // return Promise.resolve(this.getGoalModelsInGoalModelFolder(path.join(this.workspaceRoot,'gm')));
     } else {
-      const gmFolderPath = path.join(this.workspaceRoot, "gm");
-      if (this.pathExists(gmFolderPath)) {
-        this.goalModels = this.getGoalModels(gmFolderPath);
-        return Promise.resolve(this.goalModels);
-      }
-      this.goalModels = [];
-      return Promise.resolve([]);
+      this.ensureGoalModelsLoaded();
+      return Promise.resolve(this.goalModels);
     }
   }
   // Should return all the missions inside a GoalModel
@@ -640,8 +681,8 @@ export class GoalModel extends vscode.TreeItem {
   parseToGm(): gmTypes.GoalModel {
     return {
       actors: this.parseMissions(),
-      orphans: this.orphans,
-      dependencies: this.dependencies,
+      orphans: this.orphans as never,
+      dependencies: this.dependencies as never,
       links: this.parseLinks(),
       display: this.display,
       tool: this.tool,

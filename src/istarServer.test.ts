@@ -34,7 +34,9 @@ class FakeDocument {
 
 // Read from the source tree, not `__dirname`: the test runs from the compiled `out/` tree,
 // which has no copy of this fixture.
-const fixturePath = path.join(process.cwd(), "src", "test", "gm", "gm", "LabSampleLogistics.gm");
+const fixturePath = fs.existsSync(path.join(process.cwd(), "src", "test", "lab_samples", "gm", "gm", "LabSampleLogistics.gm"))
+  ? path.join(process.cwd(), "src", "test", "lab_samples", "gm", "gm", "LabSampleLogistics.gm")
+  : path.join(process.cwd(), "src", "test", "gm", "gm", "LabSampleLogistics.gm");
 const fixtureText = fs.readFileSync(fixturePath, "utf8");
 
 describe("IstarServer", () => {
