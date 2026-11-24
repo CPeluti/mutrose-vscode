@@ -4,8 +4,8 @@
       "id": "ae7cf0f8-6318-4863-8320-e2309bf07538",
       "text": "M3: Delivery",
       "type": "istar.Actor",
-      "x": 228.16197183098586,
-      "y": 80,
+      "x": 456.5270910279745,
+      "y": 75.02007528230865,
       "customProperties": {
         "Description": ""
       },
@@ -14,8 +14,8 @@
           "id": "b4ec2cc9-f6a2-49f1-a31e-535935477d8a",
           "text": "G1: New Goal",
           "type": "istar.Goal",
-          "x": 228.16197183098586,
-          "y": 214.2816901408451,
+          "x": 218.91354021241597,
+          "y": 222.8187039426016,
           "customProperties": {
             "Description": "",
             "GoalType": "Achieve"
@@ -25,8 +25,8 @@
           "id": "38ce670e-30a2-460e-a4c6-c5ce2fd6f940",
           "text": "G2: New Goal",
           "type": "istar.Goal",
-          "x": 334,
-          "y": 577,
+          "x": 449.24968632371383,
+          "y": 517.9523212045169,
           "customProperties": {
             "Description": "",
             "GoalType": "Query"
@@ -48,7 +48,7 @@
   "display": {},
   "tool": "custom",
   "istar": "2.0",
-  "saveDate": "Wed, 04 Nov 2026 15:17:09 GMT",
+  "saveDate": "Tue, 24 Nov 2026 22:14:20 GMT",
   "diagram": {
     "width": 2000,
     "height": 1300,

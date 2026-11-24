@@ -1,8 +1,8 @@
 .vscode/**
 .vscode-test/**
 src/**
-!src/editors/dist/**
-!src/lsp/lsp-mutrose/server/out/**
+!src/plugins/editor/dist/**
+!src/plugins/lsp/lsp-mutrose/server/out/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md

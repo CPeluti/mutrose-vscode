@@ -49,13 +49,13 @@ export class GoalModelProvider implements vscode.TreeDataProvider<
     if (!workspaceRoot) {
       return;
     }
-    const gmFolderPath = path.join(this.workspaceRoot, "gm");
+    const gmFolderPath = path.join(this.workspaceRoot!, "gm");
     if (this.pathExists(gmFolderPath)) {
       this.goalModels = this.getGoalModels(gmFolderPath);
     }
 
     this.fileWatcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(this.workspaceRoot, "gm/*.gm"),
+      new vscode.RelativePattern(this.workspaceRoot!, "gm/*.gm"),
     );
     this.fileWatcher.onDidChange(() => this.refresh());
     this.fileWatcher.onDidCreate(() => this.refresh());
