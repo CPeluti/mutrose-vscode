@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
-import { CustomEditorProvider } from "../../customEditor";
 import { PluginInterface } from "../pluginInterface";
+import { GM_EDITOR_VIEW_TYPE, GmEditorProvider } from "./gmEditorProvider";
 
-export class EditorPlugin implements PluginInterface {
-  public readonly name = "editor";
+export class GmEditorPlugin implements PluginInterface {
+  public readonly name = "gm-editor";
   private disposables: vscode.Disposable[] = [];
 
   public register(context: vscode.ExtensionContext): void {
-    const editorDisposable = CustomEditorProvider.register(context);
+    const editorDisposable = GmEditorProvider.register(context);
     this.disposables.push(editorDisposable);
     context.subscriptions.push(editorDisposable);
   }
@@ -19,14 +19,11 @@ export class EditorPlugin implements PluginInterface {
     this.disposables = [];
   }
 
-  /**
-   * Helper method to open a given file with the custom goal model editor.
-   */
-  public async openCustomEditor(fileUri: vscode.Uri): Promise<void> {
+  public async openEditor(fileUri: vscode.Uri): Promise<void> {
     await vscode.commands.executeCommand(
       "vscode.openWith",
       fileUri,
-      "mutrose.customEditor",
+      GM_EDITOR_VIEW_TYPE,
     );
   }
 }

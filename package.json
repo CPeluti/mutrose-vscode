@@ -23,14 +23,24 @@
   "contributes": {
     "customEditors": [
       {
-        "viewType": "mutrose.customEditor",
-        "displayName": "Custom Editor",
+        "viewType": "mutrose.gmEditor",
+        "displayName": "Goal Model Editor (React Flow)",
         "selector": [
           {
             "filenamePattern": "*.gm"
           }
         ],
         "priority": "default"
+      },
+      {
+        "viewType": "mutrose.istarEditor",
+        "displayName": "iStar Editor (@istar-ts)",
+        "selector": [
+          {
+            "filenamePattern": "*.gm"
+          }
+        ],
+        "priority": "option"
       }
     ],
     "viewsContainers": {
@@ -287,7 +297,8 @@
     }
   },
   "scripts": {
-    "compile:webview": "npm run compile:webview:istar",
+    "compile:webview": "npm run compile:webview:gm && npm run compile:webview:istar",
+    "compile:webview:gm": "cd src/editors/gm-editor && npm install && npm run build",
     "compile:webview:istar": "cd src/plugins/editor/istar-editor && npm install && npm run build && cd ../../../..",
     "compile:server": "cd src/plugins/lsp/lsp-mutrose && npm install && npm run compile && cd ../../../..",
     "compile:client": "npm install && tsc -b",

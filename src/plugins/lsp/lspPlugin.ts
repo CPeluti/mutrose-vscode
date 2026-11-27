@@ -1,4 +1,4 @@
-import * as path from "path";
+import * as fs from "fs";
 import * as vscode from "vscode";
 import {
   LanguageClient,
@@ -7,6 +7,10 @@ import {
   TransportKind,
 } from "vscode-languageclient/node";
 import { PluginInterface } from "../pluginInterface";
+import {
+  resolveServerModulePath,
+  stopLanguageClientSafely,
+} from "./lspHelpers";
 
 export class LspPlugin implements PluginInterface {
   public readonly name = "lsp";
@@ -14,6 +18,13 @@ export class LspPlugin implements PluginInterface {
 
   public async register(context: vscode.ExtensionContext): Promise<void> {
     const serverModule = this.getServerModulePath(context);
+
+    if (!fs.existsSync(serverModule)) {
+      const msg = `MutRoSe LSP server not found at "${serverModule}". LSP features will be disabled until the server is compiled.`;
+      console.error(`[LspPlugin] ${msg}`);
+      void vscode.window.showWarningMessage(msg);
+      return;
+    }
 
     const serverOptions: ServerOptions = {
       run: {
@@ -44,14 +55,21 @@ export class LspPlugin implements PluginInterface {
       clientOptions,
     );
 
-    await this.client.start();
+    try {
+      await this.client.start();
+    } catch (err) {
+      console.error("[LspPlugin] Failed to start LanguageClient:", err);
+      void vscode.window.showWarningMessage(
+        `Failed to start MutRoSe Language Server: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      this.client = undefined;
+    }
   }
 
   public async deregister(): Promise<void> {
-    if (this.client) {
-      await this.client.stop();
-      this.client = undefined;
-    }
+    const client = this.client;
+    this.client = undefined;
+    await stopLanguageClientSafely(client);
   }
 
   public getClient(): LanguageClient | undefined {
@@ -59,16 +77,6 @@ export class LspPlugin implements PluginInterface {
   }
 
   public getServerModulePath(context: vscode.ExtensionContext): string {
-    return context.asAbsolutePath(
-      path.join(
-        "src",
-        "plugins",
-        "lsp",
-        "lsp-mutrose",
-        "server",
-        "out",
-        "server.js",
-      ),
-    );
+    return resolveServerModulePath((rel) => context.asAbsolutePath(rel));
   }
 }

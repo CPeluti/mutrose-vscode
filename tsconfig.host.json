@@ -7,9 +7,9 @@
   "include": ["src"],
   "exclude": [
     "src/plugins/lsp/lsp-mutrose",
-    "src/plugins/editor/gm-editor",
-    "src/plugins/editor/istar-editor",
-    "src/plugins/editor/dist",
+    "src/plugins/editor",
+    "src/editors",
+    "src/lsp",
     "node_modules",
     ".vscode-test"
   ]

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import {
-  EditorPlugin,
+  GmEditorPlugin,
+  IstarEditorPlugin,
   LspPlugin,
   MutrosePlugin,
   PluginManager,
@@ -22,7 +23,8 @@ export async function activate(
   pluginManager
     .use(new LspPlugin())
     .use(new TreeViewPlugin())
-    .use(new EditorPlugin())
+    .use(new GmEditorPlugin())
+    .use(new IstarEditorPlugin())
     .use(new MutrosePlugin());
 
   await pluginManager.registerAll(context);

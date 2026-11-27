@@ -305,7 +305,7 @@ export class TreeViewPlugin implements PluginInterface {
       await vscode.commands.executeCommand(
         "vscode.openWith",
         fileUri,
-        "mutrose.customEditor",
+        "mutrose.gmEditor",
       );
     } catch (err) {
       vscode.window.showErrorMessage(
