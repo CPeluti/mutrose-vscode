@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { Node, NodeAttr, GoalModelProvider, GoalModel } from "../goalModel";
+import { getLanguageClient } from "../extension";
 
 /**
  * Propriedades suportadas pelo LSP por tipo/contexto de nó
@@ -95,6 +96,7 @@ function getVariableTypes(text: string, node: Node): Map<string, string> {
 
 /**
  * Editor com QuickPick interativo que fornece sugestões em tempo real ao digitar OCL
+ * utilizando diretamente as hints geradas pelo LSP (Language Server Protocol)
  */
 export async function promptOclExpression(
   node: Node,
@@ -110,15 +112,11 @@ export async function promptOclExpression(
         : "ex: world_db->select(n: Nurse | n.name in current_delivery.nurse)";
     qp.value = initialValue;
 
-    const knowledge = getKnowledgeBase();
-    const knowledgeClasses = Array.from(knowledge.keys()).sort();
+    let queryId = 0;
 
-    const monitorAttr = node.attributes.find((a) => a.attrName.toLowerCase() === "monitors")?.attrValue;
-    const monitorVars = monitorAttr ? monitorAttr.split(",").map((s) => s.trim()).filter(Boolean) : [];
-
-    const updateSuggestions = (text: string) => {
+    const updateSuggestions = async (text: string) => {
+      const currentId = ++queryId;
       const items: (vscode.QuickPickItem & { apply?: () => string; isSubmit?: boolean })[] = [];
-      const varTypes = getVariableTypes(text, node);
 
       // Item de confirmação / salvar
       items.push({
@@ -129,167 +127,211 @@ export async function promptOclExpression(
         isSubmit: true,
       });
 
-      // 1. Detecta acesso a atributo: "varName." ou "varName.prefix"
-      const memberMatch = /(?:^|[^a-zA-Z0-9_])([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)?$/.exec(text);
-      if (memberMatch) {
-        const varName = memberMatch[1];
-        const attrPrefix = memberMatch[2] || "";
-        const typeName = varTypes.get(varName);
-
-        const possibleAttrs = typeName && knowledge.has(typeName)
-          ? knowledge.get(typeName)!
-          : Array.from(new Set(Array.from(knowledge.values()).flat())).sort();
-
-        const matchingAttrs = possibleAttrs.filter((a) => a.toLowerCase().startsWith(attrPrefix.toLowerCase()));
-
-        if (matchingAttrs.length > 0) {
-          items.push({
-            label: `ATRIBUTOS DE '${varName}'${typeName ? ` (${typeName})` : ""}`,
-            kind: vscode.QuickPickItemKind.Separator,
-          });
-
-          for (const attr of matchingAttrs) {
-            items.push({
-              label: `$(symbol-property) ${varName}.${attr}`,
-              description: typeName ? `Propriedade de ${typeName}` : "Propriedade",
-              alwaysShow: true,
-              apply: () => text.replace(new RegExp(`${varName}\\.[a-zA-Z_0-9]*$`), `${varName}.${attr}`),
-            });
-          }
-        }
-      }
-
-      // 2. Detecta anotação de tipo: ": " ou ": TypePrefix"
-      const typeMatch = /:\s*([a-zA-Z_]\w*)?$/.exec(text);
-      if (typeMatch) {
-        const typePrefix = typeMatch[1] || "";
-        const matchingClasses = knowledgeClasses.filter((c) =>
-          c.toLowerCase().startsWith(typePrefix.toLowerCase())
-        );
-
-        if (matchingClasses.length > 0) {
-          items.push({
-            label: "CLASSES DE CONHECIMENTO",
-            kind: vscode.QuickPickItemKind.Separator,
-          });
-
-          for (const cls of matchingClasses) {
-            items.push({
-              label: `$(symbol-class) ${cls}`,
-              description: `Classe XML (${(knowledge.get(cls) || []).join(", ")})`,
-              alwaysShow: true,
-              apply: () => text.replace(/:\s*[a-zA-Z_0-9]*$/, `: ${cls} `),
-            });
-            items.push({
-              label: `$(symbol-class) Sequence(${cls})`,
-              description: `Coleção de ${cls}`,
-              alwaysShow: true,
-              apply: () => text.replace(/:\s*[a-zA-Z_0-9]*$/, `: Sequence(${cls}) `),
-            });
-          }
-        }
-      }
-
-      // 3. Sugestões de Templates Iniciais (quando vazio ou início)
-      if (!text || text.trim().length === 0) {
-        items.push({
-          label: "TEMPLATES OCL SUGERIDOS",
-          kind: vscode.QuickPickItemKind.Separator,
-        });
-
-        const firstClass = knowledgeClasses[0] || "Item";
-        if (propName === "AchieveCondition") {
-          const firstMonitor = monitorVars[0] || "collection";
-          items.push({
-            label: `$(symbol-snippet) ${firstMonitor}->forAll(x: ${firstClass} | ...)`,
-            description: "Iterador forAll com classe do conhecimento",
-            alwaysShow: true,
-            apply: () => `${firstMonitor}->forAll(x: ${firstClass} | x.`,
-          });
-        } else {
-          items.push({
-            label: `$(symbol-snippet) world_db->select(x: ${firstClass} | ...)`,
-            description: "Consulta select sobre world_db",
-            alwaysShow: true,
-            apply: () => `world_db->select(x: ${firstClass} | x.`,
-          });
-        }
-      }
-
       // Detecta palavra sendo digitada no final do texto
       const trailingWordMatch = /[a-zA-Z_]\w*$/.exec(text);
       const trailingWord = trailingWordMatch ? trailingWordMatch[0] : "";
 
-      // 4. Variáveis disponíveis (prioriza as que dão match com o que o usuário está digitando)
-      const declaredVars = Array.from(
-        new Set([...monitorVars, ...Array.from(varTypes.keys()), "world_db"])
-      );
-
-      const matchingVars = trailingWord
-        ? declaredVars.filter((v) => v.toLowerCase().startsWith(trailingWord.toLowerCase()))
-        : declaredVars;
-      const otherVars = trailingWord
-        ? declaredVars.filter((v) => !v.toLowerCase().startsWith(trailingWord.toLowerCase()))
-        : [];
-      const sortedVars = [...matchingVars, ...otherVars];
-
-      if (sortedVars.length > 0) {
-        items.push({
-          label: "VARIÁVEIS DISPONÍVEIS",
-          kind: vscode.QuickPickItemKind.Separator,
-        });
-        for (const v of sortedVars) {
-          const type = varTypes.get(v);
-          items.push({
-            label: `$(symbol-variable) ${v}`,
-            description: type ? `: ${type}` : v === "world_db" ? "Base de conhecimento" : "Variável de Monitor/Controle",
-            alwaysShow: true,
-            apply: () => {
-              if (trailingWord) {
-                return text.slice(0, text.length - trailingWord.length) + v;
-              }
-              const needsSpace = text.length > 0 && !text.endsWith(" ") && !text.endsWith("(") && !text.endsWith("|");
-              return text + (needsSpace ? " " : "") + v;
-            },
-          });
+      // 1. Consulta as hints geradas diretamente pelo servidor LSP
+      let lspItems: any[] = [];
+      const client = getLanguageClient();
+      if (client) {
+        try {
+          const fileUri = node.parent?.parent?.filePath
+            ? vscode.Uri.file(node.parent.parent.filePath).toString()
+            : undefined;
+          lspItems =
+            (await client.sendRequest<any[]>("mutrose/getOclHints", {
+              uri: fileUri,
+              propName,
+              expression: text,
+            })) || [];
+        } catch (e) {
+          console.warn("LSP getOclHints error:", e);
         }
       }
 
-      // 5. Operadores e Palavras-chave OCL
-      items.push({
-        label: "OPERADORES E PALAVRAS-CHAVE OCL",
-        kind: vscode.QuickPickItemKind.Separator,
-      });
+      // Se a digitação continuou enquanto a requisição rodava, descarta resposta obsoleta
+      if (currentId !== queryId) return;
 
-      const operators = [
-        { label: "->forAll(", insert: "->forAll(", isArrow: true },
-        { label: "->select(", insert: "->select(", isArrow: true },
-        { label: "in", insert: "in", isWord: true },
-        { label: "and", insert: "and", isWord: true },
-        { label: "or", insert: "or", isWord: true },
-        { label: "not", insert: "not", isWord: true },
-        { label: "=", insert: "=", isSymbol: true },
-        { label: "<>", insert: "<>", isSymbol: true },
-      ];
+      if (lspItems && lspItems.length > 0) {
+        // Agrupa as hints retornadas pelo LSP
+        const attributeHints = lspItems.filter((i) => i.kind === 10); // Property
+        const classHints = lspItems.filter((i) => i.kind === 7); // Class
+        const snippetHints = lspItems.filter((i) => i.kind === 15); // Snippet
+        const variableHints = lspItems.filter((i) => i.kind === 6); // Variable
+        const operatorHints = lspItems.filter((i) => i.kind === 14 || i.kind === 24 || i.kind === 3); // Keyword, Operator, Function
 
-      for (const op of operators) {
-        items.push({
-          label: `$(symbol-operator) ${op.label}`,
-          alwaysShow: true,
-          apply: () => {
-            if (op.isArrow) {
-              if (/->[a-zA-Z_]*$/.test(text)) {
-                return text.replace(/->[a-zA-Z_]*$/, op.insert);
-              }
-              return text + op.insert;
+        // 1. Atributos da classe/variável sugeridos pelo LSP
+        if (attributeHints.length > 0) {
+          const memberMatch = /(?:^|[^a-zA-Z0-9_])([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)?$/.exec(text);
+          const varName = memberMatch ? memberMatch[1] : "";
+          items.push({
+            label: `ATRIBUTOS DO LSP${varName ? ` ('${varName}')` : ""}`,
+            kind: vscode.QuickPickItemKind.Separator,
+          });
+
+          for (const hint of attributeHints) {
+            items.push({
+              label: `$(symbol-property) ${varName ? `${varName}.${hint.label}` : hint.label}`,
+              description: hint.detail || "Propriedade",
+              detail: typeof hint.documentation === "string" ? hint.documentation : hint.documentation?.value,
+              alwaysShow: true,
+              apply: () => {
+                if (varName) {
+                  return text.replace(new RegExp(`${varName}\\.[a-zA-Z_0-9]*$`), `${varName}.${hint.label}`);
+                }
+                return text + hint.label;
+              },
+            });
+          }
+        }
+
+        // 2. Classes de conhecimento sugeridas pelo LSP
+        if (classHints.length > 0) {
+          items.push({
+            label: "CLASSES DE CONHECIMENTO (LSP)",
+            kind: vscode.QuickPickItemKind.Separator,
+          });
+
+          for (const hint of classHints) {
+            items.push({
+              label: `$(symbol-class) ${hint.label}`,
+              description: hint.detail || "Classe de conhecimento",
+              alwaysShow: true,
+              apply: () => text.replace(/:\s*[a-zA-Z_0-9]*$/, `: ${hint.label} `),
+            });
+          }
+        }
+
+        // 3. Templates iniciais sugeridos pelo LSP
+        if (snippetHints.length > 0) {
+          items.push({
+            label: "TEMPLATES OCL (LSP)",
+            kind: vscode.QuickPickItemKind.Separator,
+          });
+
+          for (const hint of snippetHints) {
+            items.push({
+              label: `$(symbol-snippet) ${hint.label}`,
+              description: hint.detail || "Template OCL",
+              alwaysShow: true,
+              apply: () => hint.insertText || hint.label,
+            });
+          }
+        }
+
+        // 4. Variáveis sugeridas pelo LSP (prioriza variáveis que começam com o que foi digitado)
+        if (variableHints.length > 0) {
+          items.push({
+            label: "VARIÁVEIS DISPONÍVEIS (LSP)",
+            kind: vscode.QuickPickItemKind.Separator,
+          });
+
+          const matchingVars = trailingWord
+            ? variableHints.filter((v) => v.label.toLowerCase().startsWith(trailingWord.toLowerCase()))
+            : variableHints;
+          const otherVars = trailingWord
+            ? variableHints.filter((v) => !v.label.toLowerCase().startsWith(trailingWord.toLowerCase()))
+            : [];
+          const sortedVars = [...matchingVars, ...otherVars];
+
+          for (const hint of sortedVars) {
+            items.push({
+              label: `$(symbol-variable) ${hint.label}`,
+              description: hint.detail || "",
+              detail: typeof hint.documentation === "string" ? hint.documentation : hint.documentation?.value,
+              alwaysShow: true,
+              apply: () => {
+                if (trailingWord) {
+                  return text.slice(0, text.length - trailingWord.length) + hint.label;
+                }
+                const needsSpace = text.length > 0 && !text.endsWith(" ") && !text.endsWith("(") && !text.endsWith("|");
+                return text + (needsSpace ? " " : "") + hint.label;
+              },
+            });
+          }
+        }
+
+        // 5. Operadores OCL sugeridos pelo LSP
+        if (operatorHints.length > 0) {
+          items.push({
+            label: "OPERADORES OCL (LSP)",
+            kind: vscode.QuickPickItemKind.Separator,
+          });
+
+          for (const hint of operatorHints) {
+            const isArrow = hint.label.startsWith("->");
+            const isWord = /^[a-zA-Z]+$/.test(hint.label);
+            items.push({
+              label: `$(symbol-operator) ${hint.label}`,
+              description: hint.detail || "",
+              alwaysShow: true,
+              apply: () => {
+                if (isArrow) {
+                  if (/->[a-zA-Z_]*$/.test(text)) {
+                    return text.replace(/->[a-zA-Z_]*$/, hint.label);
+                  }
+                  return text + hint.label;
+                }
+                if (isWord && trailingWord && hint.label.startsWith(trailingWord.toLowerCase())) {
+                  return text.slice(0, text.length - trailingWord.length) + hint.label + " ";
+                }
+                const needsSpace = text.length > 0 && !text.endsWith(" ") && !text.endsWith("(") && !text.endsWith("|");
+                return text + (needsSpace ? " " : "") + hint.label + " ";
+              },
+            });
+          }
+        }
+      } else {
+        // Fallback local se o LSP ainda estiver iniciando
+        const knowledge = getKnowledgeBase();
+        const monitorAttr = node.attributes.find((a) => a.attrName.toLowerCase() === "monitors")?.attrValue;
+        const monitorVars = monitorAttr ? monitorAttr.split(",").map((s) => s.trim()).filter(Boolean) : [];
+        const varTypes = getVariableTypes(text, node);
+
+        const memberMatch = /(?:^|[^a-zA-Z0-9_])([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)?$/.exec(text);
+        if (memberMatch) {
+          const varName = memberMatch[1];
+          const attrPrefix = memberMatch[2] || "";
+          const typeName = varTypes.get(varName);
+          const possibleAttrs = typeName && knowledge.has(typeName)
+            ? knowledge.get(typeName)!
+            : Array.from(new Set(Array.from(knowledge.values()).flat())).sort();
+          const matchingAttrs = possibleAttrs.filter((a) => a.toLowerCase().startsWith(attrPrefix.toLowerCase()));
+          if (matchingAttrs.length > 0) {
+            items.push({ label: `ATRIBUTOS DE '${varName}'`, kind: vscode.QuickPickItemKind.Separator });
+            for (const attr of matchingAttrs) {
+              items.push({
+                label: `$(symbol-property) ${varName}.${attr}`,
+                description: typeName ? `Propriedade de ${typeName}` : "Propriedade",
+                alwaysShow: true,
+                apply: () => text.replace(new RegExp(`${varName}\\.[a-zA-Z_0-9]*$`), `${varName}.${attr}`),
+              });
             }
-            if (op.isWord && trailingWord && op.insert.startsWith(trailingWord.toLowerCase())) {
-              return text.slice(0, text.length - trailingWord.length) + op.insert + " ";
-            }
-            const needsSpace = text.length > 0 && !text.endsWith(" ") && !text.endsWith("(") && !text.endsWith("|");
-            return text + (needsSpace ? " " : "") + op.insert + (op.isSymbol ? " " : " ");
-          },
-        });
+          }
+        }
+
+        const declaredVars = Array.from(new Set([...monitorVars, ...Array.from(varTypes.keys()), "world_db"]));
+        const matchingVars = trailingWord
+          ? declaredVars.filter((v) => v.toLowerCase().startsWith(trailingWord.toLowerCase()))
+          : declaredVars;
+        const otherVars = trailingWord
+          ? declaredVars.filter((v) => !v.toLowerCase().startsWith(trailingWord.toLowerCase()))
+          : [];
+        const sortedVars = [...matchingVars, ...otherVars];
+        if (sortedVars.length > 0) {
+          items.push({ label: "VARIÁVEIS DISPONÍVEIS", kind: vscode.QuickPickItemKind.Separator });
+          for (const v of sortedVars) {
+            items.push({
+              label: `$(symbol-variable) ${v}`,
+              alwaysShow: true,
+              apply: () => {
+                if (trailingWord) return text.slice(0, text.length - trailingWord.length) + v;
+                return text + (text.endsWith(" ") || text === "" ? "" : " ") + v;
+              },
+            });
+          }
+        }
       }
 
       qp.items = items;

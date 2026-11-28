@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import type { LanguageClient } from "vscode-languageclient/node";
 import {
   GmEditorPlugin,
   IstarEditorPlugin,
@@ -9,6 +10,10 @@ import {
 } from "./plugins";
 
 let pluginManager: PluginManager;
+
+export function getLanguageClient(): LanguageClient | undefined {
+  return pluginManager?.getPlugin<LspPlugin>("lsp")?.getClient();
+}
 
 /**
  * Extension activation entry point.
